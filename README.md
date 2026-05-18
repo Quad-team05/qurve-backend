@@ -60,6 +60,10 @@ cd qurve-backend
 DB_URL=jdbc:mysql://localhost:3306/qurve
 DB_USERNAME=본인DB유저명
 DB_PASSWORD=본인DB비밀번호
+
+JWT_SECRET=32자리이상아무문자열
+JWT_ACCESS_EXPIRATION=3600000
+JWT_REFRESH_EXPIRATION=604800000
 ```
 
 ### 3. MySQL DB 생성
