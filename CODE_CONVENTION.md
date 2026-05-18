@@ -134,7 +134,7 @@ UserResponseDto dto = UserResponseDto.from(user);
 
 ## 주석 규칙
 
-- 무엇을 했는지 보다 **왜 그렇게 했는지**를 설명
+- 무엇을 했는지 보다 왜 그렇게 했는지를 설명
 - 코드만 봐도 쉽게 알 수 있는 내용은 주석 X
 - 외부 공개 메서드 / 복잡한 로직은 Javadoc 사용
 
@@ -189,4 +189,4 @@ public LevelTestResultResponseDto submit(LevelTestSubmitRequestDto dto) {
 | `@Builder` | |
 | `@Slf4j` | |
 
-- 의존성 주입은 **생성자 주입** 사용 (`@RequiredArgsConstructor`)
+- 의존성 주입은 생성자 주입 사용 (`@RequiredArgsConstructor`)
