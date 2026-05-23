@@ -3,6 +3,7 @@ package com.qurve.global.exception;
 import com.qurve.global.common.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -33,6 +34,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.valueOf(e.getErrorCode().getStatus()))
                 .body(ApiResponse.error(e.getErrorCode()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors()
+                .get(0).getDefaultMessage();
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("VALIDATION_ERROR", message));
     }
 
 }
