@@ -14,9 +14,9 @@ Git Flow 전략을 기반으로 합니다.
 ### 브랜치 네이밍 예시
 
 ```
-feature-PLI-4-1-1
-hotfix-PLI-4-2-1
-restore-PLI-4-3-1
+feature-QVE-4-1-1
+hotfix-QVE-4-2-1
+restore-QVE-4-3-1
 ```
 
 ---
@@ -43,11 +43,11 @@ restore-PLI-4-3-1
 ### 커밋 메시지 예시
 
 ```
-feat : PLI-4-1-1(아이디 중복확인 API 개발)
-fix : PLI-4-2-1(이메일 인증번호 발송 오류 수정)
-doc : PLI-4-3-1(이메일 인증 API Swagger 명세 추가)
+feat : QVE-4-1-1(아이디 중복확인 API 개발)
+fix : QVE-4-2-1(이메일 인증번호 발송 오류 수정)
+doc : QVE-4-3-1(이메일 인증 API Swagger 명세 추가)
 chore : 프로젝트 초기 세팅
-refactor : PLI-4-5-1(회원가입 로직 리팩터링)
+refactor : QVE-4-5-1(회원가입 로직 리팩터링)
 ```
 
 ### 커밋 단위
@@ -66,5 +66,5 @@ refactor : PLI-4-5-1(회원가입 로직 리팩터링)
 ### PR 제목 예시
 
 ```
-feat : PLI-4-1-1(아이디 중복확인 API 개발)
+feat : QVE-4-1-1(아이디 중복확인 API 개발)
 ```
