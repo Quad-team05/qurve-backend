@@ -1,7 +1,9 @@
 package com.qurve.auth.service;
 
+import com.qurve.auth.dto.request.SignupEmailRequestDto;
 import com.qurve.auth.dto.request.LoginRequestDto;
 import com.qurve.auth.dto.request.SignupRequestDto;
+import com.qurve.auth.dto.response.SignupEmailResponseDto;
 import com.qurve.auth.dto.response.LoginResponseDto;
 import com.qurve.auth.dto.response.SignupResponseDto;
 import com.qurve.global.enums.ErrorCode;
@@ -10,11 +12,15 @@ import com.qurve.global.security.JwtTokenProvider;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +30,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JavaMailSender mailSender;
+    private final RedisTemplate<String, String> redisTemplate;
 
     /**
      * 회원가입
@@ -63,7 +71,7 @@ public class AuthService {
     /**
      * 로그인 ID 중복 검사
      *
-     * 회원가입 시 동일한 로그인 ID 사용을 방지하기 위해
+     * * 회원가입 시 동일한 로그인 ID 사용을 방지하기 위해
      * 저장 전에 이미 존재하는 계정인지 검증한다.
      *
      * @param loginId 중복 여부를 확인할 로그인 ID
@@ -108,6 +116,48 @@ public class AuthService {
         user.updateRefreshToken(refreshToken, LocalDateTime.now().plusDays(7));
 
         return LoginResponseDto.from(user, accessToken, refreshToken);
+    }
+
+    /**
+     * 회원가입용 이메일 인증번호 발송
+     *
+     * * 이미 가입된 이메일인지 먼저 검증한 뒤,
+     * 인증번호를 생성하여 이메일로 전송한다.
+     *
+     * * 인증번호는 일정 시간이 지나면 자동 만료되도록
+     * Redis에 TTL(Time To Live)과 함께 저장한다.
+     *
+     * @param dto 이메일 인증 요청 정보
+     * @return 이메일 인증 응답 정보
+     * @throws BusinessException 이미 가입된 이메일이거나 메일 전송에 실패한 경우
+     */
+    @Transactional
+    public SignupEmailResponseDto signupEmailSend(SignupEmailRequestDto dto) {
+
+        // 가입된 이메일인지 검증
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+        }
+
+        // 인증번호 생성
+        String code = String.valueOf((int)(Math.random() * 900000) + 100000);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(dto.getEmail());
+        message.setSubject("인증번호 발송");
+        message.setText("인증번호: " + code);
+
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.EMAIL_SEND_FAIL);
+        }
+
+        // 인증번호 재사용 방지 및 보안을 위해 만료 시간을 설정하여 Redis 저장
+        redisTemplate.opsForValue()
+                .set(dto.getEmail(), code, 3, TimeUnit.MINUTES);
+
+        return new SignupEmailResponseDto(dto.getEmail());
     }
 
 }
