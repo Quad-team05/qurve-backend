@@ -60,6 +60,20 @@ public class AuthService {
         return SignupResponseDto.from(savedUser);
     }
 
+    /**
+     * 로그인
+     *
+     * * LoginId 기반으로 유저 조회 후,
+     * 입력한 비밀번호와 암호화된 비밀번호를 비교 검증한다.
+     *
+     * * 인증 성공 시 Access Token / Refresh Token을 발급한다.
+     * * Refresh Token은 재로그인 없이 Access Token을 재발급하기 위해
+     * 유저 엔티티에 만료 시간과 함께 저장한다.
+     *
+     * @param dto 로그인 요청 정보
+     * @return 로그인 응답 정보
+     * @throws BusinessException 유저가 존재하지 않거나 비밀번호가 일치하지 않는 경우
+     */
     @Transactional
     public LoginResponseDto login(LoginRequestDto dto) {
 
