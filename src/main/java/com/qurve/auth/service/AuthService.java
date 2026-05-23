@@ -61,6 +61,21 @@ public class AuthService {
     }
 
     /**
+     * 로그인 ID 중복 검사
+     *
+     * 회원가입 시 동일한 로그인 ID 사용을 방지하기 위해
+     * 저장 전에 이미 존재하는 계정인지 검증한다.
+     *
+     * @param loginId 중복 여부를 확인할 로그인 ID
+     * @throws BusinessException 동일한 로그인 ID가 이미 존재하는 경우
+     */
+    public void checkLoginId(String loginId) {
+        if (userRepository.existsByLoginId(loginId)) {
+            throw new BusinessException(ErrorCode.DUPLICATE_LOGIN_ID);
+        }
+    }
+
+    /**
      * 로그인
      *
      * * LoginId 기반으로 유저 조회 후,
