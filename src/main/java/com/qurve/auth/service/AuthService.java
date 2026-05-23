@@ -1,8 +1,10 @@
 package com.qurve.auth.service;
 
+import com.qurve.auth.dto.request.EmailVerifyRequestDto;
 import com.qurve.auth.dto.request.SignupEmailRequestDto;
 import com.qurve.auth.dto.request.LoginRequestDto;
 import com.qurve.auth.dto.request.SignupRequestDto;
+import com.qurve.auth.dto.response.EmailVerifyResponseDto;
 import com.qurve.auth.dto.response.SignupEmailResponseDto;
 import com.qurve.auth.dto.response.LoginResponseDto;
 import com.qurve.auth.dto.response.SignupResponseDto;
@@ -160,4 +162,29 @@ public class AuthService {
         return new SignupEmailResponseDto(dto.getEmail());
     }
 
+    /**
+     * 이메일 인증번호 검증
+     *
+     * * Redis에 저장된 인증번호와 사용자가 입력한 인증번호를 비교하여 이메일 인증 여부를 확인한다.
+     * * 인증이 완료된 인증번호는 재사용 방지를 위해 즉시 삭제한다.
+     *
+     * @param dto 이메일 인증번호 검증 요청 정보
+     * @return 인증 완료된 이메일 정보
+     * @throws BusinessException 인증번호가 존재하지 않거나 일치하지 않는 경우
+     */
+    @Transactional
+    public EmailVerifyResponseDto emailVerify(EmailVerifyRequestDto dto) {
+
+        // 서버에 저장된 인증번호 조회
+        String savedCode = redisTemplate.opsForValue().get(dto.getEmail());
+
+        // 인증번호가 존재하지 않거나 일치하지 않는 경우 처리
+        if (savedCode == null || !savedCode.equals(dto.getCode())) {
+            throw new BusinessException(ErrorCode.INVALID_VERIFICATION_CODE);
+        }
+
+        redisTemplate.delete(dto.getEmail());
+
+        return new EmailVerifyResponseDto(dto.getEmail());
+    }
 }
