@@ -1,16 +1,20 @@
 package com.qurve.auth.service;
 
+import com.qurve.auth.dto.request.LoginRequestDto;
 import com.qurve.auth.dto.request.SignupRequestDto;
+import com.qurve.auth.dto.response.LoginResponseDto;
 import com.qurve.auth.dto.response.SignupResponseDto;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
+import com.qurve.global.security.JwtTokenProvider;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +23,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 회원가입
@@ -35,14 +40,17 @@ public class AuthService {
     @Transactional
     public SignupResponseDto signup(SignupRequestDto dto) {
 
+        // 로그인 ID 중복 여부 검증
         if (userRepository.existsByLoginId(dto.getLoginId())) {
             throw new BusinessException(ErrorCode.DUPLICATE_LOGIN_ID);
         }
 
+        // 이메일 중복 여부 검증
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
 
+        // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
 
         User user = dto.toEntity(encodedPassword);
@@ -51,4 +59,26 @@ public class AuthService {
 
         return SignupResponseDto.from(savedUser);
     }
+
+    @Transactional
+    public LoginResponseDto login(LoginRequestDto dto) {
+
+        // 존재하는 유저인지 검증
+        User user = userRepository.findByLoginId(dto.getLoginId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // 비밀번호 검증
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        // Token 생성
+        String accessToken = jwtTokenProvider.createAccessToken(user.getLoginId(), user.getRole().name());
+        String refreshToken = jwtTokenProvider.createRefreshToken();
+        // 객체에 Refresh Token + 만료시간 저장
+        user.updateRefreshToken(refreshToken, LocalDateTime.now().plusDays(7));
+
+        return LoginResponseDto.from(user, accessToken, refreshToken);
+    }
+
 }
