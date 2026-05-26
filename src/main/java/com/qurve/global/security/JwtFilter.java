@@ -1,5 +1,6 @@
 package com.qurve.global.security;
 
+import com.qurve.global.exception.BusinessException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +33,19 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         // 유효한 토큰일 때 Spring Security에 인증 정보 등록
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            String loginId = jwtTokenProvider.getLoginId(token);
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(loginId, null, List.of());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (token != null) {
+            try {
+                if (jwtTokenProvider.validateToken(token)) {
+                    String loginId = jwtTokenProvider.getLoginId(token);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(loginId, null, List.of());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            } catch (BusinessException e) {
+                // 유효하지 않은 토큰일 경우 인증 없이 통과
+            }
         }
+
+        filterChain.doFilter(request, response);
 
         filterChain.doFilter(request, response);
     }
