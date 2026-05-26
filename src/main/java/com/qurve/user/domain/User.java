@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -43,4 +45,15 @@ public class User extends BaseEntity {
     @Builder.Default
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
+
+    @Column(name = "refresh_token", length = 255)
+    private String refreshToken;
+
+    @Column(name = "refresh_token_expired_at")
+    private LocalDateTime refreshTokenExpiredAt;
+
+    public void updateRefreshToken(String refreshToken, LocalDateTime expiredAt) {
+        this.refreshToken = refreshToken;
+        this.refreshTokenExpiredAt = expiredAt;
+    }
 }

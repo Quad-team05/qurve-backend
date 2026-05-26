@@ -1,6 +1,8 @@
 package com.qurve.auth.controller;
 
+import com.qurve.auth.dto.request.LoginRequestDto;
 import com.qurve.auth.dto.request.SignupRequestDto;
+import com.qurve.auth.dto.response.LoginResponseDto;
 import com.qurve.auth.dto.response.SignupResponseDto;
 import com.qurve.auth.service.AuthService;
 import com.qurve.global.common.ApiResponse;
@@ -21,5 +23,10 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponseDto>> signup(@Valid @RequestBody SignupRequestDto signupRequestDto) {
         return ResponseEntity.ok(ApiResponse.success(authService.signup(signupRequestDto)));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponseDto>> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
+        return ResponseEntity.ok(ApiResponse.success(authService.login(loginRequestDto)));
     }
 }
