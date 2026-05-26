@@ -48,7 +48,7 @@ public class AuthService {
      * @throws BusinessException 로그인 ID 또는 이메일이 이미 존재하는 경우
      */
     @Transactional
-    public SignupResponseDto signup(SignupRequestDto dto) {
+    public SignupResponseDto save(SignupRequestDto dto) {
 
         // 로그인 ID 중복 여부 검증
         if (userRepository.existsByLoginId(dto.getLoginId())) {

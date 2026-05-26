@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class LoginRequestDto {
 
     @NotBlank(message = "필수로 입력해야 합니다.")
-    @Size(min = 1, max = 40)
+    @Size(min = 1, max = 30)
     private String loginId;
 
     @NotBlank(message = "필수로 입력해야 합니다.")

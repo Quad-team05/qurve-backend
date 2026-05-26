@@ -11,11 +11,15 @@ import com.qurve.auth.dto.response.SignupResponseDto;
 import com.qurve.auth.service.AuthService;
 import com.qurve.global.common.ApiResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@Validated
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
@@ -23,7 +27,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<SignupResponseDto>> signup(@Valid @RequestBody SignupRequestDto signupRequestDto) {
-        return ResponseEntity.ok(ApiResponse.success(authService.signup(signupRequestDto)));
+        return ResponseEntity.ok(ApiResponse.success(authService.save(signupRequestDto)));
     }
 
     @PostMapping("/login")
@@ -32,7 +36,7 @@ public class AuthController {
     }
 
     @GetMapping("/check-id")
-    public ResponseEntity<ApiResponse<Void>> checkLoginId(@RequestParam("loginId") String loginId) {
+    public ResponseEntity<ApiResponse<Void>> checkLoginId(@NotBlank @Size(min = 1, max = 30) @RequestParam("loginId") String loginId) {
         authService.checkLoginId(loginId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
