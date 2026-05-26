@@ -1,7 +1,9 @@
 package com.qurve.auth.controller;
 
+import com.qurve.auth.dto.request.SignupEmailRequestDto;
 import com.qurve.auth.dto.request.LoginRequestDto;
 import com.qurve.auth.dto.request.SignupRequestDto;
+import com.qurve.auth.dto.response.SignupEmailResponseDto;
 import com.qurve.auth.dto.response.LoginResponseDto;
 import com.qurve.auth.dto.response.SignupResponseDto;
 import com.qurve.auth.service.AuthService;
@@ -31,5 +33,10 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> checkLoginId(@RequestParam("loginId") String loginId) {
         authService.checkLoginId(loginId);
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PostMapping("/signup/email/send")
+    public ResponseEntity<ApiResponse<SignupEmailResponseDto>> sendSignupEmail(@Valid @RequestBody SignupEmailRequestDto signupEmailRequestDto) {
+        return ResponseEntity.ok(ApiResponse.success((authService.signupEmailSend(signupEmailRequestDto))));
     }
 }
