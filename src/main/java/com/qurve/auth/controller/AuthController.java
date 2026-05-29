@@ -49,4 +49,10 @@ public class AuthController {
     public ResponseEntity<ApiResponse<TokenReissueResponseDto>> reissue(@Valid @RequestBody TokenReissueRequestDto tokenReissueRequestDto) {
         return ResponseEntity.ok(ApiResponse.success(authService.reissue(tokenReissueRequestDto)));
     }
+
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<ApiResponse<Void>> withdraw() {
+        authService.withdraw();
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
