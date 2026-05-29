@@ -239,4 +239,12 @@ public class AuthService {
          // 실제 삭제 대신 isDelete = true 탈퇴 상태로 변경 (soft delete, 데이터 무결성 및 이력 보존)
          user.withdraw();
     }
+
+    @Transactional
+    public FindIdResponseDto findId(FindIdRequestDto dto) {
+        User user = userRepository.findByNameAndEmail(dto.getName(), dto.getEmail())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return new FindIdResponseDto(user.getLoginId());
+    }
 }

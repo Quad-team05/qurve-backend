@@ -55,4 +55,9 @@ public class AuthController {
         authService.withdraw();
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PostMapping("/find-id")
+    public ResponseEntity<ApiResponse<FindIdResponseDto>> findId(@Valid @RequestBody FindIdRequestDto findIdRequestDto) {
+        return ResponseEntity.ok(ApiResponse.success(authService.findId(findIdRequestDto)));
+    }
 }
