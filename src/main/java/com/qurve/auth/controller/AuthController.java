@@ -67,4 +67,15 @@ public class AuthController {
         authService.checkEmail(email);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PostMapping("/password/email/send")
+    public ResponseEntity<ApiResponse<PasswordEmailResponseDto>> sendPasswordEmail(@Valid @RequestBody PasswordEmailRequestDto passwordEmailRequestDto) {
+        return ResponseEntity.ok(ApiResponse.success(authService.passwordEmailSend(passwordEmailRequestDto)));
+    }
+
+    @PostMapping("/password/reset")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequestDto resetPasswordRequestDto) {
+        authService.resetPassword(resetPasswordRequestDto);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
