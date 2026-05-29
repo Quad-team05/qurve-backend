@@ -5,6 +5,7 @@ import com.qurve.auth.dto.response.*;
 import com.qurve.auth.service.AuthService;
 import com.qurve.global.common.ApiResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
@@ -59,5 +60,11 @@ public class AuthController {
     @PostMapping("/find-id")
     public ResponseEntity<ApiResponse<FindIdResponseDto>> findId(@Valid @RequestBody FindIdRequestDto findIdRequestDto) {
         return ResponseEntity.ok(ApiResponse.success(authService.findId(findIdRequestDto)));
+    }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<ApiResponse<Void>> checkEmail(@NotBlank @Email @RequestParam("email") String email) {
+        authService.checkEmail(email);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

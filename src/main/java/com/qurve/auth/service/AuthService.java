@@ -263,5 +263,17 @@ public class AuthService {
         return new FindIdResponseDto(user.getLoginId());
     }
 
-
+    /**
+     * 이메일 가입 여부 확인
+     *
+     * * 아이디 찾기 시 입력한 이메일이 가입된 계정인지 확인한다.
+     *
+     * @param email 확인할 이메일
+     * @throws BusinessException 가입되지 않은 이메일인 경우
+     */
+    public void checkEmail(String email) {
+        if (!userRepository.existsByEmail(email)) {
+            throw new BusinessException(ErrorCode.EMAIL_NOT_FOUND);
+        }
+    }
 }
