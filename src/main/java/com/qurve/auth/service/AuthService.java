@@ -1,13 +1,7 @@
 package com.qurve.auth.service;
 
-import com.qurve.auth.dto.request.EmailVerifyRequestDto;
-import com.qurve.auth.dto.request.SignupEmailRequestDto;
-import com.qurve.auth.dto.request.LoginRequestDto;
-import com.qurve.auth.dto.request.SignupRequestDto;
-import com.qurve.auth.dto.response.EmailVerifyResponseDto;
-import com.qurve.auth.dto.response.SignupEmailResponseDto;
-import com.qurve.auth.dto.response.LoginResponseDto;
-import com.qurve.auth.dto.response.SignupResponseDto;
+import com.qurve.auth.dto.request.*;
+import com.qurve.auth.dto.response.*;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.global.security.JwtTokenProvider;
@@ -186,5 +180,41 @@ public class AuthService {
         redisTemplate.delete(dto.getEmail());
 
         return new EmailVerifyResponseDto(dto.getEmail());
+    }
+
+    /**
+     * Access Token 재발급
+     *
+     * * Refresh Token 유효성 검증 후,
+     * 새로운 Access Token / Refresh Token을 재발급한다.
+     *
+     * @param dto 토큰 재발급 요청 정보
+     * @return 토큰 재발급 응답 정보
+     * @throws BusinessException 토큰이 유효하지 않거나 만료된 경우
+     */
+    @Transactional
+    public TokenReissueResponseDto reissue(TokenReissueRequestDto dto) {
+
+        // Refresh Token 유효성 검증
+        if (!jwtTokenProvider.validateToken(dto.getRefreshToken())) {
+            throw new BusinessException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // Refresh Token 기반 유저 조회
+        User user = userRepository.findByRefreshToken(dto.getRefreshToken())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // Refresh Token 만료 여부 확인
+        if (user.getRefreshTokenExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new BusinessException(ErrorCode.EXPIRED_TOKEN);
+        }
+
+        // 새로운 Token 생성
+        String accessToken = jwtTokenProvider.createAccessToken(user.getLoginId(), user.getRole().name());
+        String refreshToken = jwtTokenProvider.createRefreshToken();
+        // 객체에 Refresh Token + 만료시간 저장
+        user.updateRefreshToken(refreshToken, LocalDateTime.now().plusDays(7));
+
+        return TokenReissueResponseDto.from(accessToken, refreshToken);
     }
 }

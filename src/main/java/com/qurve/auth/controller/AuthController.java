@@ -1,13 +1,7 @@
 package com.qurve.auth.controller;
 
-import com.qurve.auth.dto.request.EmailVerifyRequestDto;
-import com.qurve.auth.dto.request.SignupEmailRequestDto;
-import com.qurve.auth.dto.request.LoginRequestDto;
-import com.qurve.auth.dto.request.SignupRequestDto;
-import com.qurve.auth.dto.response.EmailVerifyResponseDto;
-import com.qurve.auth.dto.response.SignupEmailResponseDto;
-import com.qurve.auth.dto.response.LoginResponseDto;
-import com.qurve.auth.dto.response.SignupResponseDto;
+import com.qurve.auth.dto.request.*;
+import com.qurve.auth.dto.response.*;
 import com.qurve.auth.service.AuthService;
 import com.qurve.global.common.ApiResponse;
 import jakarta.validation.Valid;
@@ -49,5 +43,10 @@ public class AuthController {
     @PostMapping("/email/verify")
     public ResponseEntity<ApiResponse<EmailVerifyResponseDto>> verifyEmail(@Valid @RequestBody EmailVerifyRequestDto emailVerifyRequestDto) {
         return ResponseEntity.ok(ApiResponse.success(authService.emailVerify(emailVerifyRequestDto)));
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<ApiResponse<TokenReissueResponseDto>> reissue(@Valid @RequestBody TokenReissueRequestDto tokenReissueRequestDto) {
+        return ResponseEntity.ok(ApiResponse.success(authService.reissue(tokenReissueRequestDto)));
     }
 }
