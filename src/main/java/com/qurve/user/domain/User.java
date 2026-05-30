@@ -42,6 +42,12 @@ public class User extends BaseEntity {
     @Column(name = "nickname", length = 30, nullable = false)
     private String nickname;
 
+    @Column(name = "learning_goal", length = 255)
+    private String learningGoal;
+
+    @Column(name = "current_level", length = 255)
+    private String currentLevel;
+
     @Builder.Default
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
@@ -55,5 +61,10 @@ public class User extends BaseEntity {
     public void updateRefreshToken(String refreshToken, LocalDateTime expiredAt) {
         this.refreshToken = refreshToken;
         this.refreshTokenExpiredAt = expiredAt;
+    }
+
+    public void updateLearningProfile(String learningGoal, String currentLevel) {
+        this.learningGoal = learningGoal;
+        this.currentLevel = currentLevel;
     }
 }
