@@ -37,9 +37,16 @@ public class LevelService {
                 new OptionDto(3, "아직 어려워요")
         );
 
+        List<OptionDto> option3 = List.of(
+                new OptionDto(1, "네, 간단한 회화가 가능해요"),
+                new OptionDto(2, "짧은 문장, 단어만 말할 수 있어요"),
+                new OptionDto(3, "아직 어려워요")
+        );
+
         List<QuestionDto> questions = List.of(
                 new QuestionDto(1, "일본어를 배워본 기간이 얼마나 되나요?", option1),
-                new QuestionDto(2, "히라가나·가타카나를 읽을 수 있나요?", option2)
+                new QuestionDto(2, "히라가나·가타카나를 읽을 수 있나요?", option2),
+                new QuestionDto(3, "일본어로 말할 수 있나요?", option3)
         );
 
         return new PreQuestionResponseDto(questions);
