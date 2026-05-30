@@ -1,0 +1,31 @@
+package com.qurve.user.controller;
+
+import com.qurve.global.common.ApiResponse;
+import com.qurve.user.dto.request.LearningProfileRequestDto;
+import com.qurve.user.dto.response.LearningProfileResponseDto;
+import com.qurve.user.service.UserService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+
+    @PatchMapping("/learning-profile")
+    public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(
+            @Valid @RequestBody LearningProfileRequestDto requestDto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        userService.updateLearningProfile(requestDto, authentication.getName())
+                )
+        );
+    }
+}
