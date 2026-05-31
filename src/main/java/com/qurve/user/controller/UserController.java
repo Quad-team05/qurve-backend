@@ -2,6 +2,7 @@ package com.qurve.user.controller;
 
 import com.qurve.global.common.ApiResponse;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
+import com.qurve.user.dto.request.UserProfileUpdateRequestDto;
 import com.qurve.user.dto.response.LearningProfileResponseDto;
 import com.qurve.user.dto.response.UserProfileResponseDto;
 import com.qurve.user.service.UserService;
@@ -21,6 +22,14 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserProfileResponseDto>> findOne(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(userService.findOne(authentication.getName())));
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> update(
+            @Valid @RequestBody UserProfileUpdateRequestDto requestDto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(userService.update(requestDto, authentication.getName())));
     }
 
     @PatchMapping("/learning-profile")

@@ -67,4 +67,22 @@ public class User extends BaseEntity {
         this.learningGoal = learningGoal;
         this.currentLevel = currentLevel;
     }
+
+    public void updateProfile(String name, String nickname, String learningGoal, String currentLevel) {
+        if (name != null) {
+            this.name = name;
+        }
+
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+
+        if (learningGoal != null) {
+            this.learningGoal = learningGoal;
+        }
+
+        if (currentLevel != null) {
+            this.currentLevel = currentLevel;
+        }
+    }
 }
