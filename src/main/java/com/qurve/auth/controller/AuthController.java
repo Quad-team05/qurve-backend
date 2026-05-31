@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @Validated
@@ -48,5 +49,11 @@ public class AuthController {
     @PostMapping("/reissue")
     public ResponseEntity<ApiResponse<TokenReissueResponseDto>> reissue(@Valid @RequestBody TokenReissueRequestDto tokenReissueRequestDto) {
         return ResponseEntity.ok(ApiResponse.success(authService.reissue(tokenReissueRequestDto)));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<AuthLogoutResponseDto>> logout(Authentication authentication) {
+        AuthLogoutResponseDto responseDto = authService.logout(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
 }
