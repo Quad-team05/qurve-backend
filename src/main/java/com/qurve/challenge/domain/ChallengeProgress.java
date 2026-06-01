@@ -27,7 +27,4 @@ public class ChallengeProgress {
     @Column(name = "completed_days", nullable = false)
     private Integer completedDays = 0;
 
-    @Builder.Default
-    @Column(name = "progress_rate", nullable = false)
-    private Integer progressRate = 0;
 }
