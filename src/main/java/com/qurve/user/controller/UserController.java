@@ -3,6 +3,7 @@ package com.qurve.user.controller;
 import com.qurve.global.common.ApiResponse;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
 import com.qurve.user.dto.response.LearningProfileResponseDto;
+import com.qurve.user.dto.response.UserProfileResponseDto;
 import com.qurve.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<UserProfileResponseDto>> findOne(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(userService.findOne(authentication.getName())));
+    }
 
     @PatchMapping("/learning-profile")
     public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(
