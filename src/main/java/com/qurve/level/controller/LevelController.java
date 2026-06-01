@@ -3,6 +3,7 @@ package com.qurve.level.controller;
 import com.qurve.global.common.ApiResponse;
 import com.qurve.level.dto.request.LevelTestRequestDto;
 import com.qurve.level.dto.request.LevelTestResultRequestDto;
+import com.qurve.level.dto.request.SaveLevelRequestDto;
 import com.qurve.level.dto.response.LevelTestResponseDto;
 import com.qurve.level.dto.response.LevelTestResultResponseDto;
 import com.qurve.level.dto.response.PreQuestionResponseDto;
@@ -32,5 +33,11 @@ public class LevelController {
     @PostMapping("/test/result")
     public ResponseEntity<ApiResponse<LevelTestResultResponseDto>> levelTestResult(@Validated @RequestBody LevelTestResultRequestDto levelTestResultRequestDto) {
         return ResponseEntity.ok(ApiResponse.success(levelService.levelTestResult(levelTestResultRequestDto)));
+    }
+
+    @PostMapping("/save")
+    public ResponseEntity<ApiResponse<Void>> saveLevel(@Validated @RequestBody SaveLevelRequestDto levelSaveRequestDto) {
+        levelService.saveLevel(levelSaveRequestDto);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

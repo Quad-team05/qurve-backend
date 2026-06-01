@@ -42,6 +42,9 @@ public class User extends BaseEntity {
     @Column(name = "nickname", length = 30, nullable = false)
     private String nickname;
 
+    @Column(name = "current_level")
+    private Integer currentLevel;
+
     @Builder.Default
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
@@ -67,5 +70,9 @@ public class User extends BaseEntity {
 
     public void updatePassword(String encodedPassword) {
         this.passwordHash = encodedPassword;
+    }
+
+    public void updateLevel(int level) {
+        this.currentLevel = level;
     }
 }
