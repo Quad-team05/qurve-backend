@@ -232,7 +232,7 @@ public class AuthService {
     @Transactional
     public AuthLogoutResponseDto logout(String loginId) {
 
-        User user = userRepository.findOneByLoginId(loginId)
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         user.clearRefreshToken();
