@@ -3,6 +3,7 @@ package com.qurve.challenge.controller;
 import com.qurve.challenge.dto.request.ChallengeCreateRequestDto;
 import com.qurve.challenge.dto.response.ChallengeCreateResponseDto;
 import com.qurve.challenge.dto.response.ChallengeGoalTypeResponseDto;
+import com.qurve.challenge.dto.response.ChallengeMainResponseDto;
 import com.qurve.challenge.dto.response.ChallengeManageResponseDto;
 import com.qurve.challenge.service.ChallengeService;
 import com.qurve.global.common.ApiResponse;
@@ -25,6 +26,14 @@ public class ChallengeController {
     public ResponseEntity<ApiResponse<List<ChallengeGoalTypeResponseDto>>> getGoalTypes() {
         return ResponseEntity.ok(ApiResponse.success(challengeService.getGoalTypes()));
     }
+
+    @GetMapping("/main")
+    public ResponseEntity<ApiResponse<List<ChallengeMainResponseDto>>> findAllForMain(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(challengeService.findAllForMain(authentication.getName())));
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<ChallengeManageResponseDto>>> getMyChallenges(
             Authentication authentication
