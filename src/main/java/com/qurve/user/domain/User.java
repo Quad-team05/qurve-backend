@@ -63,6 +63,11 @@ public class User extends BaseEntity {
         this.refreshTokenExpiredAt = expiredAt;
     }
 
+    public void clearRefreshToken() {
+        this.refreshToken = null;
+        this.refreshTokenExpiredAt = null;
+    }
+
     public void updateLearningProfile(String learningGoal, String currentLevel) {
         this.learningGoal = learningGoal;
         this.currentLevel = currentLevel;
