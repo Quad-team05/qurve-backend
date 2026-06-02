@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @Validated
@@ -59,5 +60,11 @@ public class AuthController {
     @PostMapping("/find-id")
     public ResponseEntity<ApiResponse<FindIdResponseDto>> findId(@Valid @RequestBody FindIdRequestDto findIdRequestDto) {
         return ResponseEntity.ok(ApiResponse.success(authService.findId(findIdRequestDto)));
+    }
+  
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<AuthLogoutResponseDto>> logout(Authentication authentication) {
+        AuthLogoutResponseDto responseDto = authService.logout(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
 }
