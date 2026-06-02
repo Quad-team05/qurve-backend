@@ -70,6 +70,10 @@ public class User extends BaseEntity {
     public void withdraw() {
         this.isDeleted = true;
     }
+
+    public void updatePassword(String encodedPassword) {
+        this.passwordHash = encodedPassword;
+    }
   
     public void clearRefreshToken() {
         this.refreshToken = null;

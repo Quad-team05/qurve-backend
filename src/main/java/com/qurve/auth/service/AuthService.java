@@ -278,6 +278,71 @@ public class AuthService {
         }
     }
 
+    /**
+     * 비밀번호 재설정용 이메일 인증번호 발송
+     *
+     * * 사용자가 입력한 로그인 ID와 이메일 정보가
+     * 실제 가입된 계정과 일치하는지 검증한 뒤,
+     * 비밀번호 재설정을 위한 인증번호를 이메일로 발송한다.
+     *
+     * * 인증번호는 일정 시간이 지나면 자동 만료되도록
+     * Redis에 TTL(Time To Live)과 함께 저장한다.
+     *
+     * @param dto 비밀번호 재설정 인증 요청 정보
+     * @return 인증번호가 발송된 이메일 정보
+     * @throws BusinessException 일치하는 사용자가 없거나 메일 전송에 실패한 경우
+     */
+    @Transactional
+    public PasswordEmailResponseDto passwordEmailSend(PasswordEmailRequestDto dto) {
+
+        // 로그인 ID와 이메일이 모두 일치하는 실제 가입 사용자만 인증 허용
+        userRepository.findByLoginIdAndEmail(dto.getLoginId(), dto.getEmail())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // 인증번호 생성
+        String code = String.valueOf((int)(Math.random() * 900000) + 100000);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(dto.getEmail());
+        message.setSubject("인증번호 발송");
+        message.setText("인증번호: " + code);
+
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.EMAIL_SEND_FAIL);
+        }
+
+        // 인증번호 재사용 방지 및 보안을 위해 만료 시간을 설정하여 Redis 저장
+        redisTemplate.opsForValue()
+                .set(dto.getEmail(), code, 3, TimeUnit.MINUTES);
+
+        return new PasswordEmailResponseDto(dto.getEmail());
+    }
+
+    /**
+     * 비밀번호 재설정
+     *
+     * * 로그인 ID와 이메일 정보를 기반으로 사용자를 검증한 뒤,
+     * 새로운 비밀번호로 변경한다.
+     *
+     * @param dto 비밀번호 재설정 요청 정보
+     * @throws BusinessException 일치하는 사용자가 존재하지 않는 경우
+     */
+    @Transactional
+    public void resetPassword(ResetPasswordRequestDto dto) {
+
+        // 로그인 ID와 이메일이 모두 일치하는 사용자만 비밀번호 변경 허용
+        User user = userRepository.findByLoginIdAndEmail(dto.getLoginId(), dto.getEmail())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
+
+        // 암호화된 새 비밀번호 저장
+        user.updatePassword(encodedPassword);
+    } 
+      
      /**
      * 로그아웃
      *
