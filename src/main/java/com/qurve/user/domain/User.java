@@ -42,11 +42,11 @@ public class User extends BaseEntity {
     @Column(name = "nickname", length = 30, nullable = false)
     private String nickname;
 
+    @Column(name = "current_level")
+    private Integer currentLevel;
+
     @Column(name = "learning_goal", length = 255)
     private String learningGoal;
-
-    @Column(name = "current_level", length = 255)
-    private String currentLevel;
 
     @Builder.Default
     @Column(name = "email_verified", nullable = false)
@@ -74,18 +74,22 @@ public class User extends BaseEntity {
     public void updatePassword(String encodedPassword) {
         this.passwordHash = encodedPassword;
     }
+
+    public void updateLevel(int level) {
+        this.currentLevel = level;
+    }
   
     public void clearRefreshToken() {
         this.refreshToken = null;
         this.refreshTokenExpiredAt = null;
     }
 
-    public void updateLearningProfile(String learningGoal, String currentLevel) {
+    public void updateLearningProfile(String learningGoal, Integer currentLevel) {
         this.learningGoal = learningGoal;
         this.currentLevel = currentLevel;
     }
 
-    public void updateProfile(String name, String nickname, String learningGoal, String currentLevel) {
+    public void updateProfile(String name, String nickname, String learningGoal, Integer currentLevel) {
         if (name != null) {
             this.name = name;
         }

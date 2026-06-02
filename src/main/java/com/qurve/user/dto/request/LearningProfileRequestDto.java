@@ -13,5 +13,5 @@ public class LearningProfileRequestDto {
 
     @NotBlank
     @Size(max = 255)
-    private String currentLevel;
+    private Integer currentLevel;
 }

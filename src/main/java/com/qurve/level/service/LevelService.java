@@ -1,9 +1,15 @@
 package com.qurve.level.service;
 
+import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.exception.BusinessException;
 import com.qurve.level.dto.request.LevelTestRequestDto;
 import com.qurve.level.dto.request.LevelTestResultRequestDto;
+import com.qurve.level.dto.request.SaveLevelRequestDto;
 import com.qurve.level.dto.response.*;
+import com.qurve.user.domain.User;
+import com.qurve.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class LevelService {
+
+    private final UserRepository userRepository;
 
     /**
      * 사전 레벨 테스트 질문 조회
@@ -455,5 +463,25 @@ public class LevelService {
                 yield 10;
             }
         };
+    }
+
+    /**
+     * 레벨 테스트 결과 저장
+     *
+     * * 인증된 사용자의 레벨을 갱신하여
+     * 이후 학습 콘텐츠 추천 및 난이도 설정에 활용한다.
+     *
+     * @param dto 저장할 레벨 정보
+     * @throws BusinessException 인증된 사용자가 존재하지 않는 경우
+     */
+    @Transactional
+    public void saveLevel(SaveLevelRequestDto dto) {
+
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        user.updateLevel(dto.getLevel());
     }
 }
