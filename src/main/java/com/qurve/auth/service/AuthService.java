@@ -240,6 +240,31 @@ public class AuthService {
          // 실제 삭제 대신 isDelete = true 탈퇴 상태로 변경 (soft delete, 데이터 무결성 및 이력 보존)
          user.withdraw();
     }
+
+    /**
+     * 로그인 ID 찾기
+     *
+     * * 사용자가 입력한 이름과 이메일 정보를 기반으로
+     * 가입된 계정을 조회하여 로그인 ID를 반환한다.
+     *
+     * * 이름과 이메일을 함께 검증하여
+     * 타인의 계정 정보를 조회하는 상황을 방지한다.
+     *
+     * @param dto 로그인 ID 찾기 요청 정보
+     * @return 조회된 로그인 ID
+     * @throws BusinessException 일치하는 사용자가 존재하지 않는 경우
+     */
+    @Transactional
+    public FindIdResponseDto findId(FindIdRequestDto dto) {
+
+        // 이름과 이메일이 모두 일치하는 사용자만 조회 허용
+        User user = userRepository.findByNameAndEmail(dto.getName(), dto.getEmail())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return new FindIdResponseDto(user.getLoginId());
+    }
+
+
   
      /**
      * 로그아웃

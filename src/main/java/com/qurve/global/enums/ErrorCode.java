@@ -9,6 +9,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(404, "USER_NOT_FOUND", "존재하지 않는 유저입니다."),
     DUPLICATE_LOGIN_ID(409, "DUPLICATE_LOGIN_ID", "이미 사용 중인 아이디입니다."),
     DUPLICATE_EMAIL(409, "DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다."),
+    EMAIL_NOT_FOUND(404, "EMAIL_NOT_FOUND", "가입되지 않은 이메일입니다."),
     INVALID_PASSWORD(400, "INVALID_PASSWORD", "비밀번호가 일치하지 않습니다."),
     INVALID_TOKEN(401, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(401, "EXPIRED_TOKEN", "만료된 토큰입니다."),
