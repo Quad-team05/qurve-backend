@@ -64,11 +64,7 @@ public class LevelService {
     public LevelTestResponseDto getLevelTestQuestions(LevelTestRequestDto dto) {
         int caseNumber = determineCase(dto.getPre1Answer(), dto.getPre2Answer(), dto.getPre3Answer());
 
-        List<LevelTestQuestionDto> questions = switch (caseNumber) {
-            case 1 -> getCase1Questions();
-            case 2 -> getCase2Questions();
-            default -> getCase3Questions();
-        };
+        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber);
 
         return new LevelTestResponseDto(questions);
     }
@@ -98,6 +94,23 @@ public class LevelService {
         if (score <= 2) return 1;
         if (score <= 4) return 2;
         return 3;
+    }
+
+    /**
+     * 레벨 테스트 문항 조회
+     *
+     * * 사용자의 사전 질문 결과에 따라 서로 다른 난이도의
+     * 문제 세트를 제공하기 위해 케이스별 문항을 분리하여 관리한다.
+     *
+     * @param caseNumber 문제 세트 번호
+     * @return 해당 케이스의 레벨 테스트 문항 목록
+     */
+    private List<LevelTestQuestionDto> getQuestionsByCase(int caseNumber) {
+        return switch (caseNumber) {
+            case 1 -> getCase1Questions();
+            case 2 -> getCase2Questions();
+            default -> getCase3Questions();
+        };
     }
 
     // Case 1 문제 데이터
@@ -375,11 +388,7 @@ public class LevelService {
         int caseNumber = determineCase(dto.getPre1Answer(), dto.getPre2Answer(), dto.getPre3Answer());
 
         // 문제 가져오기
-        List<LevelTestQuestionDto> questions = switch (caseNumber) {
-            case 1 -> getCase1Questions();
-            case 2 -> getCase2Questions();
-            default -> getCase3Questions();
-        };
+        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber);
 
         int score = 0;
         int correctCount = 0;
