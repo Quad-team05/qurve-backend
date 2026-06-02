@@ -51,6 +51,12 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(authService.reissue(tokenReissueRequestDto)));
     }
 
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<ApiResponse<Void>> withdraw() {
+        authService.withdraw();
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+  
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<AuthLogoutResponseDto>> logout(Authentication authentication) {
         AuthLogoutResponseDto responseDto = authService.logout(authentication.getName());

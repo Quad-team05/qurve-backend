@@ -52,6 +52,10 @@ public class User extends BaseEntity {
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
 
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
     @Column(name = "refresh_token", length = 255)
     private String refreshToken;
 
@@ -63,6 +67,10 @@ public class User extends BaseEntity {
         this.refreshTokenExpiredAt = expiredAt;
     }
 
+    public void withdraw() {
+        this.isDeleted = true;
+    }
+  
     public void clearRefreshToken() {
         this.refreshToken = null;
         this.refreshTokenExpiredAt = null;

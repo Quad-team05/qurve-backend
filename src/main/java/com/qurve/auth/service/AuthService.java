@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -220,6 +221,27 @@ public class AuthService {
     }
 
     /**
+     * 회원 탈퇴
+     *
+     * * 현재 로그인된 사용자를 조회한 뒤,탈퇴 상태로 변경한다.
+     *
+     * @throws BusinessException 인증된 사용자가 존재하지 않는 경우
+     */
+    @Transactional
+    public void withdraw() {
+
+        // JWT 인증이 완료된 현재 사용자 식별 정보 조회
+         String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+         // 탈퇴 처리 대상 사용자가 실제 존재하는지 검증
+         User user = userRepository.findByLoginId(loginId)
+                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+         // 실제 삭제 대신 isDelete = true 탈퇴 상태로 변경 (soft delete, 데이터 무결성 및 이력 보존)
+         user.withdraw();
+    }
+  
+     /**
      * 로그아웃
      *
      * * 현재 로그인한 사용자의 refresh token 정보를 제거하여
