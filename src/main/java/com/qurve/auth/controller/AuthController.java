@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @Validated
@@ -66,5 +67,11 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> checkEmail(@NotBlank @Email @RequestParam("email") String email) {
         authService.checkEmail(email);
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+  
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<AuthLogoutResponseDto>> logout(Authentication authentication) {
+        AuthLogoutResponseDto responseDto = authService.logout(authentication.getName());
+        return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
 }

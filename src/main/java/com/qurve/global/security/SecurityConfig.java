@@ -38,7 +38,10 @@ public class SecurityConfig {
 
                 // url별 접근 권한 설정 (로그인/회원가입/토큰재발급 제외하고는 접근 권한 제한)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/challenges/goal-types"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

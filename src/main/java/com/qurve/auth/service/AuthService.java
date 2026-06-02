@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.qurve.auth.dto.response.AuthLogoutResponseDto;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
@@ -275,5 +276,26 @@ public class AuthService {
         if (!userRepository.existsByEmail(email)) {
             throw new BusinessException(ErrorCode.EMAIL_NOT_FOUND);
         }
+    }
+
+     /**
+     * 로그아웃
+     *
+     * * 현재 로그인한 사용자의 refresh token 정보를 제거하여
+     * 이후 access token 재발급이 불가능하도록 처리한다
+     *
+     * @param loginId 로그인한 사용자 ID
+     * @return 로그아웃 응답 정보
+     * @throws BusinessException 사용자가 존재하지 않는 경우
+     */
+    @Transactional
+    public AuthLogoutResponseDto logout(String loginId) {
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        user.clearRefreshToken();
+
+        return AuthLogoutResponseDto.of("로그아웃이 완료되었습니다.");
     }
 }
