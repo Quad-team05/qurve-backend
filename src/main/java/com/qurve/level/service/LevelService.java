@@ -1,6 +1,7 @@
 package com.qurve.level.service;
 
 import com.qurve.level.dto.request.LevelTestRequestDto;
+import com.qurve.level.dto.request.LevelTestResultRequestDto;
 import com.qurve.level.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -61,44 +62,55 @@ public class LevelService {
      * @return 사용자 수준에 맞는 레벨 테스트 문제 목록
      */
     public LevelTestResponseDto getLevelTestQuestions(LevelTestRequestDto dto) {
-        int caseNumber = determineCase(dto);
+        int caseNumber = determineCase(dto.getPre1Answer(), dto.getPre2Answer(), dto.getPre3Answer());
 
-        List<LevelTestQuestionDto> questions = switch (caseNumber) {
-            case 1 -> getCase1Questions();
-            case 2 -> getCase2Questions();
-            default -> getCase3Questions();
-        };
+        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber);
 
         return new LevelTestResponseDto(questions);
     }
 
     /**
-     * 사전 질문 응답을 점수화하여 문제 세트를 결정한다.
+     * 사전 질문 응답 기반 문제 세트 결정
      *
      * * 학습 기간, 읽기 능력, 말하기 능력을 종합 평가하며
      * 점수가 높을수록 더 높은 난이도의 문제를 제공한다.
      *
-     * @param dto 사전 질문 응답 정보
+     * @param pre1Answer 사전질문1 응답
+     * @param pre2Answer 사전질문2 응답
+     * @param pre3Answer 사전질문3 응답
      * @return 문제 세트 번호
      */
-    private int determineCase(LevelTestRequestDto dto) {
+    private int determineCase(int pre1Answer, int pre2Answer, int pre3Answer) {
         int score = 0;
 
-        // Q1 학습 기간 (0~3점)
-        score += dto.getPre1Answer() - 1;
+        score += pre1Answer - 1;
 
-        // Q2 읽기 능력 (0~2점)
-        if (dto.getPre2Answer() == 1) score += 2;
-        else if (dto.getPre2Answer() == 2) score += 1;
+        if (pre2Answer == 1) score += 2;
+        else if (pre2Answer == 2) score += 1;
 
-        // Q3 말하기 능력 (0~2점)
-        if (dto.getPre3Answer() == 1) score += 2;
-        else if (dto.getPre3Answer() == 2) score += 1;
+        if (pre3Answer == 1) score += 2;
+        else if (pre3Answer == 2) score += 1;
 
-        // 총점 0~7점 → 케이스 분류
         if (score <= 2) return 1;
         if (score <= 4) return 2;
         return 3;
+    }
+
+    /**
+     * 레벨 테스트 문항 조회
+     *
+     * * 사용자의 사전 질문 결과에 따라 서로 다른 난이도의
+     * 문제 세트를 제공하기 위해 케이스별 문항을 분리하여 관리한다.
+     *
+     * @param caseNumber 문제 세트 번호
+     * @return 해당 케이스의 레벨 테스트 문항 목록
+     */
+    private List<LevelTestQuestionDto> getQuestionsByCase(int caseNumber) {
+        return switch (caseNumber) {
+            case 1 -> getCase1Questions();
+            case 2 -> getCase2Questions();
+            default -> getCase3Questions();
+        };
     }
 
     // Case 1 문제 데이터
@@ -359,4 +371,89 @@ public class LevelService {
         );
     }
 
+    /**
+     * 레벨 테스트 결과 채점 및 레벨 산정
+     *
+     * * 사용자의 사전 질문 응답을 기반으로 문제 세트를 결정한 뒤,
+     * 제출한 답안을 채점하여 점수, 정답 수, 오답 수를 계산한다.
+     *
+     * * 이후 문제 세트별 점수 기준에 따라 최종 레벨을 산정한다.
+     *
+     * @param dto 레벨 테스트 제출 정보
+     * @return 채점 결과 및 레벨 정보
+     */
+    public LevelTestResultResponseDto levelTestResult(LevelTestResultRequestDto dto) {
+
+        // 케이스 분류
+        int caseNumber = determineCase(dto.getPre1Answer(), dto.getPre2Answer(), dto.getPre3Answer());
+
+        // 문제 가져오기
+        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber);
+
+        int score = 0;
+        int correctCount = 0;
+        int wrongCount = 0;
+
+        for (int i = 0; i < questions.size(); i++) {
+            LevelTestQuestionDto question = questions.get(i);
+            int userAnswer = dto.getAnswers().get(i);
+
+            if (userAnswer == question.getCorrectAnswer()) {
+                correctCount++;
+                // 문제 난이도별 가중치 적용
+                if (caseNumber == 1) {
+                    score += 10;
+                } else {
+                    score += switch (question.getDifficulty()) {
+                        case "쉬움" -> 8;
+                        case "중간", "어려움" -> 12;
+                        default -> 10;
+                    };
+                }
+            } else {
+                wrongCount++;
+            }
+        }
+
+        // 레벨 산정
+        int level = calculateLevel(caseNumber, score);
+
+        return new LevelTestResultResponseDto(score, correctCount, wrongCount, level);
+    }
+
+    /**
+     * 레벨 계산
+     *
+     * * 동일한 점수라도 문제 세트 난이도가 다르므로
+     * 세트별로 서로 다른 레벨 기준을 적용한다.
+     *
+     * @param caseNumber 문제 세트 번호
+     * @param score 획득 점수
+     * @return 최종 레벨
+     */
+    private int calculateLevel(int caseNumber, int score) {
+        return switch (caseNumber) {
+            case 1 -> {
+                if (score < 25) yield 1;
+                if (score < 50) yield 2;
+                if (score < 75) yield 3;
+                yield 4;
+            }
+            case 2 -> {
+                if (score < 20) yield 3;
+                if (score < 40) yield 4;
+                if (score < 60) yield 5;
+                if (score < 80) yield 6;
+                yield 7;
+            }
+            default -> {
+                if (score < 17) yield 5;
+                if (score < 34) yield 6;
+                if (score < 51) yield 7;
+                if (score < 68) yield 8;
+                if (score < 85) yield 9;
+                yield 10;
+            }
+        };
+    }
 }
