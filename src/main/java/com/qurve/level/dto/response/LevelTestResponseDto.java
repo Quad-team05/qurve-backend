@@ -9,8 +9,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionDto {
-    private int questionId;
-    private String question;
-    private List<OptionDto> options;
+public class LevelTestResponseDto {
+    private List<LevelTestQuestionDto> questions;
 }

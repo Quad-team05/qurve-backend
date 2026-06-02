@@ -9,6 +9,8 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PreQuestionResponseDto {
-    private List<PreQuestionDto> questions;
+public class PreQuestionDto {
+    private int questionId;
+    private String question;
+    private List<OptionDto> options;
 }
