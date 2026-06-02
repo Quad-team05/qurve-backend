@@ -17,6 +17,8 @@ public enum ErrorCode {
     EMPTY_TOKEN(401, "EMPTY_TOKEN", "토큰이 비어있습니다."),
     EMAIL_SEND_FAIL(500, "EMAIL_SEND_FAIL", "이메일 발송에 실패했습니다."),
     INVALID_VERIFICATION_CODE(400, "INVALID_VERIFICATION_CODE", "인증코드가 일치하지 않습니다."),
+    TATOEBA_API_FAIL(502, "TATOEBA_API_FAIL", "오늘의 표현 조회에 실패했습니다."),
+    TODAY_EXPRESSION_NOT_FOUND(404, "TODAY_EXPRESSION_NOT_FOUND", "오늘의 표현을 찾을 수 없습니다."),
     UNKNOWN_ERROR(500, "UNKNOWN_ERROR", "알 수 없는 오류가 발생했습니다.");
 
     private final int status;
