@@ -18,7 +18,7 @@ public class UserProfileResponseDto {
     private String name;
     private String nickname;
     private String learningGoal;
-    private String currentLevel;
+    private Integer currentLevel;
     private boolean emailVerified;
     private Role role;
     private LocalDateTime createdAt;

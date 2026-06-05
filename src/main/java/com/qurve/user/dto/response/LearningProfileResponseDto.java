@@ -9,7 +9,7 @@ import lombok.Getter;
 public class LearningProfileResponseDto {
 
     private String learningGoal;
-    private String currentLevel;
+    private Integer currentLevel;
 
     public static LearningProfileResponseDto from(User user) {
         return new LearningProfileResponseDto(

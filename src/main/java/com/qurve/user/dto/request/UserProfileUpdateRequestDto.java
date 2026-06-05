@@ -19,6 +19,5 @@ public class UserProfileUpdateRequestDto {
     @Size(max = 255)
     private String learningGoal;
 
-    @Size(max = 255)
     private Integer currentLevel;
 }
