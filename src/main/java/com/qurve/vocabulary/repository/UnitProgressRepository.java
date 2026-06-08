@@ -9,5 +9,6 @@ import java.util.Optional;
 
 public interface UnitProgressRepository extends JpaRepository<UnitProgress, Long> {
     List<UnitProgress> findByUserAndLevel(User user, String level);
+    List<UnitProgress> findByUserAndLevelOrderByUnitNumberAsc(User user, String level);
     Optional<UnitProgress> findByUserAndLevelAndUnitNumber(User user, String level, Integer unitNumber);
 }

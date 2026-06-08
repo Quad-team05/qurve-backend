@@ -1,0 +1,21 @@
+package com.qurve.vocabulary.repository;
+
+import com.qurve.vocabulary.domain.VocabularyWord;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, Long> {
+
+    long countBySource(String source);
+
+    @Query("""
+            select distinct w.unitNumber
+            from VocabularyWord w
+            where w.level = :level
+            order by w.unitNumber asc
+            """)
+    List<Integer> findDistinctUnitNumbersByLevel(@Param("level") String level);
+}
