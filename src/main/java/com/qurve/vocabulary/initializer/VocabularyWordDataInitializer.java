@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * JLPT 단어 데이터 초기화
@@ -25,7 +27,13 @@ import java.util.*;
 public class VocabularyWordDataInitializer implements ApplicationRunner {
 
     private static final String SOURCE = "ELZUP";
-    private static final String SEED_FILE_PATH = "data/elzup_jlpt_all.csv";
+    private static final Map<String, String> SEED_FILE_PATHS = Map.of(
+            "N1", "data/elzup_jlpt_n1.csv",
+            "N2", "data/elzup_jlpt_n2.csv",
+            "N3", "data/elzup_jlpt_n3.csv",
+            "N4", "data/elzup_jlpt_n4.csv",
+            "N5", "data/elzup_jlpt_n5.csv"
+    );
     // elzup 데이터에는 유닛 구분이 없으므로 20개 단어 단위로 유닛을 나눔
     private static final int WORDS_PER_UNIT = 20;
 
@@ -50,98 +58,68 @@ public class VocabularyWordDataInitializer implements ApplicationRunner {
             return;
         }
 
-        ClassPathResource resource = new ClassPathResource(SEED_FILE_PATH);
-
-        if (!resource.exists()) {
-            return;
-        }
-
         List<VocabularyWord> words = new ArrayList<>();
-        Map<String, Integer> levelWordCountMap = new HashMap<>();
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)
-        )) {
-            String line;
-            boolean isHeader = true;
+        for (Map.Entry<String, String> entry : SEED_FILE_PATHS.entrySet()) {
+            String level = entry.getKey();
+            ClassPathResource resource = new ClassPathResource(entry.getValue());
 
-            while ((line = reader.readLine()) != null) {
-                if (isHeader) {
-                    isHeader = false;
-                    continue;
-                }
-
-                if (line.isBlank()) {
-                    continue;
-                }
-
-                List<String> columns = parseCsvLine(line);
-
-                if (columns.size() < 4) {
-                    continue;
-                }
-
-                String expression = columns.get(0).trim();
-                String reading = columns.get(1).trim();
-                String meaning = toNullable(columns.get(2));
-                String tags = columns.get(3);
-
-                String level = extractJlptLevel(tags);
-
-                if (level == null || expression.isBlank() || reading.isBlank()) {
-                    continue;
-                }
-
-                // 같은 레벨 안에서 20개 단어마다 다음 유닛 번호를 부여
-                int currentCount = levelWordCountMap.getOrDefault(level, 0);
-                int unitNumber = (currentCount / WORDS_PER_UNIT) + 1;
-                levelWordCountMap.put(level, currentCount + 1);
-
-                words.add(VocabularyWord.builder()
-                        .level(level)
-                        .unitNumber(unitNumber)
-                        .expression(expression)
-                        .reading(reading)
-                        .meaning(meaning)
-                        .partOfSpeech(null)
-                        .source(SOURCE)
-                        .build());
+            if (!resource.exists()) {
+                continue;
             }
+
+            int levelWordCount = 0;
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)
+            )) {
+                String line;
+                boolean isHeader = true;
+
+                while ((line = reader.readLine()) != null) {
+                    if (isHeader) {
+                        isHeader = false;
+                        continue;
+                    }
+
+                    if (line.isBlank()) {
+                        continue;
+                    }
+
+                    List<String> columns = parseCsvLine(line);
+
+                    if (columns.size() < 3) {
+                        continue;
+                    }
+
+                    String expression = columns.get(0).trim();
+                    String reading = columns.get(1).trim();
+                    String meaning = toNullable(columns.get(2));
+
+                    if (expression.isBlank() || reading.isBlank()) {
+                        continue;
+                    }
+
+                    // 같은 레벨 안에서 20개 단어마다 다음 유닛 번호를 부여한다.
+                    int unitNumber = (levelWordCount / WORDS_PER_UNIT) + 1;
+                    levelWordCount++;
+
+                    words.add(VocabularyWord.builder()
+                            .level(level)
+                            .unitNumber(unitNumber)
+                            .expression(expression)
+                            .reading(reading)
+                            .meaning(meaning)
+                            .partOfSpeech(null)
+                            .source(SOURCE)
+                            .build());
+                }
+            }
+
         }
 
         vocabularyWordRepository.saveAll(words);
-    }
 
-    /**
-     * JLPT 레벨 태그 변환
-     *
-     * * elzup 데이터의 JLPT_5 형식을 서비스에서 사용하는 N5 형식으로 변환한다.
-     *
-     * @param tags CSV의 tags 값
-     * @return 변환된 JLPT 레벨
-     */
-    private String extractJlptLevel(String tags) {
-        if (tags == null) {
-            return null;
-        }
-
-        if (tags.contains("JLPT_1")) {
-            return "N1";
-        }
-        if (tags.contains("JLPT_2")) {
-            return "N2";
-        }
-        if (tags.contains("JLPT_3")) {
-            return "N3";
-        }
-        if (tags.contains("JLPT_4")) {
-            return "N4";
-        }
-        if (tags.contains("JLPT_5")) {
-            return "N5";
-        }
-
-        return null;
     }
 
     /**
