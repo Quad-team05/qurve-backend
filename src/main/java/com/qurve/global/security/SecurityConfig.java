@@ -3,6 +3,7 @@ package com.qurve.global.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -38,8 +39,21 @@ public class SecurityConfig {
 
                 // url별 접근 권한 설정 (로그인/회원가입/토큰재발급 제외하고는 접근 권한 제한)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**",
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/auth/login",
+                                "/api/auth/signup",
+                                "/api/auth/signup/email/send",
+                                "/api/auth/email/verify",
+                                "/api/auth/signup/email/verify",
+                                "/api/auth/find-id",
+                                "/api/auth/password/email/send",
+                                "/api/auth/password/reset",
+                                "/api/auth/reissue"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/auth/check-id",
+                                "/api/auth/check-email",
                                 "/api/challenges/goal-types"
                         ).permitAll()
                         .anyRequest().authenticated()
