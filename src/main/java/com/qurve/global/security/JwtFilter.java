@@ -28,6 +28,24 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+
+        return "OPTIONS".equals(request.getMethod())
+                || "/api/auth/login".equals(path)
+                || "/api/auth/signup".equals(path)
+                || "/api/auth/check-id".equals(path)
+                || "/api/auth/check-email".equals(path)
+                || "/api/auth/signup/email/send".equals(path)
+                || "/api/auth/email/verify".equals(path)
+                || "/api/auth/signup/email/verify".equals(path)
+                || "/api/auth/find-id".equals(path)
+                || "/api/auth/password/email/send".equals(path)
+                || "/api/auth/password/reset".equals(path)
+                || "/api/auth/reissue".equals(path);
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = resolveToken(request);

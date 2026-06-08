@@ -42,7 +42,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success((authService.signupEmailSend(signupEmailRequestDto))));
     }
 
-    @PostMapping("/email/verify")
+    @PostMapping({"/email/verify", "/signup/email/verify"})
     public ResponseEntity<ApiResponse<EmailVerifyResponseDto>> verifyEmail(@Valid @RequestBody EmailVerifyRequestDto emailVerifyRequestDto) {
         return ResponseEntity.ok(ApiResponse.success(authService.emailVerify(emailVerifyRequestDto)));
     }
