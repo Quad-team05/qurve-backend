@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Getter
 @AllArgsConstructor
@@ -19,7 +20,7 @@ public class TodayLearningResponseDto {
 
     public static TodayLearningResponseDto from(User user) {
         return new TodayLearningResponseDto(
-                LocalDate.now(),
+                LocalDate.now(ZoneId.of("Asia/Seoul")),
                 user.getLearningGoal(),
                 user.getCurrentLevel(),
                 0,

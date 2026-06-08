@@ -18,16 +18,17 @@ public class LearningService {
     private final UserRepository userRepository;
 
     public LearningMainResponseDto getLearningMain(String loginId) {
-        User user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
+        User user = findUserByLoginId(loginId);
         return LearningMainResponseDto.from(user);
     }
 
     public TodayLearningResponseDto getTodayLearningInfo(String loginId) {
-        User user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
+        User user = findUserByLoginId(loginId);
         return TodayLearningResponseDto.from(user);
+    }
+
+    private User findUserByLoginId(String loginId) {
+        return userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 }
