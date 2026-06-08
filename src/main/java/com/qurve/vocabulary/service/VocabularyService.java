@@ -5,7 +5,10 @@ import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import com.qurve.vocabulary.domain.UnitProgress;
+import com.qurve.vocabulary.domain.VocabularyWord;
 import com.qurve.vocabulary.dto.response.UnitProgressResponseDto;
+import com.qurve.vocabulary.dto.response.UnitWordResponseDto;
+import com.qurve.vocabulary.dto.response.UnitWordStudyResponseDto;
 import com.qurve.vocabulary.enums.UnitStatus;
 import com.qurve.vocabulary.repository.UnitProgressRepository;
 import com.qurve.vocabulary.repository.VocabularyWordRepository;
@@ -75,6 +78,16 @@ public class VocabularyService {
                 .toList();
     }
 
+    /**
+     * JLPT 레벨 값 검증
+     *
+     * * 사용자가 소문자나 공백이 포함된 값으로 요청해도
+     * DB에 저장된 레벨 형식과 비교할 수 있도록 N1~N5 형태로 변환한다.
+     *
+     * @param level 요청으로 전달된 JLPT 레벨
+     * @return 검증이 완료된 JLPT 레벨
+     * @throws BusinessException 지원하지 않는 레벨인 경우
+     */
     private String normalizeLevel(String level) {
         String normalizedLevel = level == null ? "" : level.trim().toUpperCase(Locale.ROOT);
 
@@ -83,5 +96,44 @@ public class VocabularyService {
         }
 
         return normalizedLevel;
+    }
+
+    /**
+     * 유닛 단어 학습 조회
+     *
+     * * 단어 학습 화면에서 사용할 단어 목록을 조회한다.
+     *
+     * * 단어는 레벨과 유닛 번호를 기준으로 조회하며,
+     * 화면 표시 순서를 위해 조회된 순서대로 번호를 부여한다.
+     *
+     * @param loginId 로그인 ID
+     * @param level 조회할 JLPT 레벨
+     * @param unitNumber 조회할 유닛 번호
+     * @return 유닛 단어 학습 정보
+     * @throws BusinessException 유저, 레벨, 유닛 정보가 유효하지 않은 경우
+     */
+    public UnitWordStudyResponseDto getUnitWords(String loginId, String level, Integer unitNumber) {
+
+        String normalizedLevel = normalizeLevel(level);
+
+        userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if (unitNumber == null || unitNumber < 1) {
+            throw new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND);
+        }
+
+        List<VocabularyWord> words = vocabularyWordRepository
+                .findByLevelAndUnitNumberOrderByWordIdAsc(normalizedLevel, unitNumber);
+
+        if (words.isEmpty()) {
+            throw new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND);
+        }
+
+        List<UnitWordResponseDto> wordResponses = java.util.stream.IntStream.range(0, words.size())
+                .mapToObj(index -> UnitWordResponseDto.from(words.get(index), index + 1))
+                .toList();
+
+        return UnitWordStudyResponseDto.of(normalizedLevel, unitNumber, wordResponses);
     }
 }
