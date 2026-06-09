@@ -18,4 +18,5 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
             order by w.unitNumber asc
             """)
     List<Integer> findDistinctUnitNumbersByLevel(@Param("level") String level);
+    List<VocabularyWord> findByLevelAndUnitNumberOrderByWordIdAsc(String level, Integer unitNumber);
 }
