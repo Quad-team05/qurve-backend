@@ -34,9 +34,16 @@ public class VocabularyWord {
     @Column(name = "meaning", length = 500)
     private String meaning;
 
+    @Column(name = "korean_meaning", length = 500)
+    private String koreanMeaning;
+
     @Column(name = "part_of_speech", length = 50)
     private String partOfSpeech;
 
     @Column(name = "source", length = 50, nullable = false)
     private String source;
+
+    public void updateKoreanMeaning(String koreanMeaning) {
+        this.koreanMeaning = koreanMeaning;
+    }
 }

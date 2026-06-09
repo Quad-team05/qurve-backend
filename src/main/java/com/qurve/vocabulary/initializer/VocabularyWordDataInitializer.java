@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,7 @@ public class VocabularyWordDataInitializer implements ApplicationRunner {
             "N4", "data/elzup_jlpt_n4.csv",
             "N5", "data/elzup_jlpt_n5.csv"
     );
+    private static final String KOREAN_MEANING_FILE_PATH = "data/vocabulary_meaning_ko.csv";
     // elzup 데이터에는 유닛 구분이 없으므로 20개 단어 단위로 유닛을 나눔
     private static final int WORDS_PER_UNIT = 20;
 
@@ -53,8 +55,11 @@ public class VocabularyWordDataInitializer implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) throws Exception {
 
+        Map<WordKey, String> koreanMeaningMap = loadKoreanMeaningMap();
+
         // 서버 재시작 시 동일한 단어가 중복 저장되지 않도록 기존 데이터 여부 확인
         if (vocabularyWordRepository.countBySource(SOURCE) > 0) {
+            updateKoreanMeanings(koreanMeaningMap);
             return;
         }
 
@@ -95,6 +100,7 @@ public class VocabularyWordDataInitializer implements ApplicationRunner {
                     String expression = columns.get(0).trim();
                     String reading = columns.get(1).trim();
                     String meaning = toNullable(columns.get(2));
+                    String koreanMeaning = koreanMeaningMap.get(new WordKey(level, expression, reading));
 
                     if (expression.isBlank() || reading.isBlank()) {
                         continue;
@@ -110,6 +116,7 @@ public class VocabularyWordDataInitializer implements ApplicationRunner {
                             .expression(expression)
                             .reading(reading)
                             .meaning(meaning)
+                            .koreanMeaning(koreanMeaning)
                             .partOfSpeech(null)
                             .source(SOURCE)
                             .build());
@@ -120,6 +127,72 @@ public class VocabularyWordDataInitializer implements ApplicationRunner {
 
         vocabularyWordRepository.saveAll(words);
 
+    }
+
+    private Map<WordKey, String> loadKoreanMeaningMap() throws Exception {
+        ClassPathResource resource = new ClassPathResource(KOREAN_MEANING_FILE_PATH);
+
+        if (!resource.exists()) {
+            return Map.of();
+        }
+
+        Map<WordKey, String> koreanMeaningMap = new HashMap<>();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)
+        )) {
+            String line;
+            boolean isHeader = true;
+
+            while ((line = reader.readLine()) != null) {
+                if (isHeader) {
+                    isHeader = false;
+                    continue;
+                }
+
+                if (line.isBlank()) {
+                    continue;
+                }
+
+                List<String> columns = parseCsvLine(line);
+
+                if (columns.size() < 4) {
+                    continue;
+                }
+
+                String level = columns.get(0).trim();
+                String expression = columns.get(1).trim();
+                String reading = columns.get(2).trim();
+                String koreanMeaning = toNullable(columns.get(3));
+
+                if (level.isBlank() || expression.isBlank() || reading.isBlank() || koreanMeaning == null) {
+                    continue;
+                }
+
+                koreanMeaningMap.put(new WordKey(level, expression, reading), koreanMeaning);
+            }
+        }
+
+        return koreanMeaningMap;
+    }
+
+    private void updateKoreanMeanings(Map<WordKey, String> koreanMeaningMap) {
+        if (koreanMeaningMap.isEmpty()) {
+            return;
+        }
+
+        vocabularyWordRepository.findBySource(SOURCE)
+                .forEach(word -> {
+                    String koreanMeaning = koreanMeaningMap.get(new WordKey(
+                            word.getLevel(),
+                            word.getExpression(),
+                            word.getReading()
+                    ));
+
+                    if (koreanMeaning != null) {
+                        word.updateKoreanMeaning(koreanMeaning);
+                    }
+                });
     }
 
     /**
@@ -161,5 +234,8 @@ public class VocabularyWordDataInitializer implements ApplicationRunner {
     private String toNullable(String value) {
         String trimmed = value == null ? "" : value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private record WordKey(String level, String expression, String reading) {
     }
 }
