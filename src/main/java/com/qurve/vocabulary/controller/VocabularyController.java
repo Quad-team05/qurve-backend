@@ -46,4 +46,10 @@ public class VocabularyController {
         vocabularyService.removeBookmark(authentication.getName(), wordId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PatchMapping("/units/{unitNumber}/start")
+    public ResponseEntity<ApiResponse<Void>> startUnit(@PathVariable Integer unitNumber, @RequestParam String level, Authentication authentication) {
+        vocabularyService.startUnit(authentication.getName(), level, unitNumber);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
