@@ -211,16 +211,48 @@ public class VocabularyService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        UnitProgress unitProgress = unitProgressRepository.findByUserAndLevelAndUnitNumber(user, level, unitNumber)
+        UnitProgress unitProgress = unitProgressRepository.findByUserAndLevelAndUnitNumber(user, normalizedLevel, unitNumber)
                 .orElse(UnitProgress.builder()
                         .user(user)
-                        .level(level)
+                        .level(normalizedLevel)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
                         .updatedAt(LocalDateTime.now())
                         .build());
 
         unitProgress.updateStatus(UnitStatus.IN_PROGRESS);
+        unitProgressRepository.save(unitProgress);
+    }
+
+    /**
+     * 유닛 학습 완료
+     *
+     * * 학습완료 버튼 클릭 시 해당 유닛의 학습 상태를 COMPLETED로 변경한다.
+     * * UnitProgress가 없는 경우 새로 생성 후 COMPLETED로 저장한다.
+     *
+     * @param loginId 로그인 ID
+     * @param level 조회할 JLPT 레벨
+     * @param unitNumber 학습 완료할 유닛 번호
+     * @throws BusinessException 유저가 존재하지 않거나 레벨이 유효하지 않은 경우
+     */
+    @Transactional
+    public void completeUnit(String loginId, String level, Integer unitNumber){
+
+        String normalizedLevel = normalizeLevel(level);
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        UnitProgress unitProgress = unitProgressRepository.findByUserAndLevelAndUnitNumber(user, normalizedLevel, unitNumber)
+                .orElse(UnitProgress.builder()
+                        .user(user)
+                        .level(normalizedLevel)
+                        .unitNumber(unitNumber)
+                        .status(UnitStatus.BEFORE)
+                        .updatedAt(LocalDateTime.now())
+                        .build());
+
+        unitProgress.updateStatus(UnitStatus.COMPLETED);
         unitProgressRepository.save(unitProgress);
     }
 }
