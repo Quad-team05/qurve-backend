@@ -4,18 +4,21 @@ import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.vocabulary.domain.Bookmark;
 import com.qurve.vocabulary.domain.UnitProgress;
 import com.qurve.vocabulary.domain.VocabularyWord;
 import com.qurve.vocabulary.dto.response.UnitProgressResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordStudyResponseDto;
 import com.qurve.vocabulary.enums.UnitStatus;
+import com.qurve.vocabulary.repository.BookmarkRepository;
 import com.qurve.vocabulary.repository.UnitProgressRepository;
 import com.qurve.vocabulary.repository.VocabularyWordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,6 +35,7 @@ public class VocabularyService {
     private final UserRepository userRepository;
     private final UnitProgressRepository unitProgressRepository;
     private final VocabularyWordRepository vocabularyWordRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     /**
      * 단어 유닛 목록 조회
@@ -135,5 +139,56 @@ public class VocabularyService {
                 .toList();
 
         return UnitWordStudyResponseDto.of(normalizedLevel, unitNumber, wordResponses);
+    }
+
+    /**
+     * 단어 북마크 추가
+     *
+     * * 단어 학습 중 북마크 버튼 클릭 시 해당 단어를 북마크에 추가한다.
+     * * 이미 북마크된 단어인 경우 예외를 발생시킨다.
+     *
+     * @param loginId 로그인 ID
+     * @param wordId 북마크할 단어 ID
+     * @throws BusinessException 유저가 존재하지 않거나 이미 북마크된 단어인 경우
+     */
+    @Transactional
+    public void addBookmark(String loginId, Long wordId) {
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        vocabularyWordRepository.findById(wordId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND));
+
+        if (bookmarkRepository.existsByUserAndWordId(user, wordId)) {
+            throw new BusinessException(ErrorCode.DUPLICATE_BOOKMARK);
+        }
+
+        bookmarkRepository.save(Bookmark.builder()
+                .user(user)
+                .wordId(wordId)
+                .createdAt(LocalDateTime.now())
+                .build());
+    }
+
+    /**
+     * 단어 북마크 삭제
+     *
+     * * 북마크된 단어를 북마크에서 제거한다.
+     *
+     * @param loginId 로그인 ID
+     * @param wordId 북마크 삭제할 단어 ID
+     * @throws BusinessException 유저가 존재하지 않거나 북마크가 존재하지 않는 경우
+     */
+    @Transactional
+    public void removeBookmark(String loginId, Long wordId) {
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Bookmark bookmark = bookmarkRepository.findByUserAndWordId(user, wordId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOOKMARK_NOT_FOUND));
+
+        bookmarkRepository.delete(bookmark);
     }
 }

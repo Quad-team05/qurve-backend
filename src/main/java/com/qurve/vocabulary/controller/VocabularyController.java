@@ -34,4 +34,16 @@ public class VocabularyController {
 
         return ApiResponse.success(response);
     }
+
+    @PostMapping("/bookmarks/{wordId}")
+    public ResponseEntity<ApiResponse<Void>> addBookmark(@PathVariable Long wordId, Authentication authentication) {
+        vocabularyService.addBookmark(authentication.getName(), wordId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/bookmarks/{wordId}")
+    public ResponseEntity<ApiResponse<Void>> deleteBookmark(@PathVariable Long wordId, Authentication authentication) {
+        vocabularyService.removeBookmark(authentication.getName(), wordId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
