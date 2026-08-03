@@ -5,9 +5,11 @@ import com.qurve.global.exception.BusinessException;
 import com.qurve.problem.domain.Problem;
 import com.qurve.problem.domain.ProblemChoice;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
+import com.qurve.problem.dto.request.ProblemSubmitRequestDto;
 import com.qurve.problem.dto.response.ProblemChoiceResponseDto;
 import com.qurve.problem.dto.response.ProblemListResponseDto;
 import com.qurve.problem.dto.response.ProblemResponseDto;
+import com.qurve.problem.dto.response.ProblemSubmitResponseDto;
 import com.qurve.problem.repository.ProblemChoiceRepository;
 import com.qurve.problem.repository.ProblemRepository;
 import lombok.RequiredArgsConstructor;
@@ -81,6 +83,32 @@ public class ProblemService {
                 normalizedSubType,
                 problemResponseDtos
         );
+    }
+
+    /**
+     * 문제 답안 제출
+     *
+     * * 사용자가 선택한 선택지 번호를 정답 번호와 비교하고
+     * 정답 선택지와 해설을 함께 반환한다.
+     *
+     * @param problemId 제출 대상 문제 ID
+     * @param requestDto 제출한 선택지 번호
+     * @return 채점 결과와 정답 정보
+     * @throws BusinessException 문제가 없거나 선택지 번호가 유효하지 않은 경우
+     */
+    public ProblemSubmitResponseDto submit(Long problemId, ProblemSubmitRequestDto requestDto) {
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        if (!problemChoiceRepository.existsByProblemAndChoiceNumber(problem, requestDto.getSelectedChoiceNumber())) {
+            throw new BusinessException(ErrorCode.INVALID_PROBLEM_CHOICE);
+        }
+
+        ProblemChoice answerChoice = problemChoiceRepository
+                .findByProblemAndChoiceNumber(problem, problem.getAnswerIndex())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PROBLEM_CHOICE));
+
+        return ProblemSubmitResponseDto.of(problem, requestDto.getSelectedChoiceNumber(), answerChoice);
     }
 
     /**
