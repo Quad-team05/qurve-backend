@@ -1,39 +1,38 @@
 package com.qurve.problem.dto.response;
 
-import com.qurve.problem.domain.Problem;
 import com.qurve.problem.domain.ProblemChoice;
 import com.qurve.problem.domain.ProblemSubmission;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @AllArgsConstructor
-public class ProblemSubmitResponseDto {
+public class ProblemSolutionResponseDto {
 
-    private Long problemId;
     private Long submissionId;
     private Integer selectedChoiceNumber;
     private Integer answerChoiceNumber;
     private String answerChoiceText;
     private boolean correct;
     private String explanation;
+    private LocalDateTime submittedAt;
 
-    public static ProblemSubmitResponseDto of(
+    public static ProblemSolutionResponseDto of(
             ProblemSubmission problemSubmission,
             ProblemChoice answerChoice
     ) {
-        Problem problem = problemSubmission.getProblem();
-
-        return ProblemSubmitResponseDto.builder()
-                .problemId(problem.getProblemId())
+        return ProblemSolutionResponseDto.builder()
                 .submissionId(problemSubmission.getSubmissionId())
                 .selectedChoiceNumber(problemSubmission.getSelectedChoiceNumber())
                 .answerChoiceNumber(problemSubmission.getAnswerChoiceNumber())
                 .answerChoiceText(answerChoice.getChoiceText())
                 .correct(problemSubmission.isCorrect())
-                .explanation(problem.getExplanation())
+                .explanation(problemSubmission.getProblem().getExplanation())
+                .submittedAt(problemSubmission.getCreatedAt())
                 .build();
     }
 }

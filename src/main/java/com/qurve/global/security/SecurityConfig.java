@@ -50,8 +50,7 @@ public class SecurityConfig {
                                 "/api/auth/find-id",
                                 "/api/auth/password/email/send",
                                 "/api/auth/password/reset",
-                                "/api/auth/reissue",
-                                "/api/problems/*/submit"
+                                "/api/auth/reissue"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/auth/check-id",

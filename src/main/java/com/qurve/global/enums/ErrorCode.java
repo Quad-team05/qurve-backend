@@ -22,6 +22,7 @@ public enum ErrorCode {
     INVALID_LEVEL(400, "INVALID_LEVEL", "지원하지 않는 JLPT 레벨입니다."),
     PROBLEM_NOT_FOUND(404, "PROBLEM_NOT_FOUND", "조회 조건에 맞는 문제를 찾을 수 없습니다."),
     INVALID_PROBLEM_CHOICE(400, "INVALID_PROBLEM_CHOICE", "해당 문제에 존재하지 않는 선택지입니다."),
+    PROBLEM_SUBMISSION_NOT_FOUND(404, "PROBLEM_SUBMISSION_NOT_FOUND", "해당 문제의 제출 이력을 찾을 수 없습니다."),
     VOCABULARY_UNIT_NOT_FOUND(404, "VOCABULARY_UNIT_NOT_FOUND", "해당 레벨의 단어 유닛을 찾을 수 없습니다."),
     DUPLICATE_BOOKMARK(409, "DUPLICATE_BOOKMARK", "이미 북마크된 단어입니다."),
     BOOKMARK_NOT_FOUND(404, "BOOKMARK_NOT_FOUND", "북마크를 찾을 수 없습니다."),
