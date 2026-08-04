@@ -284,4 +284,29 @@ public class VocabularyService {
                 .map(word -> UnitWordResponseDto.from(word, 0))
                 .toList();
     }
+
+    /**
+     * 북마크 단어 조회
+     *
+     * * 사용자가 북마크한 단어 목록을 조회한다.
+     * * 북마크 테이블의 wordId를 기반으로 단어 정보를 조회하여 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 북마크 단어 목록
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public List<UnitWordResponseDto> getBookmarks(String loginId) {
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
+
+        return bookmarks.stream()
+                .map(bookmark -> {VocabularyWord word = vocabularyWordRepository.findById(bookmark.getWordId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND));
+                return UnitWordResponseDto.from(word, 0);
+                })
+                .toList();
+    }
 }
