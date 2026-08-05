@@ -1,0 +1,24 @@
+package com.qurve.problem.repository;
+
+import com.qurve.problem.domain.Problem;
+import com.qurve.problem.domain.ProblemChoice;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface ProblemChoiceRepository extends JpaRepository<ProblemChoice, Long> {
+    boolean existsByProblemAndChoiceNumber(Problem problem, Integer choiceNumber);
+    long countByProblem(Problem problem);
+    Optional<ProblemChoice> findByProblemAndChoiceNumber(Problem problem, Integer choiceNumber);
+
+    @Query("""
+            select pc
+            from ProblemChoice pc
+            where pc.problem in :problems
+            order by pc.problem.problemId asc, pc.choiceNumber asc
+            """)
+    List<ProblemChoice> findAllByProblemsOrderByProblemIdAscChoiceNumberAsc(@Param("problems") List<Problem> problems);
+}
