@@ -2,6 +2,7 @@ package com.qurve.auth.service;
 
 import com.qurve.auth.dto.request.*;
 import com.qurve.auth.dto.response.*;
+import com.qurve.badge.service.BadgeService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.global.security.JwtTokenProvider;
@@ -30,6 +31,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender mailSender;
     private final RedisTemplate<String, String> redisTemplate;
+    private final BadgeService badgeService;
 
     /**
      * 회원가입
@@ -112,6 +114,7 @@ public class AuthService {
         String refreshToken = jwtTokenProvider.createRefreshToken();
         // 객체에 Refresh Token + 만료시간 저장
         user.updateRefreshToken(refreshToken, LocalDateTime.now().plusDays(7));
+        badgeService.evaluate(user);
 
         return LoginResponseDto.from(user, accessToken, refreshToken);
     }

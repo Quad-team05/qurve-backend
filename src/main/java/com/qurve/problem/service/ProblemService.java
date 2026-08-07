@@ -1,5 +1,6 @@
 package com.qurve.problem.service;
 
+import com.qurve.badge.service.BadgeService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.problem.domain.Problem;
@@ -39,6 +40,7 @@ public class ProblemService {
     private final ProblemSubmissionRepository problemSubmissionRepository;
     private final ProblemBookmarkRepository problemBookmarkRepository;
     private final UserRepository userRepository;
+    private final BadgeService badgeService;
 
     /**
      * 문제 목록 조회
@@ -131,6 +133,7 @@ public class ProblemService {
                 .answerChoiceNumber(problem.getAnswerIndex())
                 .correct(problem.getAnswerIndex().equals(requestDto.getSelectedChoiceNumber()))
                 .build());
+        badgeService.evaluate(user);
 
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);
     }

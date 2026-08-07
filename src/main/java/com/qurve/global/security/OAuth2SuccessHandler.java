@@ -1,5 +1,6 @@
 package com.qurve.global.security;
 
+import com.qurve.badge.service.BadgeService;
 import com.qurve.global.enums.Role;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
@@ -36,6 +37,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
+    private final BadgeService badgeService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     /**
@@ -88,6 +90,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String refreshToken = jwtTokenProvider.createRefreshToken();
         user.updateRefreshToken(refreshToken, LocalDateTime.now().plusDays(7));
         userRepository.save(user);
+        badgeService.evaluate(user);
 
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(
