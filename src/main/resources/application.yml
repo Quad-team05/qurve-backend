@@ -84,6 +84,10 @@ jwt:
   access-token-expiration: ${JWT_ACCESS_EXPIRATION}
   refresh-token-expiration: ${JWT_REFRESH_EXPIRATION}
 
+problem:
+  seed:
+    enabled: ${PROBLEM_SEED_ENABLED:false}
+    path-pattern: classpath*:data/problems/*.csv
 tts:
   voicerss:
     base-url: https://api.voicerss.org
