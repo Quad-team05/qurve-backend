@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -282,6 +283,36 @@ public class VocabularyService {
 
         return words.stream()
                 .map(word -> UnitWordResponseDto.from(word, 0))
+                .toList();
+    }
+
+    /**
+     * 북마크 단어 조회
+     *
+     * * 사용자가 북마크한 단어 목록을 조회한다.
+     * * 북마크 테이블의 wordId를 기반으로 단어 정보를 조회하여 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 북마크 단어 목록
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public List<UnitWordResponseDto> getBookmarks(String loginId) {
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
+
+        // 북마크된 단어 ID 목록 추출
+        List<Long> wordIds = bookmarks.stream()
+                .map(Bookmark::getWordId)
+                .toList();
+
+        List<VocabularyWord> words = vocabularyWordRepository.findAllById(wordIds);
+
+        // 순서 번호(1부터) 부여하여 반환
+        return IntStream.range(0, words.size())
+                .mapToObj(i -> UnitWordResponseDto.from(words.get(i), i + 1))
                 .toList();
     }
 }

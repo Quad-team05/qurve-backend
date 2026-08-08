@@ -64,4 +64,9 @@ public class VocabularyController {
     public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getChallengeWords(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(vocabularyService.getChallengeWords(authentication.getName())));
     }
+
+    @GetMapping("/bookmarks")
+    public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getBookmarks(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(vocabularyService.getBookmarks(authentication.getName())));
+    }
 }
