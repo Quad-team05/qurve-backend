@@ -1,5 +1,8 @@
 package com.qurve.vocabulary.service;
 
+import com.qurve.challenge.domain.Challenge;
+import com.qurve.challenge.domain.ChallengeGoalType;
+import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
@@ -24,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +40,7 @@ public class VocabularyService {
     private final UnitProgressRepository unitProgressRepository;
     private final VocabularyWordRepository vocabularyWordRepository;
     private final BookmarkRepository bookmarkRepository;
+    private final ChallengeRepository challengeRepository;
 
     /**
      * 단어 유닛 목록 조회
@@ -254,5 +259,60 @@ public class VocabularyService {
 
         unitProgress.updateStatus(UnitStatus.COMPLETED);
         unitProgressRepository.save(unitProgress);
+    }
+
+    /**
+     * 챌린지 단어 조회
+     *
+     * * 챌린지 목표 유형이 단어 암기(WORD_COUNT)인 챌린지의 목표 단어 개수만큼
+     * 전체 단어 데이터셋에서 랜덤으로 단어를 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 챌린지 단어 목록
+     * @throws BusinessException 유저가 존재하지 않거나 WORD_COUNT 챌린지가 없는 경우
+     */
+    public List<UnitWordResponseDto> getChallengeWords(String loginId) {
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Challenge challenge = challengeRepository.findByUserAndGoalType(user, ChallengeGoalType.WORD_COUNT)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+
+        List<VocabularyWord> words = vocabularyWordRepository.findRandom(challenge.getTargetValue());
+
+        return words.stream()
+                .map(word -> UnitWordResponseDto.from(word, 0))
+                .toList();
+    }
+
+    /**
+     * 북마크 단어 조회
+     *
+     * * 사용자가 북마크한 단어 목록을 조회한다.
+     * * 북마크 테이블의 wordId를 기반으로 단어 정보를 조회하여 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 북마크 단어 목록
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public List<UnitWordResponseDto> getBookmarks(String loginId) {
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
+
+        // 북마크된 단어 ID 목록 추출
+        List<Long> wordIds = bookmarks.stream()
+                .map(Bookmark::getWordId)
+                .toList();
+
+        List<VocabularyWord> words = vocabularyWordRepository.findAllById(wordIds);
+
+        // 순서 번호(1부터) 부여하여 반환
+        return IntStream.range(0, words.size())
+                .mapToObj(i -> UnitWordResponseDto.from(words.get(i), i + 1))
+                .toList();
     }
 }

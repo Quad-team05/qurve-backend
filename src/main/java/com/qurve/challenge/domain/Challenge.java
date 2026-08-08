@@ -28,7 +28,7 @@ public class Challenge extends BaseEntity {
     private String title;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "goal_type", nullable = false)
+    @Column(name = "goal_type", length = 50, nullable = false)
     private ChallengeGoalType goalType;
 
     @Column(name = "target_value", nullable = false)
