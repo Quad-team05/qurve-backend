@@ -2,6 +2,7 @@ package com.qurve.vocabulary.controller;
 
 import com.qurve.global.common.ApiResponse;
 import com.qurve.vocabulary.dto.response.UnitProgressResponseDto;
+import com.qurve.vocabulary.dto.response.UnitWordResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordStudyResponseDto;
 import com.qurve.vocabulary.service.VocabularyService;
 import jakarta.validation.constraints.NotBlank;
@@ -33,5 +34,39 @@ public class VocabularyController {
         UnitWordStudyResponseDto response = vocabularyService.getUnitWords(loginId, level, unitNumber);
 
         return ApiResponse.success(response);
+    }
+
+    @PostMapping("/bookmarks/{wordId}")
+    public ResponseEntity<ApiResponse<Void>> addBookmark(@PathVariable Long wordId, Authentication authentication) {
+        vocabularyService.addBookmark(authentication.getName(), wordId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/bookmarks/{wordId}")
+    public ResponseEntity<ApiResponse<Void>> deleteBookmark(@PathVariable Long wordId, Authentication authentication) {
+        vocabularyService.removeBookmark(authentication.getName(), wordId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PatchMapping("/units/{unitNumber}/start")
+    public ResponseEntity<ApiResponse<Void>> startUnit(@PathVariable Integer unitNumber, @RequestParam String level, Authentication authentication) {
+        vocabularyService.startUnit(authentication.getName(), level, unitNumber);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PatchMapping("/units/{unitNumber}/complete")
+    public ResponseEntity<ApiResponse<Void>> completeUnit(@PathVariable Integer unitNumber, @RequestParam String level, Authentication authentication) {
+        vocabularyService.completeUnit(authentication.getName(), level, unitNumber);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @GetMapping("/challenge-words")
+    public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getChallengeWords(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(vocabularyService.getChallengeWords(authentication.getName())));
+    }
+
+    @GetMapping("/bookmarks")
+    public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getBookmarks(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(vocabularyService.getBookmarks(authentication.getName())));
     }
 }

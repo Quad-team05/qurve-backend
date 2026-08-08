@@ -22,4 +22,7 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
     List<Integer> findDistinctUnitNumbersByLevel(@Param("level") String level);
 
     List<VocabularyWord> findByLevelAndUnitNumberOrderByWordIdAsc(String level, Integer unitNumber);
+
+    @Query("SELECT v FROM VocabularyWord v ORDER BY FUNCTION('RAND') LIMIT :limit")
+    List<VocabularyWord> findRandom(@Param("limit") int limit);
 }
