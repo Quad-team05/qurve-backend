@@ -23,7 +23,7 @@ public class User extends BaseEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "login_id", length = 100, nullable = false, unique = true)
+    @Column(name = "login_id", length = 255, nullable = false, unique = true)
     private String loginId;
 
     @Column(name = "password_hash", length = 255, nullable = false)
