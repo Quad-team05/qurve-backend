@@ -1,5 +1,6 @@
 package com.qurve.challenge.service;
 
+import com.qurve.badge.service.BadgeService;
 import com.qurve.challenge.domain.Challenge;
 import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.domain.ChallengeProgress;
@@ -32,6 +33,7 @@ public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeProgressRepository challengeProgressRepository;
     private final UserRepository userRepository;
+    private final BadgeService badgeService;
 
     public List<ChallengeGoalTypeResponseDto> getGoalTypes() {
         return Arrays.stream(ChallengeGoalType.values())
@@ -96,6 +98,7 @@ public class ChallengeService {
 
         Challenge challenge = requestDto.toEntity(user);
         Challenge savedChallenge = challengeRepository.save(challenge);
+        badgeService.evaluate(user);
 
         return ChallengeCreateResponseDto.from(savedChallenge);
     }

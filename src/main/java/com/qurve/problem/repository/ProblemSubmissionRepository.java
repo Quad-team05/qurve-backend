@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface ProblemSubmissionRepository extends JpaRepository<ProblemSubmission, Long> {
     Optional<ProblemSubmission> findFirstByUserAndProblemOrderBySubmissionIdDesc(User user, Problem problem);
     List<ProblemSubmission> findAllByUserAndProblemOrderBySubmissionIdDesc(User user, Problem problem);
+    long countByUser(User user);
+    long countByUserAndCorrectTrue(User user);
 }

@@ -1,5 +1,6 @@
 package com.qurve.vocabulary.service;
 
+import com.qurve.badge.service.BadgeService;
 import com.qurve.challenge.domain.Challenge;
 import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.repository.ChallengeRepository;
@@ -41,6 +42,7 @@ public class VocabularyService {
     private final VocabularyWordRepository vocabularyWordRepository;
     private final BookmarkRepository bookmarkRepository;
     private final ChallengeRepository challengeRepository;
+    private final BadgeService badgeService;
 
     /**
      * 단어 유닛 목록 조회
@@ -174,6 +176,7 @@ public class VocabularyService {
                 .wordId(wordId)
                 .createdAt(LocalDateTime.now())
                 .build());
+        badgeService.evaluate(user);
     }
 
     /**
