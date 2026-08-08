@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -21,6 +22,9 @@ import java.util.UUID;
  *
  * * 소셜 로그인 성공 시 사용자 정보를 조회하거나 자동 회원가입 처리 후
  * JWT Access Token / Refresh Token을 발급하여 응답으로 반환한다.
+ *
+ * * 구글: email, name 속성으로 사용자 정보 추출
+ * * 카카오: kakao_account.email, kakao_account.profile.nickname으로 사용자 정보 추출
  *
  * * 이메일 기준으로 기존 회원 여부를 확인하며,
  * 신규 사용자인 경우 자동으로 회원가입 처리한다.
@@ -44,10 +48,22 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
 
-        // 구글에서 반환된 사용자 정보 추출
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
+
+        String email;
+        String name;
+
+        // 카카오 로그인인 경우 kakao_account에서 사용자 정보 추출
+        if (oAuth2User.getAttribute("kakao_account") != null) {
+            Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account");
+            email = (String) kakaoAccount.get("email");
+            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            name = (String) profile.get("nickname");
+        } else {
+            // 구글 로그인인 경우 최상위 속성에서 사용자 정보 추출
+            email = oAuth2User.getAttribute("email");
+            name = oAuth2User.getAttribute("name");
+        }
 
         // 이메일 기준으로 기존 회원 조회, 없으면 자동 회원가입 처리
         User user = userRepository.findByEmail(email)
