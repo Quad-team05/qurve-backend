@@ -83,3 +83,12 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-expiration: ${JWT_ACCESS_EXPIRATION}
   refresh-token-expiration: ${JWT_REFRESH_EXPIRATION}
+
+tts:
+  voicerss:
+    base-url: https://api.voicerss.org
+    language: ja-jp
+    codec: MP3
+    format: 44khz_16bit_stereo
+    connect-timeout-millis: 3000
+    read-timeout-millis: 5000

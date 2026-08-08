@@ -23,6 +23,7 @@
 hs_err_pid*
 replay_pid*
 
-.env.gradle/
+.env
 .gradle/
 build/
+/.idea/.name
