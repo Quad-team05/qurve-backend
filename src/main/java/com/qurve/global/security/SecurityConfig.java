@@ -34,9 +34,9 @@ public class SecurityConfig {
 
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // JWT 기반 인증은 서버 세션을 사용하지 않기 때문에 STATELESS 설정
+                // OAuth2 로그인은 세션이 필요하므로 IF_REQUIRED로 설정
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 
                 // url별 접근 권한 설정 (로그인/회원가입/토큰재발급 제외하고는 접근 권한 제한)
                 .authorizeHttpRequests(auth -> auth

@@ -49,13 +49,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
 
+        String truncatedName = name != null && name.length() > 20 ? name.substring(0, 20) : name;
+        String truncatedNickname = name != null && name.length() > 30 ? name.substring(0, 30) : name;
+
         // 이메일 기준으로 기존 회원 조회, 없으면 자동 회원가입 처리
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> userRepository.save(User.builder()
                         .loginId(email)
                         .email(email)
-                        .name(name)
-                        .nickname(name)
+                        .name(truncatedName)
+                        .nickname(truncatedNickname)
                         .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
                         .role(Role.USER)
                         .emailVerified(true)
