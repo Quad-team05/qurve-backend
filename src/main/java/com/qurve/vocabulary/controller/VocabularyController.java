@@ -52,4 +52,10 @@ public class VocabularyController {
         vocabularyService.startUnit(authentication.getName(), level, unitNumber);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PatchMapping("/units/{unitNumber}/complete")
+    public ResponseEntity<ApiResponse<Void>> completeUnit(@PathVariable Integer unitNumber, @RequestParam String level, Authentication authentication) {
+        vocabularyService.completeUnit(authentication.getName(), level, unitNumber);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
