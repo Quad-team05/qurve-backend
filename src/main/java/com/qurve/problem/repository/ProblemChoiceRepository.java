@@ -10,9 +10,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProblemChoiceRepository extends JpaRepository<ProblemChoice, Long> {
-    boolean existsByProblemAndChoiceNumber(Problem problem, Integer choiceNumber);
     long countByProblem(Problem problem);
-    Optional<ProblemChoice> findByProblemAndChoiceNumber(Problem problem, Integer choiceNumber);
+    List<ProblemChoice> findAllByProblemOrderByChoiceNumberAsc(Problem problem);
 
     @Query("""
             select pc
