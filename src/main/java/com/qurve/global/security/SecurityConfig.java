@@ -55,8 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/auth/check-id",
                                 "/api/auth/check-email",
-                                "/api/challenges/goal-types",
-                                "/api/problems"
+                                "/api/challenges/goal-types"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
