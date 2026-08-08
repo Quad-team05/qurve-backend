@@ -4,6 +4,7 @@ import com.qurve.global.common.ApiResponse;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
 import com.qurve.problem.dto.request.ProblemSubmitRequestDto;
 import com.qurve.problem.dto.response.ProblemListResponseDto;
+import com.qurve.problem.dto.response.ProblemResponseDto;
 import com.qurve.problem.dto.response.ProblemSolutionListResponseDto;
 import com.qurve.problem.dto.response.ProblemSubmitResponseDto;
 import com.qurve.problem.service.ProblemService;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @Validated
@@ -53,6 +57,33 @@ public class ProblemController {
     ) {
         return ResponseEntity.ok(
                 ApiResponse.success(problemService.findSolution(authentication.getName(), problemId))
+        );
+    }
+
+    @PostMapping("/bookmarks/{problemId}")
+    public ResponseEntity<ApiResponse<Void>> addBookmark(
+            @PathVariable Long problemId,
+            Authentication authentication
+    ) {
+        problemService.addBookmark(authentication.getName(), problemId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/bookmarks/{problemId}")
+    public ResponseEntity<ApiResponse<Void>> deleteBookmark(
+            @PathVariable Long problemId,
+            Authentication authentication
+    ) {
+        problemService.removeBookmark(authentication.getName(), problemId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @GetMapping("/bookmarks")
+    public ResponseEntity<ApiResponse<List<ProblemResponseDto>>> findBookmarks(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(problemService.findBookmarks(authentication.getName()))
         );
     }
 }

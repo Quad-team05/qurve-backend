@@ -3,6 +3,7 @@ package com.qurve.problem.service;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.problem.domain.Problem;
+import com.qurve.problem.domain.ProblemBookmark;
 import com.qurve.problem.domain.ProblemChoice;
 import com.qurve.problem.domain.ProblemSubmission;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
@@ -13,6 +14,7 @@ import com.qurve.problem.dto.response.ProblemResponseDto;
 import com.qurve.problem.dto.response.ProblemSolutionListResponseDto;
 import com.qurve.problem.dto.response.ProblemSolutionResponseDto;
 import com.qurve.problem.dto.response.ProblemSubmitResponseDto;
+import com.qurve.problem.repository.ProblemBookmarkRepository;
 import com.qurve.problem.repository.ProblemChoiceRepository;
 import com.qurve.problem.repository.ProblemRepository;
 import com.qurve.problem.repository.ProblemSubmissionRepository;
@@ -35,6 +37,7 @@ public class ProblemService {
     private final ProblemRepository problemRepository;
     private final ProblemChoiceRepository problemChoiceRepository;
     private final ProblemSubmissionRepository problemSubmissionRepository;
+    private final ProblemBookmarkRepository problemBookmarkRepository;
     private final UserRepository userRepository;
 
     /**
@@ -172,6 +175,97 @@ public class ProblemService {
                 .toList();
 
         return ProblemSolutionListResponseDto.of(problem.getProblemId(), solutions);
+    }
+
+    /**
+     * 문제 북마크 추가
+     *
+     * * 문제 풀이 중 북마크 버튼 클릭 시 해당 문제를 북마크에 추가한다.
+     * * 이미 북마크된 문제인 경우 예외를 발생시킨다.
+     *
+     * @param loginId 로그인 ID
+     * @param problemId 북마크할 문제 ID
+     * @throws BusinessException 유저나 문제가 없거나 이미 북마크된 문제인 경우
+     */
+    @Transactional
+    public void addBookmark(String loginId, Long problemId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        if (problemBookmarkRepository.existsByUserAndProblem(user, problem)) {
+            throw new BusinessException(ErrorCode.DUPLICATE_PROBLEM_BOOKMARK);
+        }
+
+        problemBookmarkRepository.save(ProblemBookmark.builder()
+                .user(user)
+                .problem(problem)
+                .build());
+    }
+
+    /**
+     * 문제 북마크 삭제
+     *
+     * * 북마크된 문제를 북마크에서 제거한다.
+     *
+     * @param loginId 로그인 ID
+     * @param problemId 북마크 삭제할 문제 ID
+     * @throws BusinessException 유저, 문제, 북마크가 존재하지 않는 경우
+     */
+    @Transactional
+    public void removeBookmark(String loginId, Long problemId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        ProblemBookmark problemBookmark = problemBookmarkRepository.findByUserAndProblem(user, problem)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_BOOKMARK_NOT_FOUND));
+
+        problemBookmarkRepository.delete(problemBookmark);
+    }
+
+    /**
+     * 문제 북마크 목록 조회
+     *
+     * * 로그인한 사용자가 북마크한 문제 목록을 최신순으로 조회한다.
+     * * 문제 풀이 화면과 동일하게 정답과 해설은 숨기고 문제 본문과 선택지만 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 북마크한 문제 목록
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public List<ProblemResponseDto> findBookmarks(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        List<Problem> problems = problemBookmarkRepository.findByUserOrderByCreatedAtDesc(user)
+                .stream()
+                .map(ProblemBookmark::getProblem)
+                .toList();
+
+        if (problems.isEmpty()) {
+            return List.of();
+        }
+
+        List<ProblemChoice> problemChoices = problemChoiceRepository
+                .findAllByProblemsOrderByProblemIdAscChoiceNumberAsc(problems);
+
+        Map<Long, List<ProblemChoiceResponseDto>> choiceMap = problemChoices.stream()
+                .collect(Collectors.groupingBy(
+                        problemChoice -> problemChoice.getProblem().getProblemId(),
+                        Collectors.mapping(ProblemChoiceResponseDto::from, Collectors.toList())
+                ));
+
+        return problems.stream()
+                .map(problem -> ProblemResponseDto.from(
+                        problem,
+                        choiceMap.getOrDefault(problem.getProblemId(), List.of())
+                ))
+                .toList();
     }
 
     /**
