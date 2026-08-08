@@ -153,13 +153,13 @@ public class ProblemService {
         List<ProblemSubmission> problemSubmissions = problemSubmissionRepository
                 .findAllByUserAndProblemOrderBySubmissionIdDesc(user, problem);
 
-        ProblemChoice answerChoice = problemChoiceRepository
-                .findByProblemAndChoiceNumber(problem, problem.getAnswerIndex())
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PROBLEM_CHOICE));
-
         if (problemSubmissions.isEmpty()) {
             throw new BusinessException(ErrorCode.PROBLEM_SUBMISSION_NOT_FOUND);
         }
+
+        ProblemChoice answerChoice = problemChoiceRepository
+                .findByProblemAndChoiceNumber(problem, problem.getAnswerIndex())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PROBLEM_CHOICE));
 
         List<ProblemSolutionResponseDto> solutions = problemSubmissions.stream()
                 .map(problemSubmission -> ProblemSolutionResponseDto.of(problemSubmission, answerChoice))
