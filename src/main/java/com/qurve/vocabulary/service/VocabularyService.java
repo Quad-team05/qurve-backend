@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -302,11 +303,16 @@ public class VocabularyService {
 
         List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
 
-        return bookmarks.stream()
-                .map(bookmark -> {VocabularyWord word = vocabularyWordRepository.findById(bookmark.getWordId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND));
-                return UnitWordResponseDto.from(word, 0);
-                })
+        // 북마크된 단어 ID 목록 추출
+        List<Long> wordIds = bookmarks.stream()
+                .map(Bookmark::getWordId)
+                .toList();
+
+        List<VocabularyWord> words = vocabularyWordRepository.findAllById(wordIds);
+
+        // 순서 번호(1부터) 부여하여 반환
+        return IntStream.range(0, words.size())
+                .mapToObj(i -> UnitWordResponseDto.from(words.get(i), i + 1))
                 .toList();
     }
 }
