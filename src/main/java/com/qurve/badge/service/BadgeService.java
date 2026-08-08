@@ -48,21 +48,8 @@ public class BadgeService {
      */
     public BadgeListResponseDto findAll(String loginId) {
         User user = findUserByLoginId(loginId);
-        Map<BadgeDefinition, UserBadge> userBadgeMap = userBadgeRepository.findAllByUser(user)
-                .stream()
-                .collect(Collectors.toMap(UserBadge::getBadgeDefinition, Function.identity()));
-        BadgeProgress badgeProgress = calculateProgress(user);
-
-        List<BadgeResponseDto> badges = BadgeDefinition.orderedValues()
-                .stream()
-                .map(badgeDefinition -> BadgeResponseDto.of(
-                        badgeDefinition,
-                        userBadgeMap.get(badgeDefinition),
-                        badgeProgress.currentValueOf(badgeDefinition)
-                ))
-                .toList();
-
-        return BadgeListResponseDto.from(badges);
+        BadgeComputation badgeComputation = loadBadgeComputation(user);
+        return createBadgeListResponse(badgeComputation.userBadgeMap(), badgeComputation.badgeProgress());
     }
 
     /**
@@ -79,6 +66,21 @@ public class BadgeService {
     }
 
     /**
+     * 배지 달성 조건 평가 후 전체 배지 조회
+     *
+     * * 한 번 계산한 진행률과 획득 상태를 재사용해
+     * 배지 지급과 응답 생성을 함께 처리한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 평가 반영 후 전체 배지 목록
+     */
+    @Transactional
+    public BadgeListResponseDto evaluateAndFindAll(String loginId) {
+        User user = findUserByLoginId(loginId);
+        return evaluateAndFindAll(user);
+    }
+
+    /**
      * 배지 달성 조건 평가
      *
      * * 출석, 문제 제출, 단어 북마크, 챌린지 생성 등 사용자 행동 이후 호출해
@@ -88,22 +90,32 @@ public class BadgeService {
      */
     @Transactional
     public void evaluate(User user) {
-        BadgeProgress badgeProgress = calculateProgress(user);
-
-        BadgeDefinition.orderedValues().stream()
-                .filter(badgeDefinition -> badgeProgress.isAchieved(badgeDefinition))
-                .filter(badgeDefinition -> !userBadgeRepository.existsByUserAndBadgeDefinition(user, badgeDefinition))
-                .map(badgeDefinition -> UserBadge.builder()
-                        .user(user)
-                        .badgeDefinition(badgeDefinition)
-                        .achievedAt(LocalDateTime.now())
-                        .build())
-                .forEach(userBadgeRepository::save);
+        BadgeComputation badgeComputation = loadBadgeComputation(user);
+        saveAchievedBadges(user, badgeComputation.userBadgeMap(), badgeComputation.badgeProgress());
     }
 
     private User findUserByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private BadgeListResponseDto evaluateAndFindAll(User user) {
+        BadgeComputation badgeComputation = loadBadgeComputation(user);
+        Map<BadgeDefinition, UserBadge> userBadgeMap = badgeComputation.userBadgeMap();
+        BadgeProgress badgeProgress = badgeComputation.badgeProgress();
+
+        saveAchievedBadges(user, userBadgeMap, badgeProgress);
+
+        return createBadgeListResponse(userBadgeMap, badgeProgress);
+    }
+
+    private BadgeComputation loadBadgeComputation(User user) {
+        Map<BadgeDefinition, UserBadge> userBadgeMap = userBadgeRepository.findAllByUser(user)
+                .stream()
+                .collect(Collectors.toMap(UserBadge::getBadgeDefinition, Function.identity()));
+        BadgeProgress badgeProgress = calculateProgress(user);
+
+        return new BadgeComputation(userBadgeMap, badgeProgress);
     }
 
     private BadgeProgress calculateProgress(User user) {
@@ -138,6 +150,52 @@ public class BadgeService {
         }
 
         return new BadgeProgress(currentValues);
+    }
+
+    private void saveAchievedBadges(
+            User user,
+            Map<BadgeDefinition, UserBadge> userBadgeMap,
+            BadgeProgress badgeProgress
+    ) {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<UserBadge> newUserBadges = BadgeDefinition.orderedValues().stream()
+                .filter(badgeDefinition -> badgeProgress.isAchieved(badgeDefinition))
+                .filter(badgeDefinition -> !userBadgeMap.containsKey(badgeDefinition))
+                .map(badgeDefinition -> UserBadge.builder()
+                        .user(user)
+                        .badgeDefinition(badgeDefinition)
+                        .achievedAt(now)
+                        .build())
+                .toList();
+
+        if (newUserBadges.isEmpty()) {
+            return;
+        }
+
+        userBadgeRepository.saveAll(newUserBadges);
+        newUserBadges.forEach(userBadge -> userBadgeMap.put(userBadge.getBadgeDefinition(), userBadge));
+    }
+
+    private BadgeListResponseDto createBadgeListResponse(
+            Map<BadgeDefinition, UserBadge> userBadgeMap,
+            BadgeProgress badgeProgress
+    ) {
+        List<BadgeResponseDto> badges = BadgeDefinition.orderedValues().stream()
+                .map(badgeDefinition -> BadgeResponseDto.of(
+                        badgeDefinition,
+                        userBadgeMap.get(badgeDefinition),
+                        badgeProgress.currentValueOf(badgeDefinition)
+                ))
+                .toList();
+
+        return BadgeListResponseDto.from(badges);
+    }
+
+    private record BadgeComputation(
+            Map<BadgeDefinition, UserBadge> userBadgeMap,
+            BadgeProgress badgeProgress
+    ) {
     }
 
     private record BadgeProgress(Map<BadgeDefinition, Integer> currentValues) {

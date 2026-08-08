@@ -16,11 +16,11 @@ public enum BadgeDefinition {
     ATTENDANCE_STREAK_100("100일 개근", "🦁", BadgeCategory.ATTENDANCE, "100일 연속 출석", BadgeConditionType.ATTENDANCE_STREAK, 100),
     ATTENDANCE_STREAK_365("365일 개근", "🐉", BadgeCategory.ATTENDANCE, "365일 연속 출석", BadgeConditionType.ATTENDANCE_STREAK, 365),
 
-    FIRST_LEARNING("첫 학습", "🌱", BadgeCategory.LEARNING, "첫 문제 풀기 완료", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 1),
-    LEARNING_10("새싹 학습자", "🌿", BadgeCategory.LEARNING, "문제 10세트 완료", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 10),
-    LEARNING_50("성실한 학습자", "🌳", BadgeCategory.LEARNING, "문제 50세트 완료", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 50),
-    LEARNING_100("학습 고수", "🌲", BadgeCategory.LEARNING, "문제 100세트 완료", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 100),
-    LEARNING_500("학습 전설", "🎄", BadgeCategory.LEARNING, "문제 500세트 완료", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 500),
+    FIRST_LEARNING("첫 학습", "🌱", BadgeCategory.LEARNING, "첫 문제 제출", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 1),
+    LEARNING_10("새싹 학습자", "🌿", BadgeCategory.LEARNING, "문제 10회 제출", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 10),
+    LEARNING_50("성실한 학습자", "🌳", BadgeCategory.LEARNING, "문제 50회 제출", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 50),
+    LEARNING_100("학습 고수", "🌲", BadgeCategory.LEARNING, "문제 100회 제출", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 100),
+    LEARNING_500("학습 전설", "🎄", BadgeCategory.LEARNING, "문제 500회 제출", BadgeConditionType.PROBLEM_SUBMISSION_COUNT, 500),
 
     FIRST_CORRECT("첫 정답", "🎯", BadgeCategory.ACCURACY, "첫 문제 정답", BadgeConditionType.CORRECT_PROBLEM_COUNT, 1),
     ACCURACY_50("절반은 맞춰", "🎪", BadgeCategory.ACCURACY, "정답률 50% 달성", BadgeConditionType.ACCURACY_RATE, 50),

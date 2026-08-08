@@ -25,7 +25,6 @@ public class BadgeController {
 
     @PostMapping("/evaluate")
     public ResponseEntity<ApiResponse<BadgeListResponseDto>> evaluate(Authentication authentication) {
-        badgeService.evaluate(authentication.getName());
-        return ResponseEntity.ok(ApiResponse.success(badgeService.findAll(authentication.getName())));
+        return ResponseEntity.ok(ApiResponse.success(badgeService.evaluateAndFindAll(authentication.getName())));
     }
 }
