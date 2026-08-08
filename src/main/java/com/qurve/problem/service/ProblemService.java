@@ -116,13 +116,19 @@ public class ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
 
-        if (!problemChoiceRepository.existsByProblemAndChoiceNumber(problem, requestDto.getSelectedChoiceNumber())) {
+        List<ProblemChoice> problemChoices = problemChoiceRepository.findAllByProblemOrderByChoiceNumberAsc(problem);
+
+        boolean isValidSelectedChoice = problemChoices.stream()
+                .anyMatch(problemChoice -> problemChoice.getChoiceNumber().equals(requestDto.getSelectedChoiceNumber()));
+
+        if (!isValidSelectedChoice) {
             throw new BusinessException(ErrorCode.INVALID_PROBLEM_CHOICE);
         }
 
-        ProblemChoice answerChoice = problemChoiceRepository
-                .findByProblemAndChoiceNumber(problem, problem.getAnswerIndex())
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PROBLEM_CHOICE));
+        ProblemChoice answerChoice = problemChoices.stream()
+                .filter(problemChoice -> problemChoice.getChoiceNumber().equals(problem.getAnswerIndex()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_ANSWER_CHOICE_NOT_FOUND));
 
         ProblemSubmission problemSubmission = problemSubmissionRepository.save(ProblemSubmission.builder()
                 .user(user)
@@ -156,13 +162,13 @@ public class ProblemService {
         List<ProblemSubmission> problemSubmissions = problemSubmissionRepository
                 .findAllByUserAndProblemOrderBySubmissionIdDesc(user, problem);
 
-        ProblemChoice answerChoice = problemChoiceRepository
-                .findByProblemAndChoiceNumber(problem, problem.getAnswerIndex())
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PROBLEM_CHOICE));
-
         if (problemSubmissions.isEmpty()) {
             throw new BusinessException(ErrorCode.PROBLEM_SUBMISSION_NOT_FOUND);
         }
+
+        ProblemChoice answerChoice = problemChoiceRepository
+                .findByProblemAndChoiceNumber(problem, problem.getAnswerIndex())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PROBLEM_CHOICE));
 
         List<ProblemSolutionResponseDto> solutions = problemSubmissions.stream()
                 .map(problemSubmission -> ProblemSolutionResponseDto.of(problemSubmission, answerChoice))
