@@ -25,6 +25,7 @@ import java.util.UUID;
  *
  * * 구글: email, name 속성으로 사용자 정보 추출
  * * 카카오: kakao_account.email, kakao_account.profile.nickname으로 사용자 정보 추출
+ * * 네이버: response.email, response.name으로 사용자 정보 추출
  *
  * * 이메일 기준으로 기존 회원 여부를 확인하며,
  * 신규 사용자인 경우 자동으로 회원가입 처리한다.
@@ -59,8 +60,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             email = (String) kakaoAccount.get("email");
             Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
             name = (String) profile.get("nickname");
-        } else {
-            // 구글 로그인인 경우 최상위 속성에서 사용자 정보 추출
+        } // 네이버 로그인인 경우 response에서 사용자 정보 추출
+        else if (oAuth2User.getAttribute("response") != null) {
+            Map<String, Object> naverResponse = oAuth2User.getAttribute("response");
+            email = (String) naverResponse.get("email");
+            name = (String) naverResponse.get("name");
+        } // 구글 로그인인 경우 최상위 속성에서 사용자 정보 추출
+        else {
             email = oAuth2User.getAttribute("email");
             name = oAuth2User.getAttribute("name");
         }
