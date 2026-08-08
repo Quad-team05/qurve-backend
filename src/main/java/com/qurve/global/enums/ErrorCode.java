@@ -21,6 +21,8 @@ public enum ErrorCode {
     TODAY_EXPRESSION_NOT_FOUND(404, "TODAY_EXPRESSION_NOT_FOUND", "오늘의 표현을 찾을 수 없습니다."),
     INVALID_LEVEL(400, "INVALID_LEVEL", "지원하지 않는 JLPT 레벨입니다."),
     PROBLEM_NOT_FOUND(404, "PROBLEM_NOT_FOUND", "조회 조건에 맞는 문제를 찾을 수 없습니다."),
+    INVALID_PROBLEM_CHOICE(400, "INVALID_PROBLEM_CHOICE", "해당 문제에 존재하지 않는 선택지입니다."),
+    PROBLEM_ANSWER_CHOICE_NOT_FOUND(500, "PROBLEM_ANSWER_CHOICE_NOT_FOUND", "문제 정답 선택지 데이터가 올바르지 않습니다."),
     VOCABULARY_WORD_NOT_FOUND(404, "VOCABULARY_WORD_NOT_FOUND", "단어를 찾을 수 없습니다."),
     VOCABULARY_UNIT_NOT_FOUND(404, "VOCABULARY_UNIT_NOT_FOUND", "해당 레벨의 단어 유닛을 찾을 수 없습니다."),
     VOCABULARY_AUDIO_FAIL(502, "VOCABULARY_AUDIO_FAIL", "서버에서 음성 생성에 실패했습니다."),
