@@ -4,11 +4,13 @@ import com.qurve.global.common.ApiResponse;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
 import com.qurve.problem.dto.request.ProblemSubmitRequestDto;
 import com.qurve.problem.dto.response.ProblemListResponseDto;
+import com.qurve.problem.dto.response.ProblemSolutionListResponseDto;
 import com.qurve.problem.dto.response.ProblemSubmitResponseDto;
 import com.qurve.problem.service.ProblemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -36,8 +38,21 @@ public class ProblemController {
     @PostMapping("/{problemId}/submit")
     public ResponseEntity<ApiResponse<ProblemSubmitResponseDto>> submit(
             @PathVariable Long problemId,
-            @Valid @RequestBody ProblemSubmitRequestDto requestDto
+            @Valid @RequestBody ProblemSubmitRequestDto requestDto,
+            Authentication authentication
     ) {
-        return ResponseEntity.ok(ApiResponse.success(problemService.submit(problemId, requestDto)));
+        return ResponseEntity.ok(
+                ApiResponse.success(problemService.submit(authentication.getName(), problemId, requestDto))
+        );
+    }
+
+    @GetMapping("/{problemId}/solution")
+    public ResponseEntity<ApiResponse<ProblemSolutionListResponseDto>> findSolution(
+            @PathVariable Long problemId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(problemService.findSolution(authentication.getName(), problemId))
+        );
     }
 }

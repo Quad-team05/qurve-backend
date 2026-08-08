@@ -4,14 +4,20 @@ import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.problem.domain.Problem;
 import com.qurve.problem.domain.ProblemChoice;
+import com.qurve.problem.domain.ProblemSubmission;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
 import com.qurve.problem.dto.request.ProblemSubmitRequestDto;
 import com.qurve.problem.dto.response.ProblemChoiceResponseDto;
 import com.qurve.problem.dto.response.ProblemListResponseDto;
 import com.qurve.problem.dto.response.ProblemResponseDto;
+import com.qurve.problem.dto.response.ProblemSolutionListResponseDto;
+import com.qurve.problem.dto.response.ProblemSolutionResponseDto;
 import com.qurve.problem.dto.response.ProblemSubmitResponseDto;
 import com.qurve.problem.repository.ProblemChoiceRepository;
 import com.qurve.problem.repository.ProblemRepository;
+import com.qurve.problem.repository.ProblemSubmissionRepository;
+import com.qurve.user.domain.User;
+import com.qurve.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +34,8 @@ public class ProblemService {
 
     private final ProblemRepository problemRepository;
     private final ProblemChoiceRepository problemChoiceRepository;
+    private final ProblemSubmissionRepository problemSubmissionRepository;
+    private final UserRepository userRepository;
 
     /**
      * 문제 목록 조회
@@ -91,12 +99,17 @@ public class ProblemService {
      * * 사용자가 선택한 선택지 번호를 정답 번호와 비교하고
      * 정답 선택지와 해설을 함께 반환한다.
      *
+     * @param loginId 로그인 ID
      * @param problemId 제출 대상 문제 ID
      * @param requestDto 제출한 선택지 번호
      * @return 채점 결과와 정답 정보
-     * @throws BusinessException 문제가 없거나 선택지 번호가 유효하지 않은 경우
+     * @throws BusinessException 유저, 문제가 없거나 선택지 번호가 유효하지 않은 경우
      */
-    public ProblemSubmitResponseDto submit(Long problemId, ProblemSubmitRequestDto requestDto) {
+    @Transactional
+    public ProblemSubmitResponseDto submit(String loginId, Long problemId, ProblemSubmitRequestDto requestDto) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
 
@@ -114,7 +127,51 @@ public class ProblemService {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_ANSWER_CHOICE_NOT_FOUND));
 
-        return ProblemSubmitResponseDto.of(problem, requestDto.getSelectedChoiceNumber(), answerChoice);
+        ProblemSubmission problemSubmission = problemSubmissionRepository.save(ProblemSubmission.builder()
+                .user(user)
+                .problem(problem)
+                .selectedChoiceNumber(requestDto.getSelectedChoiceNumber())
+                .answerChoiceNumber(problem.getAnswerIndex())
+                .correct(problem.getAnswerIndex().equals(requestDto.getSelectedChoiceNumber()))
+                .build());
+
+        return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);
+    }
+
+    /**
+     * 문제 정답 풀이 이력 조회
+     *
+     * * 로그인한 사용자의 제출 이력을 최신순으로 조회하고
+     * 각 제출 이력별 정답과 해설을 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @param problemId 조회 대상 문제 ID
+     * @return 제출 이력별 정답 풀이 목록
+     * @throws BusinessException 유저, 문제, 제출 이력이 없거나 정답 선택지가 유효하지 않은 경우
+     */
+    public ProblemSolutionListResponseDto findSolution(String loginId, Long problemId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        List<ProblemSubmission> problemSubmissions = problemSubmissionRepository
+                .findAllByUserAndProblemOrderBySubmissionIdDesc(user, problem);
+
+        if (problemSubmissions.isEmpty()) {
+            throw new BusinessException(ErrorCode.PROBLEM_SUBMISSION_NOT_FOUND);
+        }
+
+        ProblemChoice answerChoice = problemChoiceRepository
+                .findByProblemAndChoiceNumber(problem, problem.getAnswerIndex())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PROBLEM_CHOICE));
+
+        List<ProblemSolutionResponseDto> solutions = problemSubmissions.stream()
+                .map(problemSubmission -> ProblemSolutionResponseDto.of(problemSubmission, answerChoice))
+                .toList();
+
+        return ProblemSolutionListResponseDto.of(problem.getProblemId(), solutions);
     }
 
     /**
