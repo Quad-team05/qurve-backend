@@ -9,6 +9,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -31,6 +32,8 @@ public class VocabularyAudioService {
     private final String language;
     private final String codec;
     private final String format;
+    private final int connectTimeoutMillis;
+    private final int readTimeoutMillis;
 
     public VocabularyAudioService(
             UserRepository userRepository,
@@ -39,13 +42,18 @@ public class VocabularyAudioService {
             @Value("${tts.voicerss.api-key:}") String apiKey,
             @Value("${tts.voicerss.language:ja-jp}") String language,
             @Value("${tts.voicerss.codec:MP3}") String codec,
-            @Value("${tts.voicerss.format:44khz_16bit_stereo}") String format
+            @Value("${tts.voicerss.format:44khz_16bit_stereo}") String format,
+            @Value("${tts.voicerss.connect-timeout-millis:3000}") int connectTimeoutMillis,
+            @Value("${tts.voicerss.read-timeout-millis:5000}") int readTimeoutMillis
     ) {
         this.userRepository = userRepository;
         this.vocabularyWordRepository = vocabularyWordRepository;
         this.baseUrl = voiceRssBaseUrl;
+        this.connectTimeoutMillis = connectTimeoutMillis;
+        this.readTimeoutMillis = readTimeoutMillis;
         this.restClient = RestClient.builder()
                 .baseUrl(voiceRssBaseUrl)
+                .requestFactory(createRequestFactory(connectTimeoutMillis, readTimeoutMillis))
                 .build();
         this.apiKey = apiKey;
         this.language = language;
@@ -56,12 +64,14 @@ public class VocabularyAudioService {
     @PostConstruct
     public void logConfiguration() {
         log.info(
-                "VoiceRSS config loaded. baseUrl={}, apiKeyPresent={}, language={}, codec={}, format={}",
+                "VoiceRSS config loaded. baseUrl={}, apiKeyPresent={}, language={}, codec={}, format={}, connectTimeoutMillis={}, readTimeoutMillis={}",
                 baseUrl,
                 StringUtils.hasText(apiKey),
                 language,
                 codec,
-                format
+                format,
+                connectTimeoutMillis,
+                readTimeoutMillis
         );
     }
 
@@ -156,5 +166,12 @@ public class VocabularyAudioService {
 
     private String toUtf8Text(byte[] audio) {
         return new String(audio, StandardCharsets.UTF_8);
+    }
+
+    private SimpleClientHttpRequestFactory createRequestFactory(int connectTimeoutMillis, int readTimeoutMillis) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(connectTimeoutMillis);
+        requestFactory.setReadTimeout(readTimeoutMillis);
+        return requestFactory;
     }
 }
