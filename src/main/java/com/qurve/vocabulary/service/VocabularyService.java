@@ -191,4 +191,36 @@ public class VocabularyService {
 
         bookmarkRepository.delete(bookmark);
     }
+
+    /**
+     * 유닛 학습 시작
+     *
+     * * 단어보기 클릭 시 해당 유닛의 학습 상태를 IN_PROGRESS로 변경한다.
+     * * UnitProgress가 없는 경우 새로 생성 후 IN_PROGRESS로 저장한다.
+     *
+     * @param loginId 로그인 ID
+     * @param level 조회할 JLPT 레벨
+     * @param unitNumber 학습 시작할 유닛 번호
+     * @throws BusinessException 유저가 존재하지 않거나 레벨이 유효하지 않은 경우
+     */
+    @Transactional
+    public void startUnit(String loginId, String level, Integer unitNumber){
+
+        String normalizedLevel = normalizeLevel(level);
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        UnitProgress unitProgress = unitProgressRepository.findByUserAndLevelAndUnitNumber(user, level, unitNumber)
+                .orElse(UnitProgress.builder()
+                        .user(user)
+                        .level(level)
+                        .unitNumber(unitNumber)
+                        .status(UnitStatus.BEFORE)
+                        .updatedAt(LocalDateTime.now())
+                        .build());
+
+        unitProgress.updateStatus(UnitStatus.IN_PROGRESS);
+        unitProgressRepository.save(unitProgress);
+    }
 }
