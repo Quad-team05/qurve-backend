@@ -42,7 +42,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 || "/api/auth/find-id".equals(path)
                 || "/api/auth/password/email/send".equals(path)
                 || "/api/auth/password/reset".equals(path)
-                || "/api/auth/reissue".equals(path);
+                || "/api/auth/reissue".equals(path)
+                || path.startsWith("/login/oauth2/code/")
+                || path.startsWith("/oauth2/");
     }
 
     @Override

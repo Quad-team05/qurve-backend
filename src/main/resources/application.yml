@@ -53,7 +53,7 @@ spring:
             client-secret: ${KAKAO_CLIENT_SECRET}
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
-            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            redirect-uri: ${KAKAO_REDIRECT_URI}
             scope:
               - profile_nickname
               - account_email
@@ -88,3 +88,11 @@ problem:
   seed:
     enabled: ${PROBLEM_SEED_ENABLED:false}
     path-pattern: classpath*:data/problems/*.csv
+tts:
+  voicerss:
+    base-url: https://api.voicerss.org
+    language: ja-jp
+    codec: MP3
+    format: 44khz_16bit_stereo
+    connect-timeout-millis: 3000
+    read-timeout-millis: 5000

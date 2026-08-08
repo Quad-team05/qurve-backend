@@ -2,6 +2,7 @@ package com.qurve.vocabulary.controller;
 
 import com.qurve.global.common.ApiResponse;
 import com.qurve.vocabulary.dto.response.UnitProgressResponseDto;
+import com.qurve.vocabulary.dto.response.UnitWordResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordStudyResponseDto;
 import com.qurve.vocabulary.service.VocabularyService;
 import jakarta.validation.constraints.NotBlank;
@@ -57,5 +58,15 @@ public class VocabularyController {
     public ResponseEntity<ApiResponse<Void>> completeUnit(@PathVariable Integer unitNumber, @RequestParam String level, Authentication authentication) {
         vocabularyService.completeUnit(authentication.getName(), level, unitNumber);
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @GetMapping("/challenge-words")
+    public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getChallengeWords(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(vocabularyService.getChallengeWords(authentication.getName())));
+    }
+
+    @GetMapping("/bookmarks")
+    public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getBookmarks(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(vocabularyService.getBookmarks(authentication.getName())));
     }
 }
