@@ -8,13 +8,19 @@ import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import com.qurve.xp.domain.XpHistory;
+import com.qurve.xp.dto.response.XpDailyResponseDto;
 import com.qurve.xp.dto.response.XpStatResponseDto;
 import com.qurve.xp.repository.XpHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -91,5 +97,39 @@ public class XpService {
                 .orElse(0);
 
         return XpStatResponseDto.of(totalXp, streakDays);
+    }
+
+    /**
+     * 최근 7일 XP 획득 기록 조회
+     *
+     * * 오늘 기준 최근 7일간 날짜별 XP 합산 결과를 반환한다.
+     * * XP 기록이 없는 날은 0으로 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 날짜별 XP 목록
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public List<XpDailyResponseDto> getWeeklyXp(String loginId) {
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        LocalDateTime start = LocalDate.now().minusDays(6).atStartOfDay();
+        LocalDateTime end = LocalDate.now().atTime(23, 59, 59);
+
+        List<XpHistory> histories = xpHistoryRepository.findByUserAndEarnedAtBetweenOrderByEarnedAtDesc(user, start, end);
+
+        // 날짜별 XP 합산
+        Map<LocalDate, Integer> xpByDate = histories.stream()
+                .collect(Collectors.groupingBy(
+                        h -> h.getEarnedAt().toLocalDate(),
+                        Collectors.summingInt(XpHistory::getXpAmount)
+                ));
+
+        // 7일치 날짜 목록 생성
+        return IntStream.range(0,7)
+                .mapToObj(i -> LocalDate.now().minusDays(6 - i))
+                .map(date -> XpDailyResponseDto.of(date, xpByDate.getOrDefault(date, 0)))
+                .toList();
     }
 }
