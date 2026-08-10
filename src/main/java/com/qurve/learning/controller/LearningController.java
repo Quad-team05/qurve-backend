@@ -1,6 +1,7 @@
 package com.qurve.learning.controller;
 
 import com.qurve.global.common.ApiResponse;
+import com.qurve.learning.dto.response.StudyTimeStatisticsResponseDto;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
 import com.qurve.learning.service.LearningService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,17 @@ public class LearningController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         learningService.findTodayLearning(authentication.getName())
+                )
+        );
+    }
+
+    @GetMapping("/study-time/statistics")
+    public ResponseEntity<ApiResponse<StudyTimeStatisticsResponseDto>> findStudyTimeStatistics(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        learningService.findStudyTimeStatistics(authentication.getName())
                 )
         );
     }
