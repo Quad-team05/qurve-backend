@@ -13,6 +13,7 @@ public interface ProblemChoiceRepository extends JpaRepository<ProblemChoice, Lo
     boolean existsByProblemAndChoiceNumber(Problem problem, Integer choiceNumber);
     long countByProblem(Problem problem);
     Optional<ProblemChoice> findByProblemAndChoiceNumber(Problem problem, Integer choiceNumber);
+    List<ProblemChoice> findAllByProblemOrderByChoiceNumberAsc(Problem problem);
 
     @Query("""
             select pc
