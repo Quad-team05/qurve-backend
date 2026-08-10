@@ -132,4 +132,8 @@ public enum LevelDefinition {
         int nextOrdinal = ordinal() + 1;
         return nextOrdinal < values().length ? values()[nextOrdinal] : this;
     }
+
+    public boolean isMaxLevel() {
+        return this == LV_100;
+    }
 }

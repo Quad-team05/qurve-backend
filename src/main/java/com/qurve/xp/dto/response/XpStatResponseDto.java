@@ -30,8 +30,8 @@ public class XpStatResponseDto {
                 .title(current.getTitle())
                 .totalXp(totalXp)
                 .currentLevelXp(current.getRequiredXp())
-                .nextLevelXp(next.getRequiredXp())
-                .xpToNextLevel(next.getRequiredXp() - totalXp)
+                .xpToNextLevel(current.isMaxLevel() ? 0 : next.getRequiredXp() - totalXp)
+                .nextLevelXp(current.isMaxLevel() ? current.getRequiredXp() : next.getRequiredXp())
                 .streakDays(streakDays)
                 .build();
     }
