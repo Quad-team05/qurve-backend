@@ -3,6 +3,7 @@ package com.qurve.problem.controller;
 import com.qurve.global.common.ApiResponse;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
 import com.qurve.problem.dto.request.ProblemSubmitRequestDto;
+import com.qurve.problem.dto.response.ProblemAccuracyResponseDto;
 import com.qurve.problem.dto.response.ProblemListResponseDto;
 import com.qurve.problem.dto.response.ProblemResponseDto;
 import com.qurve.problem.dto.response.ProblemSolutionListResponseDto;
@@ -57,6 +58,15 @@ public class ProblemController {
     ) {
         return ResponseEntity.ok(
                 ApiResponse.success(problemService.findSolution(authentication.getName(), problemId))
+        );
+    }
+
+    @GetMapping("/accuracy")
+    public ResponseEntity<ApiResponse<ProblemAccuracyResponseDto>> findAccuracy(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(problemService.findAccuracy(authentication.getName()))
         );
     }
 

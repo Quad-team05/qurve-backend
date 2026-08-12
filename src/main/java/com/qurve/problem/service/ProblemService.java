@@ -10,6 +10,7 @@ import com.qurve.problem.domain.ProblemSubmission;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
 import com.qurve.problem.dto.request.ProblemSubmitRequestDto;
 import com.qurve.problem.dto.response.ProblemChoiceResponseDto;
+import com.qurve.problem.dto.response.ProblemAccuracyResponseDto;
 import com.qurve.problem.dto.response.ProblemListResponseDto;
 import com.qurve.problem.dto.response.ProblemResponseDto;
 import com.qurve.problem.dto.response.ProblemSolutionListResponseDto;
@@ -178,6 +179,26 @@ public class ProblemService {
                 .toList();
 
         return ProblemSolutionListResponseDto.of(problem.getProblemId(), solutions);
+    }
+
+    /**
+     * 문제풀이 정답률 조회
+     *
+     * * 로그인한 사용자의 전체 문제 제출 수와 정답 수를 기준으로
+     * 정답률을 퍼센트 단위로 계산해 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 문제풀이 정답률 통계
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public ProblemAccuracyResponseDto findAccuracy(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        int totalSubmissionCount = (int) problemSubmissionRepository.countByUser(user);
+        int correctSubmissionCount = (int) problemSubmissionRepository.countByUserAndCorrectTrue(user);
+
+        return ProblemAccuracyResponseDto.of(totalSubmissionCount, correctSubmissionCount);
     }
 
     /**
