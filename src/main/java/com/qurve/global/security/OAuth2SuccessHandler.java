@@ -1,6 +1,8 @@
 package com.qurve.global.security;
 
 import com.qurve.badge.service.BadgeService;
+import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.exception.BusinessException;
 import com.qurve.global.enums.Role;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
@@ -75,6 +77,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 이메일 기준으로 기존 회원 조회, 없으면 자동 회원가입 처리
         User user = userRepository.findByEmail(email)
+                .map(existingUser -> {
+                    if (existingUser.isDeleted()) {
+                        throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+                    }
+                    return existingUser;
+                })
                 .orElseGet(() -> userRepository.save(User.builder()
                         .loginId(email)
                         .email(email)
