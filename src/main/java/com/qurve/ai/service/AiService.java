@@ -98,10 +98,8 @@ public class AiService {
 
     private String buildPersonalizedInfo(User user) {
         // 누적 XP
-        int totalXp = xpHistoryRepository.findByUserOrderByEarnedAtDesc(user)
-                .stream()
-                .mapToInt(history -> history.getXpAmount())
-                .sum();
+        long totalXpValue = xpHistoryRepository.sumXpAmountByUser(user);
+        int totalXp = Math.toIntExact(totalXpValue);
 
         // 연속 학습일
         int streakDays = studyStatisticsRepository.findByUser(user)
