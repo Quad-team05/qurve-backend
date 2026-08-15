@@ -81,10 +81,8 @@ public class XpService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        int totalXp = xpHistoryRepository.findByUserOrderByEarnedAtDesc(user)
-                .stream()
-                .mapToInt(XpHistory::getXpAmount)
-                .sum();
+        long totalXpValue = xpHistoryRepository.sumXpAmountByUser(user);
+        int totalXp = Math.toIntExact(totalXpValue);
 
         int streakDays = studyStatisticsRepository.findByUser(user)
                 .map(StudyStatistics::getStreakDays)
