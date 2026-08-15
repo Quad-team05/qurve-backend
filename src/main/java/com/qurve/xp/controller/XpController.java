@@ -3,6 +3,7 @@ package com.qurve.xp.controller;
 import com.qurve.global.common.ApiResponse;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.xp.dto.response.TodayXpResponseDto;
 import com.qurve.xp.dto.response.XpDailyResponseDto;
 import com.qurve.xp.dto.response.XpStatResponseDto;
 import com.qurve.xp.service.XpService;
@@ -30,5 +31,10 @@ public class XpController {
     @GetMapping("/weekly")
     public ResponseEntity<ApiResponse<List<XpDailyResponseDto>>> getXpWeekly(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(xpService.getWeeklyXp(authentication.getName())));
+    }
+
+    @GetMapping("/today")
+    public ResponseEntity<ApiResponse<TodayXpResponseDto>> getTodayXp(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(xpService.getTodayXp(authentication.getName())));
     }
 }

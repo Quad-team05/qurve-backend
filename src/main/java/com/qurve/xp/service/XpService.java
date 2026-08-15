@@ -8,6 +8,7 @@ import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import com.qurve.xp.domain.XpHistory;
+import com.qurve.xp.dto.response.TodayXpResponseDto;
 import com.qurve.xp.dto.response.XpDailyResponseDto;
 import com.qurve.xp.dto.response.XpStatResponseDto;
 import com.qurve.xp.repository.XpHistoryRepository;
@@ -129,5 +130,27 @@ public class XpService {
                 .mapToObj(i -> LocalDate.now().minusDays(6 - i))
                 .map(date -> XpDailyResponseDto.of(date, xpByDate.getOrDefault(date, 0)))
                 .toList();
+    }
+
+    /**
+     * 오늘 XP 획득 기록 조회
+     *
+     * * 오늘 획득한 XP 기록 목록과 총 획득 XP를 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 오늘 총 XP 및 획득 기록 목록
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public TodayXpResponseDto getTodayXp(String loginId) {
+
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        LocalDateTime start = LocalDate.now().atStartOfDay();
+        LocalDateTime end = LocalDate.now().atTime(23, 59, 59);
+
+        List<XpHistory> histories = xpHistoryRepository.findByUserAndEarnedAtBetweenOrderByEarnedAtDesc(user, start, end);
+
+        return TodayXpResponseDto.of(histories);
     }
 }
