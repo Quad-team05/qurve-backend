@@ -6,9 +6,11 @@ import com.qurve.attendance.dto.response.AttendanceResponseDto;
 import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.badge.service.BadgeService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ public class AttendanceService {
     private final UserRepository userRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
     private final BadgeService badgeService;
+    private final XpService xpService;
 
     /**
      * 출석 카드 조회
@@ -70,9 +73,16 @@ public class AttendanceService {
     @Transactional
     public AttendanceResponseDto save(String loginId) {
         User user = findUserByLoginId(loginId);
-        StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
+
+        StudyStatistics studyStatistics = studyStatisticsRepository.findByUser_UserId(user.getUserId()).orElse(null);
 
         LocalDate today = LocalDate.now(KST_ZONE);
+
+        boolean alreadyCheckedToday = studyStatistics != null && isCheckedToday(studyStatistics.getUpdatedAt(), today);
+
+        if (studyStatistics == null)
+            studyStatistics = studyStatisticsRepository.save(StudyStatistics.create(user));
+
         int updatedStreakDays = calculateUpdatedStreakDays(
                 studyStatistics.getStreakDays(),
                 studyStatistics.getUpdatedAt(),
@@ -80,6 +90,15 @@ public class AttendanceService {
         );
 
         studyStatistics.updateStreakDays(updatedStreakDays);
+
+        if (!alreadyCheckedToday) {
+            xpService.grantXp(user, XpActionType.DAILY_ATTENDANCE);
+            if (updatedStreakDays == 3)
+                xpService.grantXp(user, XpActionType.STREAK_3_DAYS);
+            if (updatedStreakDays == 7)
+                xpService.grantXp(user, XpActionType.STREAK_7_DAYS);
+        }
+
         badgeService.evaluate(user);
 
         return AttendanceResponseDto.from(

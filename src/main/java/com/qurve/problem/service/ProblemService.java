@@ -2,6 +2,7 @@ package com.qurve.problem.service;
 
 import com.qurve.badge.service.BadgeService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.problem.domain.Problem;
 import com.qurve.problem.domain.ProblemBookmark;
@@ -21,6 +22,7 @@ import com.qurve.problem.repository.ProblemRepository;
 import com.qurve.problem.repository.ProblemSubmissionRepository;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +43,7 @@ public class ProblemService {
     private final ProblemBookmarkRepository problemBookmarkRepository;
     private final UserRepository userRepository;
     private final BadgeService badgeService;
+    private final XpService xpService;
 
     /**
      * 문제 목록 조회
@@ -139,6 +142,10 @@ public class ProblemService {
                 .answerChoiceNumber(problem.getAnswerIndex())
                 .correct(problem.getAnswerIndex().equals(requestDto.getSelectedChoiceNumber()))
                 .build());
+
+        if (problemSubmission.isCorrect())
+            xpService.grantXp(user, XpActionType.PROBLEM_CORRECT);
+
         badgeService.evaluate(user);
 
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);

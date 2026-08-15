@@ -5,6 +5,7 @@ import com.qurve.challenge.domain.Challenge;
 import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
@@ -18,6 +19,7 @@ import com.qurve.vocabulary.enums.UnitStatus;
 import com.qurve.vocabulary.repository.BookmarkRepository;
 import com.qurve.vocabulary.repository.UnitProgressRepository;
 import com.qurve.vocabulary.repository.VocabularyWordRepository;
+import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,7 @@ public class VocabularyService {
     private final BookmarkRepository bookmarkRepository;
     private final ChallengeRepository challengeRepository;
     private final BadgeService badgeService;
+    private final XpService xpService;
 
     /**
      * 단어 유닛 목록 조회
@@ -176,6 +179,9 @@ public class VocabularyService {
                 .wordId(wordId)
                 .createdAt(LocalDateTime.now())
                 .build());
+
+        xpService.grantXp(user, XpActionType.WORD_BOOKMARK);
+
         badgeService.evaluate(user);
     }
 
@@ -228,8 +234,10 @@ public class VocabularyService {
                         .updatedAt(LocalDateTime.now())
                         .build());
 
-        unitProgress.updateStatus(UnitStatus.IN_PROGRESS);
-        unitProgressRepository.save(unitProgress);
+        if (unitProgress.getStatus() != UnitStatus.COMPLETED) {
+            unitProgress.updateStatus(UnitStatus.IN_PROGRESS);
+            unitProgressRepository.save(unitProgress);
+        }
     }
 
     /**
@@ -260,8 +268,13 @@ public class VocabularyService {
                         .updatedAt(LocalDateTime.now())
                         .build());
 
+        boolean alreadyCompleted = unitProgress.getStatus() == UnitStatus.COMPLETED;
+
         unitProgress.updateStatus(UnitStatus.COMPLETED);
         unitProgressRepository.save(unitProgress);
+
+        if (!alreadyCompleted)
+            xpService.grantXp(user, XpActionType.WORD_SET_COMPLETE);
     }
 
     /**
