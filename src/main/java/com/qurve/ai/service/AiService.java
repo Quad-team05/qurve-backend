@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -160,14 +161,18 @@ public class AiService {
                 "contents", contents
         );
 
-        Map response = restClient.post()
-                .uri(apiUrl + "?key=" + apiKey)
-                .header("Content-Type", "application/json")
-                .body(body)
-                .retrieve()
-                .body(Map.class);
+        try {
+            Map response = restClient.post()
+                    .uri(apiUrl + "?key=" + apiKey)
+                    .header("Content-Type", "application/json")
+                    .body(body)
+                    .retrieve()
+                    .body(Map.class);
 
-        return extractAnswer(response);
+            return extractAnswer(response);
+        } catch (RestClientException e) {
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
     }
 
     private String buildSystemPrompt(String personalizedInfo) {

@@ -30,7 +30,8 @@ public class AiChatMessage {
     @Column(name = "sender_type", nullable = false)
     private SenderType senderType;
 
-    @Column(name = "message", length = 2550, nullable = false)
+    @Lob
+    @Column(name = "message", nullable = false)
     private String message;
 
     @Column(name = "created_at", nullable = false)
