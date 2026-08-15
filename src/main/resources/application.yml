@@ -96,3 +96,7 @@ tts:
     format: 44khz_16bit_stereo
     connect-timeout-millis: 3000
     read-timeout-millis: 5000
+
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  api-url: https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent
