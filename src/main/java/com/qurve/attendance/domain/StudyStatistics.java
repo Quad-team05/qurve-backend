@@ -49,13 +49,27 @@ public class StudyStatistics {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "last_attendance_at")
+    private LocalDateTime lastAttendanceAt;
+
     public static StudyStatistics create(User user) {
         return StudyStatistics.builder()
                 .user(user)
                 .build();
     }
 
-    public void updateStreakDays(int streakDays) {
+    public void updateAttendance(int streakDays, LocalDateTime lastAttendanceAt) {
         this.streakDays = streakDays;
+        this.lastAttendanceAt = lastAttendanceAt;
+    }
+
+    public void initializeLastAttendanceAt(LocalDateTime lastAttendanceAt) {
+        if (this.lastAttendanceAt == null) {
+            this.lastAttendanceAt = lastAttendanceAt;
+        }
+    }
+
+    public void addStudyTime(int studyTimeMinutes) {
+        this.totalStudyTime += studyTimeMinutes;
     }
 }

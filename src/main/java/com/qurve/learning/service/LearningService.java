@@ -1,5 +1,8 @@
 package com.qurve.learning.service;
 
+import com.qurve.attendance.dto.request.StudyTimeSaveRequestDto;
+import com.qurve.attendance.dto.response.StudyTimeSaveResponseDto;
+import com.qurve.attendance.service.AttendanceService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
@@ -19,6 +22,7 @@ public class LearningService {
     private static final int TODAY_LEARNING_ESTIMATED_MINUTES = 10;
 
     private final UserRepository userRepository;
+    private final AttendanceService attendanceService;
 
     /**
      * 오늘의 학습 카드 조회
@@ -40,6 +44,10 @@ public class LearningService {
                 TODAY_LEARNING_TOTAL_QUESTION_COUNT,
                 TODAY_LEARNING_ESTIMATED_MINUTES
         );
+    }
+
+    public StudyTimeSaveResponseDto saveStudyTime(String loginId, StudyTimeSaveRequestDto requestDto) {
+        return attendanceService.saveStudyTime(loginId, requestDto);
     }
 
     private void validateUser(String loginId) {
