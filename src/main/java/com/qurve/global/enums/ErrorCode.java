@@ -32,6 +32,7 @@ public enum ErrorCode {
     DUPLICATE_BOOKMARK(409, "DUPLICATE_BOOKMARK", "이미 북마크된 단어입니다."),
     BOOKMARK_NOT_FOUND(404, "BOOKMARK_NOT_FOUND", "북마크를 찾을 수 없습니다."),
     CHALLENGE_NOT_FOUND(404, "CHALLENGE_NOT_FOUND", "챌린지를 찾을 수 없습니다."),
+    GEMINI_API_FAIL(502, "GEMINI_API_FAIL", "AI 응답 생성에 실패했습니다."),
     UNKNOWN_ERROR(500, "UNKNOWN_ERROR", "알 수 없는 오류가 발생했습니다.");
 
     private final int status;

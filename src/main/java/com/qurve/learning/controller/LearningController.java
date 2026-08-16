@@ -1,5 +1,7 @@
 package com.qurve.learning.controller;
 
+import com.qurve.attendance.dto.request.StudyTimeSaveRequestDto;
+import com.qurve.attendance.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.global.common.ApiResponse;
 import com.qurve.learning.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.learning.dto.response.StudyTimeSaveResponseDto;

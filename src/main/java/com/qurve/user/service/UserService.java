@@ -4,11 +4,13 @@ import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
+import com.qurve.user.dto.request.UserPasswordChangeRequestDto;
 import com.qurve.user.dto.request.UserProfileUpdateRequestDto;
 import com.qurve.user.dto.response.LearningProfileResponseDto;
 import com.qurve.user.dto.response.UserProfileResponseDto;
 import com.qurve.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     /**
      * 회원 정보 조회
@@ -29,7 +32,7 @@ public class UserService {
      * @throws BusinessException 유저가 존재하지 않는 경우
      */
     public UserProfileResponseDto findOne(String loginId) {
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         return UserProfileResponseDto.from(user);
@@ -48,7 +51,7 @@ public class UserService {
      */
     @Transactional
     public UserProfileResponseDto update(UserProfileUpdateRequestDto requestDto, String loginId) {
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         user.updateProfile(
@@ -62,11 +65,23 @@ public class UserService {
     }
 
     @Transactional
+    public void changePassword(UserPasswordChangeRequestDto requestDto, String loginId) {
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        user.updatePassword(passwordEncoder.encode(requestDto.getNewPassword()));
+    }
+
+    @Transactional
     public LearningProfileResponseDto updateLearningProfile(
             LearningProfileRequestDto requestDto,
             String loginId
     ) {
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         user.updateLearningProfile(

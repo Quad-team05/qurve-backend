@@ -101,7 +101,7 @@ public class AuthService {
     public LoginResponseDto login(LoginRequestDto dto) {
 
         // 존재하는 유저인지 검증
-        User user = userRepository.findByLoginId(dto.getLoginId())
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(dto.getLoginId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // 비밀번호 검증
@@ -209,6 +209,10 @@ public class AuthService {
         User user = userRepository.findByRefreshToken(dto.getRefreshToken())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        if (user.isDeleted()) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
         // Refresh Token 만료 여부 확인
         if (user.getRefreshTokenExpiredAt().isBefore(LocalDateTime.now())) {
             throw new BusinessException(ErrorCode.EXPIRED_TOKEN);
@@ -237,10 +241,11 @@ public class AuthService {
          String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
 
          // 탈퇴 처리 대상 사용자가 실제 존재하는지 검증
-         User user = userRepository.findByLoginId(loginId)
+         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                  .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
          // 실제 삭제 대신 isDelete = true 탈퇴 상태로 변경 (soft delete, 데이터 무결성 및 이력 보존)
+         user.clearRefreshToken();
          user.withdraw();
     }
 
@@ -261,7 +266,7 @@ public class AuthService {
     public FindIdResponseDto findId(FindIdRequestDto dto) {
 
         // 이름과 이메일이 모두 일치하는 사용자만 조회 허용
-        User user = userRepository.findByNameAndEmail(dto.getName(), dto.getEmail())
+        User user = userRepository.findByNameAndEmailAndIsDeletedFalse(dto.getName(), dto.getEmail())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         return new FindIdResponseDto(user.getLoginId());
@@ -276,7 +281,7 @@ public class AuthService {
      * @throws BusinessException 가입되지 않은 이메일인 경우
      */
     public void checkEmail(String email) {
-        if (!userRepository.existsByEmail(email)) {
+        if (userRepository.findByEmailAndIsDeletedFalse(email).isEmpty()) {
             throw new BusinessException(ErrorCode.EMAIL_NOT_FOUND);
         }
     }
@@ -299,7 +304,7 @@ public class AuthService {
     public PasswordEmailResponseDto passwordEmailSend(PasswordEmailRequestDto dto) {
 
         // 로그인 ID와 이메일이 모두 일치하는 실제 가입 사용자만 인증 허용
-        userRepository.findByLoginIdAndEmail(dto.getLoginId(), dto.getEmail())
+        userRepository.findByLoginIdAndEmailAndIsDeletedFalse(dto.getLoginId(), dto.getEmail())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // 인증번호 생성
@@ -336,7 +341,7 @@ public class AuthService {
     public void resetPassword(ResetPasswordRequestDto dto) {
 
         // 로그인 ID와 이메일이 모두 일치하는 사용자만 비밀번호 변경 허용
-        User user = userRepository.findByLoginIdAndEmail(dto.getLoginId(), dto.getEmail())
+        User user = userRepository.findByLoginIdAndEmailAndIsDeletedFalse(dto.getLoginId(), dto.getEmail())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // 비밀번호 암호화
@@ -359,7 +364,7 @@ public class AuthService {
     @Transactional
     public AuthLogoutResponseDto logout(String loginId) {
 
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         user.clearRefreshToken();
