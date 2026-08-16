@@ -41,6 +41,13 @@ public class StudyTimeRecord {
     @Column(name = "study_time_minutes", nullable = false)
     private int studyTimeMinutes = 0;
 
+    public static StudyTimeRecord create(User user, LocalDate studyDate) {
+        return StudyTimeRecord.builder()
+                .user(user)
+                .studyDate(studyDate)
+                .build();
+    }
+
     public void addStudyTime(int studyTimeMinutes) {
         this.studyTimeMinutes += studyTimeMinutes;
     }

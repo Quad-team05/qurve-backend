@@ -1,9 +1,14 @@
 package com.qurve.learning.service;
 
+import com.qurve.attendance.domain.StudyStatistics;
+import com.qurve.attendance.repository.StudyStatisticsRepository;
+import com.qurve.badge.service.BadgeService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.learning.domain.StudyTimeRecord;
+import com.qurve.learning.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.learning.dto.response.DailyStudyTimeResponseDto;
+import com.qurve.learning.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.learning.dto.response.StudyTimeStatisticsResponseDto;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
 import com.qurve.learning.repository.StudyTimeRecordRepository;
@@ -35,6 +40,8 @@ public class LearningService {
 
     private final UserRepository userRepository;
     private final StudyTimeRecordRepository studyTimeRecordRepository;
+    private final StudyStatisticsRepository studyStatisticsRepository;
+    private final BadgeService badgeService;
 
     /**
      * 오늘의 학습 카드 조회
@@ -111,6 +118,31 @@ public class LearningService {
         );
     }
 
+    /**
+     * 학습 시간 저장
+     *
+     * * 오늘 날짜 기준 학습 시간 레코드를 생성하거나 누적하고,
+     * 전체 누적 학습 시간도 함께 갱신한다.
+     *
+     * @param loginId 로그인 ID
+     * @param requestDto 추가할 학습 시간
+     * @return 추가된 학습 시간과 누적 학습 시간
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    @Transactional
+    public StudyTimeSaveResponseDto saveStudyTime(String loginId, StudyTimeSaveRequestDto requestDto) {
+        User user = findUserByLoginId(loginId);
+        StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
+        StudyTimeRecord studyTimeRecord = findOrCreateStudyTimeRecord(user, LocalDate.now(KST_ZONE));
+
+        int studyTimeMinutes = requestDto.getStudyTimeMinutes();
+        studyTimeRecord.addStudyTime(studyTimeMinutes);
+        studyStatistics.addStudyTime(studyTimeMinutes);
+        badgeService.evaluate(user);
+
+        return StudyTimeSaveResponseDto.of(studyTimeMinutes, studyStatistics);
+    }
+
     private void validateUser(String loginId) {
         findUserByLoginId(loginId);
     }
@@ -118,5 +150,15 @@ public class LearningService {
     private User findUserByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private StudyStatistics findOrCreateStudyStatistics(User user) {
+        return studyStatisticsRepository.findByUser_UserId(user.getUserId())
+                .orElseGet(() -> studyStatisticsRepository.save(StudyStatistics.create(user)));
+    }
+
+    private StudyTimeRecord findOrCreateStudyTimeRecord(User user, LocalDate studyDate) {
+        return studyTimeRecordRepository.findByUserAndStudyDate(user, studyDate)
+                .orElseGet(() -> studyTimeRecordRepository.save(StudyTimeRecord.create(user, studyDate)));
     }
 }

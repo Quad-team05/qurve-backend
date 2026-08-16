@@ -58,4 +58,8 @@ public class StudyStatistics {
     public void updateStreakDays(int streakDays) {
         this.streakDays = streakDays;
     }
+
+    public void addStudyTime(int studyTimeMinutes) {
+        this.totalStudyTime += studyTimeMinutes;
+    }
 }
