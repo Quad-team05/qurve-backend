@@ -4,6 +4,7 @@ import com.qurve.global.common.ApiResponse;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
 import com.qurve.problem.dto.request.ProblemSubmitRequestDto;
 import com.qurve.problem.dto.response.ProblemAccuracyResponseDto;
+import com.qurve.problem.dto.response.ProblemAccuracyTrendResponseDto;
 import com.qurve.problem.dto.response.ProblemListResponseDto;
 import com.qurve.problem.dto.response.ProblemResponseDto;
 import com.qurve.problem.dto.response.ProblemSolutionListResponseDto;
@@ -67,6 +68,15 @@ public class ProblemController {
     ) {
         return ResponseEntity.ok(
                 ApiResponse.success(problemService.findAccuracy(authentication.getName()))
+        );
+    }
+
+    @GetMapping("/accuracy/trend")
+    public ResponseEntity<ApiResponse<ProblemAccuracyTrendResponseDto>> findAccuracyTrend(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(problemService.findAccuracyTrend(authentication.getName()))
         );
     }
 
