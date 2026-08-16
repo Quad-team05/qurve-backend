@@ -1,10 +1,12 @@
 package com.qurve.attendance.service;
 
+import com.qurve.attendance.domain.DailyStudyLog;
 import com.qurve.attendance.domain.StudyStatistics;
 import com.qurve.attendance.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.attendance.dto.response.AttendanceDayResponseDto;
 import com.qurve.attendance.dto.response.AttendanceResponseDto;
 import com.qurve.attendance.dto.response.StudyTimeSaveResponseDto;
+import com.qurve.attendance.repository.DailyStudyLogRepository;
 import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.badge.service.BadgeService;
 import com.qurve.global.enums.ErrorCode;
@@ -31,6 +33,7 @@ public class AttendanceService {
     private static final List<String> DAY_OF_WEEK_LABELS = List.of("월", "화", "수", "목", "금", "토", "일");
 
     private final UserRepository userRepository;
+    private final DailyStudyLogRepository dailyStudyLogRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
     private final BadgeService badgeService;
 
@@ -97,7 +100,8 @@ public class AttendanceService {
      * 학습 시간 저장
      *
      * * 클라이언트에서 측정한 학습 시간을 분 단위로 전달받아
-     * 사용자의 누적 학습 시간(totalStudyTime)에 더한다.
+     * 사용자의 날짜별 학습 로그를 생성하거나 누적하고,
+     * 전체 누적 학습 시간(totalStudyTime)에도 함께 더한다.
      *
      * @param loginId 로그인 ID
      * @param requestDto 추가할 학습 시간
@@ -108,9 +112,12 @@ public class AttendanceService {
     public StudyTimeSaveResponseDto saveStudyTime(String loginId, StudyTimeSaveRequestDto requestDto) {
         User user = findUserByLoginId(loginId);
         StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
+        LocalDate today = LocalDate.now(KST_ZONE);
+        DailyStudyLog dailyStudyLog = findOrCreateDailyStudyLog(user, today);
 
         int studyTimeMinutes = requestDto.getStudyTimeMinutes();
         initializeLastAttendanceAtIfNeeded(studyStatistics);
+        dailyStudyLog.addStudyTime(studyTimeMinutes);
         studyStatistics.addStudyTime(studyTimeMinutes);
         badgeService.evaluate(user);
 
@@ -125,6 +132,11 @@ public class AttendanceService {
     private StudyStatistics findOrCreateStudyStatistics(User user) {
         return studyStatisticsRepository.findByUser_UserId(user.getUserId())
                 .orElseGet(() -> studyStatisticsRepository.save(StudyStatistics.create(user)));
+    }
+
+    private DailyStudyLog findOrCreateDailyStudyLog(User user, LocalDate studyDate) {
+        return dailyStudyLogRepository.findByUserAndStudyDate(user, studyDate)
+                .orElseGet(() -> dailyStudyLogRepository.save(DailyStudyLog.create(user, studyDate)));
     }
 
     private LocalDateTime resolveLastAttendanceAt(StudyStatistics studyStatistics) {
