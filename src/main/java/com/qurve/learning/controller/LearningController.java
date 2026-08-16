@@ -3,6 +3,9 @@ package com.qurve.learning.controller;
 import com.qurve.attendance.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.attendance.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.global.common.ApiResponse;
+import com.qurve.learning.dto.request.StudyTimeSaveRequestDto;
+import com.qurve.learning.dto.response.StudyTimeSaveResponseDto;
+import com.qurve.learning.dto.response.StudyTimeStatisticsResponseDto;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
 import com.qurve.learning.service.LearningService;
 import jakarta.validation.Valid;
@@ -33,11 +36,26 @@ public class LearningController {
         );
     }
 
+    @GetMapping("/study-time/statistics")
+    public ResponseEntity<ApiResponse<StudyTimeStatisticsResponseDto>> findStudyTimeStatistics(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        learningService.findStudyTimeStatistics(authentication.getName())
+                )
+        );
+    }
+
     @PostMapping("/study-time")
     public ResponseEntity<ApiResponse<StudyTimeSaveResponseDto>> saveStudyTime(
             @Valid @RequestBody StudyTimeSaveRequestDto requestDto,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(ApiResponse.success(learningService.saveStudyTime(authentication.getName(), requestDto)));
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        learningService.saveStudyTime(authentication.getName(), requestDto)
+                )
+        );
     }
 }
