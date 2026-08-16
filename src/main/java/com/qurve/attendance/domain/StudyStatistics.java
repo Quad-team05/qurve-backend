@@ -72,8 +72,4 @@ public class StudyStatistics {
     public void addStudyTime(int studyTimeMinutes) {
         this.totalStudyTime += studyTimeMinutes;
     }
-
-    public void addStudyTime(int studyTimeMinutes) {
-        this.totalStudyTime += studyTimeMinutes;
-    }
 }
