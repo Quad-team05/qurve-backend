@@ -15,7 +15,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "tb_xp_history")
+@Table(name = "tb_xp_history", uniqueConstraints = {@UniqueConstraint(
+                        name = "uk_xp_history_user_action_reference",
+                        columnNames = {"user_id", "action_type", "reference_id"})})
 public class XpHistory {
 
     @Id
@@ -30,6 +32,9 @@ public class XpHistory {
     @Enumerated(EnumType.STRING)
     @Column(name = "action_type", nullable = false)
     private XpActionType actionType;
+
+    @Column(name = "reference_id")
+    private Long referenceId;
 
     @Column(name = "xp_amount", nullable = false)
     private Integer xpAmount;

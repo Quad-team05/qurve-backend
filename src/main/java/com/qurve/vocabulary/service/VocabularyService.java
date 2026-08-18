@@ -180,7 +180,7 @@ public class VocabularyService {
                 .createdAt(LocalDateTime.now())
                 .build());
 
-        xpService.grantXp(user, XpActionType.WORD_BOOKMARK);
+        xpService.grantXpOnce(user, XpActionType.WORD_BOOKMARK, wordId);
 
         badgeService.evaluate(user);
     }

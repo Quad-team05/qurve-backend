@@ -20,4 +20,5 @@ public interface XpHistoryRepository extends JpaRepository<XpHistory, Long> {
     List<XpHistory> findByUserAndEarnedAtBetweenOrderByEarnedAtDesc(User user, LocalDateTime start, LocalDateTime end);
     List<XpHistory> findByUserOrderByEarnedAtDesc(User user);
     boolean existsByUserAndActionTypeAndEarnedAtBetween(User user, XpActionType actionType, LocalDateTime start, LocalDateTime end);
+    boolean existsByUserAndActionTypeAndReferenceId(User user, XpActionType actionType, Long referenceId);
 }

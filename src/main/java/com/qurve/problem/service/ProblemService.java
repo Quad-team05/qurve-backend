@@ -144,7 +144,7 @@ public class ProblemService {
                 .build());
 
         if (problemSubmission.isCorrect())
-            xpService.grantXp(user, XpActionType.PROBLEM_CORRECT);
+            xpService.grantXpOnce(user, XpActionType.PROBLEM_CORRECT, problem.getProblemId());
 
         badgeService.evaluate(user);
 
