@@ -19,6 +19,7 @@ public enum ErrorCode {
     INVALID_VERIFICATION_CODE(400, "INVALID_VERIFICATION_CODE", "인증코드가 일치하지 않습니다."),
     TATOEBA_API_FAIL(502, "TATOEBA_API_FAIL", "오늘의 표현 조회에 실패했습니다."),
     TODAY_EXPRESSION_NOT_FOUND(404, "TODAY_EXPRESSION_NOT_FOUND", "오늘의 표현을 찾을 수 없습니다."),
+    TODAY_LEARNING_NOT_FOUND(404, "TODAY_LEARNING_NOT_FOUND", "오늘의 학습 세트를 찾을 수 없습니다."),
     INVALID_LEVEL(400, "INVALID_LEVEL", "지원하지 않는 JLPT 레벨입니다."),
     PROBLEM_NOT_FOUND(404, "PROBLEM_NOT_FOUND", "조회 조건에 맞는 문제를 찾을 수 없습니다."),
     INVALID_PROBLEM_CHOICE(400, "INVALID_PROBLEM_CHOICE", "해당 문제에 존재하지 않는 선택지입니다."),
