@@ -69,20 +69,35 @@ public class ProblemService {
         String normalizedCategory = normalizeKeyword(requestDto.getCategory());
         String normalizedSubType = normalizeKeyword(requestDto.getSubType());
 
-        List<Problem> problems = problemRepository.findAllByLevelAndCategoryAndSubTypeOrderByProblemIdAsc(
+        List<Problem> allProblems = problemRepository.findAllByLevelAndCategoryAndSubTypeOrderByProblemIdAsc(
                 normalizedLevel,
                 normalizedCategory,
                 normalizedSubType
         );
 
-        if (problems.isEmpty()) {
+        if (allProblems.isEmpty()) {
             throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
         }
+
+        int totalProblemCount = allProblems.size();
+        int offset = requestDto.getOffset() == null ? 0 : requestDto.getOffset();
+
+        if (offset >= totalProblemCount) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
+        List<Problem> problems = allProblems.stream()
+                .skip(offset)
+                .toList();
 
         if (requestDto.getCount() != null) {
             problems = problems.stream()
                     .limit(requestDto.getCount())
                     .toList();
+        }
+
+        if (problems.isEmpty()) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
         }
 
         List<ProblemChoice> problemChoices = problemChoiceRepository
@@ -105,6 +120,8 @@ public class ProblemService {
                 normalizedLevel,
                 normalizedCategory,
                 normalizedSubType,
+                totalProblemCount,
+                offset,
                 problemResponseDtos
         );
     }

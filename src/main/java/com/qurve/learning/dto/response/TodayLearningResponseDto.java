@@ -12,6 +12,7 @@ public class TodayLearningResponseDto {
     private String level;
     private String categoryCode;
     private String subTypeCode;
+    private Integer offset;
     private String category;
     private String title;
     private Integer totalQuestionCount;
@@ -21,6 +22,7 @@ public class TodayLearningResponseDto {
             String level,
             String categoryCode,
             String subTypeCode,
+            Integer offset,
             String category,
             String title,
             Integer totalQuestionCount,
@@ -30,6 +32,7 @@ public class TodayLearningResponseDto {
                 .level(level)
                 .categoryCode(categoryCode)
                 .subTypeCode(subTypeCode)
+                .offset(offset)
                 .category(category)
                 .title(title)
                 .totalQuestionCount(totalQuestionCount)

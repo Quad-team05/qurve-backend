@@ -23,9 +23,11 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Locale;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -56,8 +58,23 @@ public class LearningService {
      * @throws BusinessException 유저가 존재하지 않거나 오늘의 학습 세트가 없는 경우
      */
     public TodayLearningResponseDto findTodayLearning(String loginId) {
+        return findTodayLearning(loginId, null);
+    }
+
+    /**
+     * 오늘의 학습 카드 조회
+     *
+     * * 요청 날짜가 있으면 해당 날짜를, 없으면 KST 기준 오늘 날짜를 기준으로
+     * 사용자의 오늘의 학습 세트를 선택해 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @param date 조회 기준 날짜
+     * @return 오늘의 학습 카드 응답 정보
+     * @throws BusinessException 유저가 존재하지 않거나 오늘의 학습 세트가 없는 경우
+     */
+    public TodayLearningResponseDto findTodayLearning(String loginId, LocalDate date) {
         User user = findUserByLoginId(loginId);
-        LocalDate today = LocalDate.now(KST_ZONE);
+        LocalDate today = date == null ? LocalDate.now(KST_ZONE) : date;
         String preferredLevel = mapCurrentLevelToJlptLevel(user.getCurrentLevel());
 
         TodayLearningSet todayLearningSet = findTodayLearningSet(preferredLevel, today);
@@ -66,6 +83,7 @@ public class LearningService {
                 todayLearningSet.level(),
                 todayLearningSet.categoryCode(),
                 todayLearningSet.subTypeCode(),
+                todayLearningSet.offset(),
                 todayLearningSet.categoryLabel(),
                 todayLearningSet.titleLabel(),
                 todayLearningSet.totalQuestionCount(),
@@ -175,22 +193,46 @@ public class LearningService {
                 continue;
             }
 
-            int index = Math.floorMod(today.toEpochDay(), learningSets.size());
-            ProblemRepository.TodayLearningSetProjection learningSet = learningSets.get(index);
-            int totalQuestionCount = Math.min(DEFAULT_TODAY_LEARNING_SET_SIZE, learningSet.getProblemCount().intValue());
-
-            return new TodayLearningSet(
-                    candidateLevel,
-                    learningSet.getCategory(),
-                    learningSet.getSubType(),
-                    toCategoryLabel(learningSet.getCategory(), learningSet.getSubType()),
-                    toTitleLabel(learningSet.getSubType()),
-                    totalQuestionCount,
-                    Math.max(1, (int) Math.ceil(totalQuestionCount / 2.0))
-            );
+            List<TodayLearningSet> expandedLearningSets = expandTodayLearningSets(candidateLevel, learningSets);
+            shuffleTodayLearningSets(candidateLevel, expandedLearningSets);
+            int index = Math.floorMod(today.toEpochDay(), expandedLearningSets.size());
+            return expandedLearningSets.get(index);
         }
 
         throw new BusinessException(ErrorCode.TODAY_LEARNING_NOT_FOUND);
+    }
+
+    private List<TodayLearningSet> expandTodayLearningSets(
+            String level,
+            List<ProblemRepository.TodayLearningSetProjection> learningSets
+    ) {
+        List<TodayLearningSet> expandedLearningSets = new ArrayList<>();
+
+        for (ProblemRepository.TodayLearningSetProjection learningSet : learningSets) {
+            int problemCount = learningSet.getProblemCount().intValue();
+
+            for (int offset = 0; offset < problemCount; offset += DEFAULT_TODAY_LEARNING_SET_SIZE) {
+                int totalQuestionCount = Math.min(DEFAULT_TODAY_LEARNING_SET_SIZE, problemCount - offset);
+
+                expandedLearningSets.add(new TodayLearningSet(
+                        level,
+                        learningSet.getCategory(),
+                        learningSet.getSubType(),
+                        offset,
+                        toCategoryLabel(learningSet.getCategory(), learningSet.getSubType()),
+                        toTitleLabel(learningSet.getSubType()),
+                        totalQuestionCount,
+                        Math.max(1, (int) Math.ceil(totalQuestionCount / 2.0))
+                ));
+            }
+        }
+
+        return expandedLearningSets;
+    }
+
+    private void shuffleTodayLearningSets(String level, List<TodayLearningSet> learningSets) {
+        long seed = level.hashCode();
+        Collections.shuffle(learningSets, new Random(seed));
     }
 
     private String mapCurrentLevelToJlptLevel(Integer currentLevel) {
@@ -264,6 +306,7 @@ public class LearningService {
             String level,
             String categoryCode,
             String subTypeCode,
+            int offset,
             String categoryLabel,
             String titleLabel,
             int totalQuestionCount,
