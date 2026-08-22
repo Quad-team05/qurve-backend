@@ -36,6 +36,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            cd ~/qurve-backend
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/qurve-backend:latest
             docker stop qurve-app || true
             docker rm qurve-app || true
