@@ -1,12 +1,14 @@
 package com.qurve.wrongnote.service;
 
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.global.util.CompletionKeyGenerator;
 import com.qurve.problem.domain.Problem;
 import com.qurve.problem.repository.ProblemRepository;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.xp.service.XpService;
 import com.qurve.wrongnote.domain.WrongNote;
 import com.qurve.wrongnote.domain.WrongNoteReview;
 import com.qurve.wrongnote.dto.request.WrongNoteReviewCompleteRequestDto;
@@ -35,6 +37,7 @@ public class WrongNoteService {
     private final ProblemRepository problemRepository;
     private final WrongNoteRepository wrongNoteRepository;
     private final WrongNoteReviewRepository wrongNoteReviewRepository;
+    private final XpService xpService;
 
     /**
      * 최초 오답 문제를 오답노트에 저장합니다.
@@ -99,10 +102,19 @@ public class WrongNoteService {
 
         String reviewKey = CompletionKeyGenerator.generate(problemIds);
         WrongNoteReview review = wrongNoteReviewRepository.findByUserAndReviewKey(user, reviewKey)
-                .orElseGet(() -> createReview(user, reviewKey, problemIds.size()));
+                .orElse(null);
+
+        boolean newlyCompleted = review == null;
+        if (newlyCompleted) {
+            review = createReview(user, reviewKey, problemIds.size());
+        }
 
         LocalDateTime reviewedAt = LocalDateTime.now();
         problemIds.forEach(problemId -> wrongNoteByProblemId.get(problemId).completeReview(reviewedAt));
+
+        if (newlyCompleted) {
+            xpService.grantXp(user, XpActionType.WRONG_NOTE_COMPLETE);
+        }
 
         return WrongNoteReviewCompleteResponseDto.from(review);
     }

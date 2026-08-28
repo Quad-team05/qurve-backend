@@ -1,6 +1,7 @@
 package com.qurve.problem.service;
 
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.global.util.CompletionKeyGenerator;
 import com.qurve.problem.domain.Problem;
@@ -13,6 +14,7 @@ import com.qurve.problem.repository.ProblemSetCompletionRepository;
 import com.qurve.problem.repository.ProblemSubmissionRepository;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ public class ProblemSetService {
     private final ProblemRepository problemRepository;
     private final ProblemSubmissionRepository problemSubmissionRepository;
     private final ProblemSetCompletionRepository problemSetCompletionRepository;
+    private final XpService xpService;
 
     /**
      * 문제 세트의 모든 문제 제출 여부를 검증한 뒤 완료 기록을 저장합니다.
@@ -87,6 +90,11 @@ public class ProblemSetService {
                 .correctCount(correctCount)
                 .perfect(correctCount == problemIds.size())
                 .build());
+
+        xpService.grantXp(user, XpActionType.PROBLEM_SET_COMPLETE);
+        if (completion.isPerfect()) {
+            xpService.grantXp(user, XpActionType.PROBLEM_SET_PERFECT);
+        }
 
         return ProblemSetCompleteResponseDto.from(completion);
     }

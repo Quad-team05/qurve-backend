@@ -6,7 +6,9 @@ import com.qurve.challenge.domain.ChallengeProgress;
 import com.qurve.challenge.domain.ChallengeStatus;
 import com.qurve.challenge.repository.ChallengeProgressRepository;
 import com.qurve.challenge.repository.ChallengeRepository;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.user.domain.User;
+import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ public class ChallengeProgressService {
 
     private final ChallengeRepository challengeRepository;
     private final ChallengeProgressRepository challengeProgressRepository;
+    private final XpService xpService;
 
     /**
      * 활동 유형에 해당하는 진행 중 챌린지에 진행도를 누적합니다.
@@ -48,6 +51,7 @@ public class ChallengeProgressService {
     }
 
     private void updateProgress(Challenge challenge, int amount) {
+        boolean wasActive = challenge.getStatus() == ChallengeStatus.ACTIVE;
         challenge.addProgress(amount);
 
         ChallengeProgress progress = challengeProgressRepository.findByChallenge(challenge)
@@ -58,5 +62,9 @@ public class ChallengeProgressService {
 
         progress.updateCompletedDays(challenge.getCurrentValue());
         challengeProgressRepository.save(progress);
+
+        if (wasActive && challenge.getStatus() == ChallengeStatus.COMPLETED) {
+            xpService.grantXp(challenge.getUser(), XpActionType.CHALLENGE_COMPLETE);
+        }
     }
 }

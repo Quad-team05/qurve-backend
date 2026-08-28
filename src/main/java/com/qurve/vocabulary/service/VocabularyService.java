@@ -6,9 +6,11 @@ import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.xp.service.XpService;
 import com.qurve.vocabulary.domain.Bookmark;
 import com.qurve.vocabulary.domain.UnitProgress;
 import com.qurve.vocabulary.domain.UserWordStudy;
@@ -48,6 +50,7 @@ public class VocabularyService {
     private final BadgeService badgeService;
     private final UserWordStudyRepository userWordStudyRepository;
     private final ChallengeProgressService challengeProgressService;
+    private final XpService xpService;
 
     /**
      * 단어 유닛 목록 조회
@@ -294,6 +297,7 @@ public class VocabularyService {
 
         userWordStudyRepository.saveAll(newStudies);
         challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+        newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
     }
 
     /**
