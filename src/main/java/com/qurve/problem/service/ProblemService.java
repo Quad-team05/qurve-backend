@@ -1,6 +1,8 @@
 package com.qurve.problem.service;
 
 import com.qurve.badge.service.BadgeService;
+import com.qurve.challenge.domain.ChallengeGoalType;
+import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.problem.domain.Problem;
@@ -24,6 +26,7 @@ import com.qurve.problem.repository.ProblemRepository;
 import com.qurve.problem.repository.ProblemSubmissionRepository;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.wrongnote.service.WrongNoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +55,8 @@ public class ProblemService {
     private final ProblemBookmarkRepository problemBookmarkRepository;
     private final UserRepository userRepository;
     private final BadgeService badgeService;
+    private final ChallengeProgressService challengeProgressService;
+    private final WrongNoteService wrongNoteService;
 
     /**
      * 문제 목록 조회
@@ -160,13 +165,22 @@ public class ProblemService {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_ANSWER_CHOICE_NOT_FOUND));
 
+        boolean correct = problem.getAnswerIndex().equals(requestDto.getSelectedChoiceNumber());
         ProblemSubmission problemSubmission = problemSubmissionRepository.save(ProblemSubmission.builder()
                 .user(user)
                 .problem(problem)
                 .selectedChoiceNumber(requestDto.getSelectedChoiceNumber())
                 .answerChoiceNumber(problem.getAnswerIndex())
-                .correct(problem.getAnswerIndex().equals(requestDto.getSelectedChoiceNumber()))
+                .correct(correct)
                 .build());
+
+        if (correct) {
+            wrongNoteService.markRetryCorrect(user, problem);
+        } else {
+            wrongNoteService.saveWrongAnswer(user, problem);
+        }
+
+        challengeProgressService.addProgress(user, ChallengeGoalType.QUIZ_COUNT, 1);
         badgeService.evaluate(user);
 
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);

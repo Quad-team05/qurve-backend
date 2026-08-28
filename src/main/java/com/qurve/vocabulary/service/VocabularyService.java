@@ -4,12 +4,14 @@ import com.qurve.badge.service.BadgeService;
 import com.qurve.challenge.domain.Challenge;
 import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.repository.ChallengeRepository;
+import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import com.qurve.vocabulary.domain.Bookmark;
 import com.qurve.vocabulary.domain.UnitProgress;
+import com.qurve.vocabulary.domain.UserWordStudy;
 import com.qurve.vocabulary.domain.VocabularyWord;
 import com.qurve.vocabulary.dto.response.UnitProgressResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordResponseDto;
@@ -17,6 +19,7 @@ import com.qurve.vocabulary.dto.response.UnitWordStudyResponseDto;
 import com.qurve.vocabulary.enums.UnitStatus;
 import com.qurve.vocabulary.repository.BookmarkRepository;
 import com.qurve.vocabulary.repository.UnitProgressRepository;
+import com.qurve.vocabulary.repository.UserWordStudyRepository;
 import com.qurve.vocabulary.repository.VocabularyWordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,6 +46,8 @@ public class VocabularyService {
     private final BookmarkRepository bookmarkRepository;
     private final ChallengeRepository challengeRepository;
     private final BadgeService badgeService;
+    private final UserWordStudyRepository userWordStudyRepository;
+    private final ChallengeProgressService challengeProgressService;
 
     /**
      * 단어 유닛 목록 조회
@@ -262,6 +267,33 @@ public class VocabularyService {
 
         unitProgress.updateStatus(UnitStatus.COMPLETED);
         unitProgressRepository.save(unitProgress);
+
+        List<VocabularyWord> words = vocabularyWordRepository
+                .findByLevelAndUnitNumberOrderByWordIdAsc(normalizedLevel, unitNumber);
+
+        if (words.isEmpty()) {
+            throw new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND);
+        }
+
+        Set<Long> studiedWordIds = userWordStudyRepository.findAllByUserAndWordIn(user, words)
+                .stream()
+                .map(userWordStudy -> userWordStudy.getWord().getWordId())
+                .collect(Collectors.toSet());
+
+        List<UserWordStudy> newStudies = words.stream()
+                .filter(word -> !studiedWordIds.contains(word.getWordId()))
+                .map(word -> UserWordStudy.builder()
+                        .user(user)
+                        .word(word)
+                        .build())
+                .toList();
+
+        if (newStudies.isEmpty()) {
+            return;
+        }
+
+        userWordStudyRepository.saveAll(newStudies);
+        challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
     }
 
     /**
