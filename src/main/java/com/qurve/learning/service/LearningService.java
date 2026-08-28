@@ -12,6 +12,7 @@ import com.qurve.learning.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.learning.dto.response.StudyTimeStatisticsResponseDto;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
 import com.qurve.learning.repository.StudyTimeRecordRepository;
+import com.qurve.problem.repository.ProblemRepository;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -33,35 +38,56 @@ public class LearningService {
 
     private static final ZoneId KST_ZONE = ZoneId.of("Asia/Seoul");
     private static final List<String> DAY_OF_WEEK_LABELS = List.of("월", "화", "수", "목", "금", "토", "일");
-    private static final String TODAY_LEARNING_CATEGORY = "문자/어휘";
-    private static final String TODAY_LEARNING_TITLE = "문맥규정";
-    private static final int TODAY_LEARNING_TOTAL_QUESTION_COUNT = 20;
-    private static final int TODAY_LEARNING_ESTIMATED_MINUTES = 10;
+    private static final List<String> JLPT_LEVELS = List.of("N1", "N2", "N3", "N4", "N5");
+    private static final int DEFAULT_TODAY_LEARNING_SET_SIZE = 20;
 
     private final UserRepository userRepository;
     private final StudyTimeRecordRepository studyTimeRecordRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
+    private final ProblemRepository problemRepository;
     private final BadgeService badgeService;
 
     /**
      * 오늘의 학습 카드 조회
      *
-     * * 메인페이지 카드에 노출할 오늘의 학습 영역, 문항 수,
-     * 예상 소요 시간을 반환한다.
+     * * KST 기준 오늘 날짜와 사용자의 현재 레벨을 기준으로
+     * 오늘의 학습 세트를 선택해 반환한다.
      *
      * @param loginId 로그인 ID
      * @return 오늘의 학습 카드 응답 정보
-     * @throws BusinessException 유저가 존재하지 않는 경우
+     * @throws BusinessException 유저가 존재하지 않거나 오늘의 학습 세트가 없는 경우
      */
     public TodayLearningResponseDto findTodayLearning(String loginId) {
-        validateUser(loginId);
+        return findTodayLearning(loginId, null);
+    }
 
-        // TODO: 학습 콘텐츠 API 구현 후 사용자 레벨과 오늘 날짜를 기준으로 실제 학습 데이터를 조회하도록 변경 예정
+    /**
+     * 오늘의 학습 카드 조회
+     *
+     * * 요청 날짜가 있으면 해당 날짜를, 없으면 KST 기준 오늘 날짜를 기준으로
+     * 사용자의 오늘의 학습 세트를 선택해 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @param date 조회 기준 날짜
+     * @return 오늘의 학습 카드 응답 정보
+     * @throws BusinessException 유저가 존재하지 않거나 오늘의 학습 세트가 없는 경우
+     */
+    public TodayLearningResponseDto findTodayLearning(String loginId, LocalDate date) {
+        User user = findUserByLoginId(loginId);
+        LocalDate today = date == null ? LocalDate.now(KST_ZONE) : date;
+        String preferredLevel = mapCurrentLevelToJlptLevel(user.getCurrentLevel());
+
+        TodayLearningSet todayLearningSet = findTodayLearningSet(preferredLevel, today);
+
         return TodayLearningResponseDto.of(
-                TODAY_LEARNING_CATEGORY,
-                TODAY_LEARNING_TITLE,
-                TODAY_LEARNING_TOTAL_QUESTION_COUNT,
-                TODAY_LEARNING_ESTIMATED_MINUTES
+                todayLearningSet.level(),
+                todayLearningSet.categoryCode(),
+                todayLearningSet.subTypeCode(),
+                todayLearningSet.offset(),
+                todayLearningSet.categoryLabel(),
+                todayLearningSet.titleLabel(),
+                todayLearningSet.totalQuestionCount(),
+                todayLearningSet.estimatedMinutes()
         );
     }
 
@@ -143,10 +169,6 @@ public class LearningService {
         return StudyTimeSaveResponseDto.of(studyTimeMinutes, studyStatistics);
     }
 
-    private void validateUser(String loginId) {
-        findUserByLoginId(loginId);
-    }
-
     private User findUserByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -160,5 +182,135 @@ public class LearningService {
     private StudyTimeRecord findOrCreateStudyTimeRecord(User user, LocalDate studyDate) {
         return studyTimeRecordRepository.findByUserAndStudyDate(user, studyDate)
                 .orElseGet(() -> studyTimeRecordRepository.save(StudyTimeRecord.create(user, studyDate)));
+    }
+
+    private TodayLearningSet findTodayLearningSet(String preferredLevel, LocalDate today) {
+        for (String candidateLevel : createLevelFallbackOrder(preferredLevel)) {
+            List<ProblemRepository.TodayLearningSetProjection> learningSets = problemRepository
+                    .findTodayLearningSetsByLevel(candidateLevel);
+
+            if (learningSets.isEmpty()) {
+                continue;
+            }
+
+            List<TodayLearningSet> expandedLearningSets = expandTodayLearningSets(candidateLevel, learningSets);
+            shuffleTodayLearningSets(candidateLevel, expandedLearningSets);
+            int index = Math.floorMod(today.toEpochDay(), expandedLearningSets.size());
+            return expandedLearningSets.get(index);
+        }
+
+        throw new BusinessException(ErrorCode.TODAY_LEARNING_NOT_FOUND);
+    }
+
+    private List<TodayLearningSet> expandTodayLearningSets(
+            String level,
+            List<ProblemRepository.TodayLearningSetProjection> learningSets
+    ) {
+        List<TodayLearningSet> expandedLearningSets = new ArrayList<>();
+
+        for (ProblemRepository.TodayLearningSetProjection learningSet : learningSets) {
+            int problemCount = learningSet.getProblemCount().intValue();
+
+            for (int offset = 0; offset < problemCount; offset += DEFAULT_TODAY_LEARNING_SET_SIZE) {
+                int totalQuestionCount = Math.min(DEFAULT_TODAY_LEARNING_SET_SIZE, problemCount - offset);
+
+                expandedLearningSets.add(new TodayLearningSet(
+                        level,
+                        learningSet.getCategory(),
+                        learningSet.getSubType(),
+                        offset,
+                        toCategoryLabel(learningSet.getCategory(), learningSet.getSubType()),
+                        toTitleLabel(learningSet.getSubType()),
+                        totalQuestionCount,
+                        Math.max(1, (int) Math.ceil(totalQuestionCount / 2.0))
+                ));
+            }
+        }
+
+        return expandedLearningSets;
+    }
+
+    private void shuffleTodayLearningSets(String level, List<TodayLearningSet> learningSets) {
+        long seed = level.hashCode();
+        Collections.shuffle(learningSets, new Random(seed));
+    }
+
+    private String mapCurrentLevelToJlptLevel(Integer currentLevel) {
+        if (currentLevel == null) {
+            return "N5";
+        }
+
+        return switch (currentLevel) {
+            case 1, 2 -> "N5";
+            case 3, 4 -> "N4";
+            case 5, 6 -> "N3";
+            case 7, 8 -> "N2";
+            case 9, 10 -> "N1";
+            default -> "N5";
+        };
+    }
+
+    private List<String> createLevelFallbackOrder(String preferredLevel) {
+        int preferredIndex = JLPT_LEVELS.indexOf(preferredLevel);
+
+        if (preferredIndex < 0) {
+            return List.of("N5");
+        }
+
+        List<String> fallbackOrder = new ArrayList<>();
+
+        for (int index = preferredIndex; index < JLPT_LEVELS.size(); index++) {
+            fallbackOrder.add(JLPT_LEVELS.get(index));
+        }
+
+        for (int index = preferredIndex - 1; index >= 0; index--) {
+            fallbackOrder.add(JLPT_LEVELS.get(index));
+        }
+
+        return fallbackOrder;
+    }
+
+    private String toCategoryLabel(String categoryCode, String subTypeCode) {
+        String normalizedCategoryCode = normalizeKeyword(categoryCode);
+        String normalizedSubTypeCode = normalizeKeyword(subTypeCode);
+
+        return switch (normalizedCategoryCode) {
+            case "READING" -> "독해";
+            case "GRAMMAR" -> "문법";
+            case "LANGUAGE_KNOWLEDGE" -> switch (normalizedSubTypeCode) {
+                case "GRAMMAR_PATTERN" -> "문법";
+                default -> "문자/어휘";
+            };
+            default -> normalizedCategoryCode;
+        };
+    }
+
+    private String toTitleLabel(String subTypeCode) {
+        String normalizedSubTypeCode = normalizeKeyword(subTypeCode);
+
+        return switch (normalizedSubTypeCode) {
+            case "KANJI_READING" -> "한자 읽기";
+            case "CONTEXT_VOCABULARY" -> "문맥 규정";
+            case "USAGE" -> "용법";
+            case "GRAMMAR_PATTERN" -> "문법";
+            case "READING_COMPREHENSION" -> "독해";
+            default -> normalizedSubTypeCode;
+        };
+    }
+
+    private String normalizeKeyword(String keyword) {
+        return keyword == null ? "" : keyword.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private record TodayLearningSet(
+            String level,
+            String categoryCode,
+            String subTypeCode,
+            int offset,
+            String categoryLabel,
+            String titleLabel,
+            int totalQuestionCount,
+            int estimatedMinutes
+    ) {
     }
 }
