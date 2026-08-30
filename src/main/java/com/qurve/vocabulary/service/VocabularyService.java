@@ -184,6 +184,9 @@ public class VocabularyService {
                 .wordId(wordId)
                 .createdAt(LocalDateTime.now())
                 .build());
+
+        xpService.grantXpOnce(user, XpActionType.WORD_BOOKMARK, wordId);
+
         badgeService.evaluate(user);
     }
 
@@ -236,8 +239,10 @@ public class VocabularyService {
                         .updatedAt(LocalDateTime.now())
                         .build());
 
-        unitProgress.updateStatus(UnitStatus.IN_PROGRESS);
-        unitProgressRepository.save(unitProgress);
+        if (unitProgress.getStatus() != UnitStatus.COMPLETED) {
+            unitProgress.updateStatus(UnitStatus.IN_PROGRESS);
+            unitProgressRepository.save(unitProgress);
+        }
     }
 
     /**
@@ -268,8 +273,13 @@ public class VocabularyService {
                         .updatedAt(LocalDateTime.now())
                         .build());
 
+        boolean alreadyCompleted = unitProgress.getStatus() == UnitStatus.COMPLETED;
+
         unitProgress.updateStatus(UnitStatus.COMPLETED);
         unitProgressRepository.save(unitProgress);
+
+        if (!alreadyCompleted)
+            xpService.grantXp(user, XpActionType.WORD_SET_COMPLETE);
 
         List<VocabularyWord> words = vocabularyWordRepository
                 .findByLevelAndUnitNumberOrderByWordIdAsc(normalizedLevel, unitNumber);

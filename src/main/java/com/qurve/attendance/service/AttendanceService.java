@@ -12,9 +12,11 @@ import com.qurve.badge.service.BadgeService;
 import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,7 @@ public class AttendanceService {
     private final DailyStudyLogRepository dailyStudyLogRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
     private final BadgeService badgeService;
+    private final XpService xpService;
     private final ChallengeProgressService challengeProgressService;
 
     /**
@@ -79,21 +82,32 @@ public class AttendanceService {
     @Transactional
     public AttendanceResponseDto save(String loginId) {
         User user = findUserByLoginId(loginId);
+
         StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
 
         LocalDate today = LocalDate.now(KST_ZONE);
-        boolean alreadyCheckedToday = isCheckedToday(resolveLastAttendanceAt(studyStatistics), today);
+        LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
+
+        boolean alreadyCheckedToday = isCheckedToday(lastAttendanceAt, today);
+
         int updatedStreakDays = calculateUpdatedStreakDays(
                 studyStatistics.getStreakDays(),
-                resolveLastAttendanceAt(studyStatistics),
+                lastAttendanceAt,
                 today
         );
-        LocalDateTime attendedAt = LocalDateTime.now(KST_ZONE);
 
+        LocalDateTime attendedAt = LocalDateTime.now(KST_ZONE);
         studyStatistics.updateAttendance(updatedStreakDays, attendedAt);
+
         if (!alreadyCheckedToday) {
+            xpService.grantXp(user, XpActionType.DAILY_ATTENDANCE);
+            if (updatedStreakDays == 3)
+                xpService.grantXp(user, XpActionType.STREAK_3_DAYS);
+            if (updatedStreakDays == 7)
+                xpService.grantXp(user, XpActionType.STREAK_7_DAYS);
             challengeProgressService.addProgress(user, ChallengeGoalType.ATTENDANCE, 1);
         }
+
         badgeService.evaluate(user);
 
         return AttendanceResponseDto.from(

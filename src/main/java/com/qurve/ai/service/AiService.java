@@ -8,11 +8,13 @@ import com.qurve.ai.enums.SenderType;
 import com.qurve.ai.repository.AiChatMessageRepository;
 import com.qurve.ai.repository.AiChatRoomRepository;
 import com.qurve.attendance.repository.StudyStatisticsRepository;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.xp.repository.XpHistoryRepository;
+import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +44,7 @@ public class AiService {
     private final AiChatMessageRepository aiChatMessageRepository;
     private final XpHistoryRepository xpHistoryRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
+    private final XpService xpService;
 
     /**
      * AI 학습 도우미 채팅
@@ -61,11 +65,29 @@ public class AiService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // 채팅방 조회 또는 생성
-        AiChatRoom room = aiChatRoomRepository.findByUser(user)
-                .orElseGet(() -> aiChatRoomRepository.save(AiChatRoom.builder()
-                        .user(user)
-                        .createdAt(LocalDateTime.now())
-                        .build()));
+        AiChatRoom room = aiChatRoomRepository.findByUser(user).orElse(null);
+
+        boolean firstAiUse = room == null;
+
+        if (room == null) {
+            room = aiChatRoomRepository.save(AiChatRoom.builder()
+                            .user(user)
+                            .createdAt(LocalDateTime.now())
+                            .build());
+        }
+
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime todayStart = today.atStartOfDay();
+
+        LocalDateTime todayEnd = today.plusDays(1).atStartOfDay();
+
+        boolean usedAiToday = xpHistoryRepository.existsByUserAndActionTypeAndEarnedAtBetween(
+                                user,
+                                XpActionType.AI_COACH_DAILY,
+                                todayStart,
+                                todayEnd
+                        );
 
         // 최근 20개 메시지 조회
         List<AiChatMessage> recentMessages = aiChatMessageRepository
@@ -92,6 +114,12 @@ public class AiService {
                 .message(aiResponse)
                 .createdAt(LocalDateTime.now())
                 .build());
+
+        if (firstAiUse)
+            xpService.grantXp(user, XpActionType.AI_COACH_FIRST);
+
+        if (!usedAiToday)
+            xpService.grantXp(user, XpActionType.AI_COACH_DAILY);
 
         return AiChatResponseDto.of(aiResponse);
     }

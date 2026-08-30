@@ -4,6 +4,7 @@ import com.qurve.badge.service.BadgeService;
 import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.problem.domain.Problem;
 import com.qurve.problem.domain.ProblemBookmark;
@@ -27,6 +28,7 @@ import com.qurve.problem.repository.ProblemSubmissionRepository;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import com.qurve.wrongnote.service.WrongNoteService;
+import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +57,7 @@ public class ProblemService {
     private final ProblemBookmarkRepository problemBookmarkRepository;
     private final UserRepository userRepository;
     private final BadgeService badgeService;
+    private final XpService xpService;
     private final ChallengeProgressService challengeProgressService;
     private final WrongNoteService wrongNoteService;
 
@@ -175,6 +178,7 @@ public class ProblemService {
                 .build());
 
         if (correct) {
+            xpService.grantXpOnce(user, XpActionType.PROBLEM_CORRECT, problem.getProblemId());
             wrongNoteService.markRetryCorrect(user, problem);
         } else {
             wrongNoteService.saveWrongAnswer(user, problem);
