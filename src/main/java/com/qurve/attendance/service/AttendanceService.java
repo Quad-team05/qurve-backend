@@ -9,6 +9,8 @@ import com.qurve.attendance.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.attendance.repository.DailyStudyLogRepository;
 import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.badge.service.BadgeService;
+import com.qurve.challenge.domain.ChallengeGoalType;
+import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
@@ -36,6 +38,7 @@ public class AttendanceService {
     private final DailyStudyLogRepository dailyStudyLogRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
     private final BadgeService badgeService;
+    private final ChallengeProgressService challengeProgressService;
 
     /**
      * 출석 카드 조회
@@ -79,6 +82,7 @@ public class AttendanceService {
         StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
 
         LocalDate today = LocalDate.now(KST_ZONE);
+        boolean alreadyCheckedToday = isCheckedToday(resolveLastAttendanceAt(studyStatistics), today);
         int updatedStreakDays = calculateUpdatedStreakDays(
                 studyStatistics.getStreakDays(),
                 resolveLastAttendanceAt(studyStatistics),
@@ -87,6 +91,9 @@ public class AttendanceService {
         LocalDateTime attendedAt = LocalDateTime.now(KST_ZONE);
 
         studyStatistics.updateAttendance(updatedStreakDays, attendedAt);
+        if (!alreadyCheckedToday) {
+            challengeProgressService.addProgress(user, ChallengeGoalType.ATTENDANCE, 1);
+        }
         badgeService.evaluate(user);
 
         return AttendanceResponseDto.from(
@@ -119,6 +126,7 @@ public class AttendanceService {
         initializeLastAttendanceAtIfNeeded(studyStatistics);
         dailyStudyLog.addStudyTime(studyTimeMinutes);
         studyStatistics.addStudyTime(studyTimeMinutes);
+        challengeProgressService.addProgress(user, ChallengeGoalType.STUDY_TIME, studyTimeMinutes);
         badgeService.evaluate(user);
 
         return StudyTimeSaveResponseDto.of(studyTimeMinutes, studyStatistics);
