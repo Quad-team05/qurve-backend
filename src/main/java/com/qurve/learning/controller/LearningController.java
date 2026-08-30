@@ -4,6 +4,7 @@ import com.qurve.global.common.ApiResponse;
 import com.qurve.learning.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.learning.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.learning.dto.response.StudyTimeStatisticsResponseDto;
+import com.qurve.learning.dto.response.LearningMainResponseDto;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
 import com.qurve.learning.service.LearningService;
 import jakarta.validation.Valid;
@@ -26,6 +27,16 @@ import java.time.LocalDate;
 public class LearningController {
 
     private final LearningService learningService;
+
+    /**
+     * 학습 메인 화면 조회
+     */
+    @GetMapping("/main")
+    public ResponseEntity<ApiResponse<LearningMainResponseDto>> findMain(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(
+                learningService.findMain(authentication.getName())
+        ));
+    }
 
     @GetMapping("/today")
     public ResponseEntity<ApiResponse<TodayLearningResponseDto>> findTodayLearning(

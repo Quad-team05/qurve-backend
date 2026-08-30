@@ -6,9 +6,11 @@ import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.domain.ChallengeProgress;
 import com.qurve.challenge.dto.request.ChallengeCreateRequestDto;
 import com.qurve.challenge.dto.response.ChallengeCreateResponseDto;
-import com.qurve.challenge.dto.response.ChallengeGoalTypeResponseDto;
 import com.qurve.challenge.dto.response.ChallengeMainResponseDto;
 import com.qurve.challenge.dto.response.ChallengeManageResponseDto;
+import com.qurve.challenge.dto.response.ChallengeManagementResponseDto;
+import com.qurve.attendance.domain.StudyStatistics;
+import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.challenge.repository.ChallengeProgressRepository;
 import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.global.enums.ErrorCode;
@@ -19,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -33,19 +34,53 @@ public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeProgressRepository challengeProgressRepository;
     private final UserRepository userRepository;
+    private final StudyStatisticsRepository studyStatisticsRepository;
     private final BadgeService badgeService;
 
-    public List<ChallengeGoalTypeResponseDto> getGoalTypes() {
-        return Arrays.stream(ChallengeGoalType.values())
-                .map(ChallengeGoalTypeResponseDto::from)
-                .toList();
-    }
+    /**
+     * 챌린지 관리 화면의 전체 현황과 상태별 챌린지 목록을 조회합니다.
+     *
+     * @param loginId 로그인 ID
+     * @return 연속 학습일, 전체 달성률, 진행 중 및 완료 챌린지 목록
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public ChallengeManagementResponseDto findManagement(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        List<Challenge> challenges = challengeRepository.findAllByUser_LoginId(loginId);
 
-    public List<ChallengeManageResponseDto> getMyChallenges(String loginId) {
-        return challengeRepository.findAllByUser_LoginId(loginId)
-                .stream()
-                .map(ChallengeManageResponseDto::from)
+        List<ChallengeManageResponseDto> challengeResponses = challenges.stream()
+                .map(challenge -> ChallengeManageResponseDto.from(
+                        challenge,
+                        calculateProgressRate(challenge.getTargetValue(), challenge.getCurrentValue())
+                ))
                 .toList();
+
+        List<ChallengeManageResponseDto> activeChallenges = challengeResponses.stream()
+                .filter(challenge -> challenge.getStatus() == com.qurve.challenge.domain.ChallengeStatus.ACTIVE)
+                .toList();
+        List<ChallengeManageResponseDto> completedChallenges = challengeResponses.stream()
+                .filter(challenge -> challenge.getStatus() == com.qurve.challenge.domain.ChallengeStatus.COMPLETED)
+                .toList();
+
+        int totalProgressRate = activeChallenges.isEmpty()
+                ? 0
+                : (int) Math.round(activeChallenges.stream()
+                        .mapToInt(ChallengeManageResponseDto::getProgressRate)
+                        .average()
+                        .orElse(0));
+        int streakDays = studyStatisticsRepository.findByUser(user)
+                .map(StudyStatistics::getStreakDays)
+                .orElse(0);
+
+        return ChallengeManagementResponseDto.builder()
+                .streakDays(streakDays)
+                .totalProgressRate(totalProgressRate)
+                .activeChallengeCount(activeChallenges.size())
+                .completedChallengeCount(completedChallenges.size())
+                .activeChallenges(activeChallenges)
+                .completedChallenges(completedChallenges)
+                .build();
     }
 
     /**
@@ -58,7 +93,10 @@ public class ChallengeService {
      * @return 메인페이지 챌린지 응답 목록
      */
     public List<ChallengeMainResponseDto> findAllForMain(String loginId) {
-        List<Challenge> challenges = challengeRepository.findAllByUser_LoginId(loginId);
+        List<Challenge> challenges = challengeRepository.findAllByUser_LoginId(loginId)
+                .stream()
+                .filter(challenge -> challenge.getStatus() == com.qurve.challenge.domain.ChallengeStatus.ACTIVE)
+                .toList();
 
         if (challenges.isEmpty()) {
             return List.of();
@@ -96,8 +134,16 @@ public class ChallengeService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        if (requestDto.getEndDate().isBefore(requestDto.getStartDate())) {
+            throw new BusinessException(ErrorCode.INVALID_CHALLENGE_PERIOD);
+        }
+
         Challenge challenge = requestDto.toEntity(user);
         Challenge savedChallenge = challengeRepository.save(challenge);
+        challengeProgressRepository.save(ChallengeProgress.builder()
+                .challenge(savedChallenge)
+                .completedDays(0)
+                .build());
         badgeService.evaluate(user);
 
         return ChallengeCreateResponseDto.from(savedChallenge);

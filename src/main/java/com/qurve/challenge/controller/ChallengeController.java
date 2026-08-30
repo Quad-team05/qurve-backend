@@ -2,9 +2,8 @@ package com.qurve.challenge.controller;
 
 import com.qurve.challenge.dto.request.ChallengeCreateRequestDto;
 import com.qurve.challenge.dto.response.ChallengeCreateResponseDto;
-import com.qurve.challenge.dto.response.ChallengeGoalTypeResponseDto;
 import com.qurve.challenge.dto.response.ChallengeMainResponseDto;
-import com.qurve.challenge.dto.response.ChallengeManageResponseDto;
+import com.qurve.challenge.dto.response.ChallengeManagementResponseDto;
 import com.qurve.challenge.service.ChallengeService;
 import com.qurve.global.common.ApiResponse;
 import jakarta.validation.Valid;
@@ -22,11 +21,6 @@ public class ChallengeController {
 
     private final ChallengeService challengeService;
 
-    @GetMapping("/goal-types")
-    public ResponseEntity<ApiResponse<List<ChallengeGoalTypeResponseDto>>> getGoalTypes() {
-        return ResponseEntity.ok(ApiResponse.success(challengeService.getGoalTypes()));
-    }
-
     @GetMapping("/main")
     public ResponseEntity<ApiResponse<List<ChallengeMainResponseDto>>> findAllForMain(
             Authentication authentication
@@ -35,12 +29,12 @@ public class ChallengeController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ChallengeManageResponseDto>>> getMyChallenges(
+    public ResponseEntity<ApiResponse<ChallengeManagementResponseDto>> findManagement(
             Authentication authentication
     ) {
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        challengeService.getMyChallenges(authentication.getName())
+                        challengeService.findManagement(authentication.getName())
                 )
         );
     }
