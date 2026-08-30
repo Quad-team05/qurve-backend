@@ -1,10 +1,16 @@
 package com.qurve.attendance.service;
 
+import com.qurve.attendance.domain.DailyStudyLog;
 import com.qurve.attendance.domain.StudyStatistics;
+import com.qurve.attendance.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.attendance.dto.response.AttendanceDayResponseDto;
 import com.qurve.attendance.dto.response.AttendanceResponseDto;
+import com.qurve.attendance.dto.response.StudyTimeSaveResponseDto;
+import com.qurve.attendance.repository.DailyStudyLogRepository;
 import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.badge.service.BadgeService;
+import com.qurve.challenge.domain.ChallengeGoalType;
+import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
@@ -31,14 +37,16 @@ public class AttendanceService {
     private static final List<String> DAY_OF_WEEK_LABELS = List.of("월", "화", "수", "목", "금", "토", "일");
 
     private final UserRepository userRepository;
+    private final DailyStudyLogRepository dailyStudyLogRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
     private final BadgeService badgeService;
     private final XpService xpService;
+    private final ChallengeProgressService challengeProgressService;
 
     /**
      * 출석 카드 조회
      *
-     * * 연속 학습 일수(streak)와 마지막 갱신일(updated_at)을 기준으로
+     * * 연속 학습 일수(streak)와 마지막 출석일(lastAttendanceAt)을 기준으로
      * 현재 주차(월~일) 출석 활성화 상태를 계산해 반환한다.
      *
      * @param loginId 로그인 ID
@@ -50,12 +58,13 @@ public class AttendanceService {
         StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
 
         LocalDate today = LocalDate.now(KST_ZONE);
-        boolean checkedToday = isCheckedToday(studyStatistics.getUpdatedAt(), today);
+        LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
+        boolean checkedToday = isCheckedToday(lastAttendanceAt, today);
 
         return AttendanceResponseDto.from(
                 studyStatistics.getStreakDays(),
                 checkedToday,
-                createAttendanceDays(studyStatistics.getStreakDays(), studyStatistics.getUpdatedAt(), today)
+                createAttendanceDays(studyStatistics.getStreakDays(), lastAttendanceAt, today)
         );
     }
 
@@ -74,22 +83,21 @@ public class AttendanceService {
     public AttendanceResponseDto save(String loginId) {
         User user = findUserByLoginId(loginId);
 
-        StudyStatistics studyStatistics = studyStatisticsRepository.findByUser_UserId(user.getUserId()).orElse(null);
+        StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
 
         LocalDate today = LocalDate.now(KST_ZONE);
+        LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
 
-        boolean alreadyCheckedToday = studyStatistics != null && isCheckedToday(studyStatistics.getUpdatedAt(), today);
-
-        if (studyStatistics == null)
-            studyStatistics = studyStatisticsRepository.save(StudyStatistics.create(user));
+        boolean alreadyCheckedToday = isCheckedToday(lastAttendanceAt, today);
 
         int updatedStreakDays = calculateUpdatedStreakDays(
                 studyStatistics.getStreakDays(),
-                studyStatistics.getUpdatedAt(),
+                lastAttendanceAt,
                 today
         );
 
-        studyStatistics.updateStreakDays(updatedStreakDays);
+        LocalDateTime attendedAt = LocalDateTime.now(KST_ZONE);
+        studyStatistics.updateAttendance(updatedStreakDays, attendedAt);
 
         if (!alreadyCheckedToday) {
             xpService.grantXp(user, XpActionType.DAILY_ATTENDANCE);
@@ -97,6 +105,7 @@ public class AttendanceService {
                 xpService.grantXp(user, XpActionType.STREAK_3_DAYS);
             if (updatedStreakDays == 7)
                 xpService.grantXp(user, XpActionType.STREAK_7_DAYS);
+            challengeProgressService.addProgress(user, ChallengeGoalType.ATTENDANCE, 1);
         }
 
         badgeService.evaluate(user);
@@ -104,8 +113,37 @@ public class AttendanceService {
         return AttendanceResponseDto.from(
                 updatedStreakDays,
                 true,
-                createAttendanceDays(updatedStreakDays, LocalDateTime.now(KST_ZONE), today)
+                createAttendanceDays(updatedStreakDays, attendedAt, today)
         );
+    }
+
+    /**
+     * 학습 시간 저장
+     *
+     * * 클라이언트에서 측정한 학습 시간을 분 단위로 전달받아
+     * 사용자의 날짜별 학습 로그를 생성하거나 누적하고,
+     * 전체 누적 학습 시간(totalStudyTime)에도 함께 더한다.
+     *
+     * @param loginId 로그인 ID
+     * @param requestDto 추가할 학습 시간
+     * @return 추가된 학습 시간과 누적 학습 시간
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    @Transactional
+    public StudyTimeSaveResponseDto saveStudyTime(String loginId, StudyTimeSaveRequestDto requestDto) {
+        User user = findUserByLoginId(loginId);
+        StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
+        LocalDate today = LocalDate.now(KST_ZONE);
+        DailyStudyLog dailyStudyLog = findOrCreateDailyStudyLog(user, today);
+
+        int studyTimeMinutes = requestDto.getStudyTimeMinutes();
+        initializeLastAttendanceAtIfNeeded(studyStatistics);
+        dailyStudyLog.addStudyTime(studyTimeMinutes);
+        studyStatistics.addStudyTime(studyTimeMinutes);
+        challengeProgressService.addProgress(user, ChallengeGoalType.STUDY_TIME, studyTimeMinutes);
+        badgeService.evaluate(user);
+
+        return StudyTimeSaveResponseDto.of(studyTimeMinutes, studyStatistics);
     }
 
     private User findUserByLoginId(String loginId) {
@@ -116,6 +154,29 @@ public class AttendanceService {
     private StudyStatistics findOrCreateStudyStatistics(User user) {
         return studyStatisticsRepository.findByUser_UserId(user.getUserId())
                 .orElseGet(() -> studyStatisticsRepository.save(StudyStatistics.create(user)));
+    }
+
+    private DailyStudyLog findOrCreateDailyStudyLog(User user, LocalDate studyDate) {
+        return dailyStudyLogRepository.findByUserAndStudyDate(user, studyDate)
+                .orElseGet(() -> dailyStudyLogRepository.save(DailyStudyLog.create(user, studyDate)));
+    }
+
+    private LocalDateTime resolveLastAttendanceAt(StudyStatistics studyStatistics) {
+        if (studyStatistics.getLastAttendanceAt() != null) {
+            return studyStatistics.getLastAttendanceAt();
+        }
+
+        if (studyStatistics.getStreakDays() <= 0) {
+            return null;
+        }
+
+        return studyStatistics.getUpdatedAt();
+    }
+
+    private void initializeLastAttendanceAtIfNeeded(StudyStatistics studyStatistics) {
+        if (studyStatistics.getStreakDays() > 0 && studyStatistics.getUpdatedAt() != null) {
+            studyStatistics.initializeLastAttendanceAt(studyStatistics.getUpdatedAt());
+        }
     }
 
     private boolean isCheckedToday(LocalDateTime updatedAt, LocalDate today) {

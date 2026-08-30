@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface XpHistoryRepository extends JpaRepository<XpHistory, Long> {
+    List<XpHistory> findByUserAndEarnedAtBetweenOrderByEarnedAtDesc(User user, LocalDateTime start, LocalDateTime end);
     @Query("""
     SELECT COALESCE(SUM(x.xpAmount), 0)
     FROM XpHistory x

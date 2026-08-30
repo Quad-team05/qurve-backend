@@ -1,6 +1,8 @@
 package com.qurve.problem.service;
 
 import com.qurve.badge.service.BadgeService;
+import com.qurve.challenge.domain.ChallengeGoalType;
+import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
@@ -10,6 +12,9 @@ import com.qurve.problem.domain.ProblemChoice;
 import com.qurve.problem.domain.ProblemSubmission;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
 import com.qurve.problem.dto.request.ProblemSubmitRequestDto;
+import com.qurve.problem.dto.response.DailyProblemAccuracyResponseDto;
+import com.qurve.problem.dto.response.ProblemAccuracyResponseDto;
+import com.qurve.problem.dto.response.ProblemAccuracyTrendResponseDto;
 import com.qurve.problem.dto.response.ProblemChoiceResponseDto;
 import com.qurve.problem.dto.response.ProblemListResponseDto;
 import com.qurve.problem.dto.response.ProblemResponseDto;
@@ -22,20 +27,29 @@ import com.qurve.problem.repository.ProblemRepository;
 import com.qurve.problem.repository.ProblemSubmissionRepository;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.wrongnote.service.WrongNoteService;
 import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProblemService {
+
+    private static final ZoneId KST_ZONE = ZoneId.of("Asia/Seoul");
+    private static final List<String> DAY_OF_WEEK_LABELS = List.of("월", "화", "수", "목", "금", "토", "일");
 
     private final ProblemRepository problemRepository;
     private final ProblemChoiceRepository problemChoiceRepository;
@@ -44,6 +58,8 @@ public class ProblemService {
     private final UserRepository userRepository;
     private final BadgeService badgeService;
     private final XpService xpService;
+    private final ChallengeProgressService challengeProgressService;
+    private final WrongNoteService wrongNoteService;
 
     /**
      * 문제 목록 조회
@@ -61,20 +77,35 @@ public class ProblemService {
         String normalizedCategory = normalizeKeyword(requestDto.getCategory());
         String normalizedSubType = normalizeKeyword(requestDto.getSubType());
 
-        List<Problem> problems = problemRepository.findAllByLevelAndCategoryAndSubTypeOrderByProblemIdAsc(
+        List<Problem> allProblems = problemRepository.findAllByLevelAndCategoryAndSubTypeOrderByProblemIdAsc(
                 normalizedLevel,
                 normalizedCategory,
                 normalizedSubType
         );
 
-        if (problems.isEmpty()) {
+        if (allProblems.isEmpty()) {
             throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
         }
+
+        int totalProblemCount = allProblems.size();
+        int offset = requestDto.getOffset() == null ? 0 : requestDto.getOffset();
+
+        if (offset >= totalProblemCount) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
+        List<Problem> problems = allProblems.stream()
+                .skip(offset)
+                .toList();
 
         if (requestDto.getCount() != null) {
             problems = problems.stream()
                     .limit(requestDto.getCount())
                     .toList();
+        }
+
+        if (problems.isEmpty()) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
         }
 
         List<ProblemChoice> problemChoices = problemChoiceRepository
@@ -97,6 +128,8 @@ public class ProblemService {
                 normalizedLevel,
                 normalizedCategory,
                 normalizedSubType,
+                totalProblemCount,
+                offset,
                 problemResponseDtos
         );
     }
@@ -135,17 +168,23 @@ public class ProblemService {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_ANSWER_CHOICE_NOT_FOUND));
 
+        boolean correct = problem.getAnswerIndex().equals(requestDto.getSelectedChoiceNumber());
         ProblemSubmission problemSubmission = problemSubmissionRepository.save(ProblemSubmission.builder()
                 .user(user)
                 .problem(problem)
                 .selectedChoiceNumber(requestDto.getSelectedChoiceNumber())
                 .answerChoiceNumber(problem.getAnswerIndex())
-                .correct(problem.getAnswerIndex().equals(requestDto.getSelectedChoiceNumber()))
+                .correct(correct)
                 .build());
 
-        if (problemSubmission.isCorrect())
+        if (correct) {
             xpService.grantXpOnce(user, XpActionType.PROBLEM_CORRECT, problem.getProblemId());
+            wrongNoteService.markRetryCorrect(user, problem);
+        } else {
+            wrongNoteService.saveWrongAnswer(user, problem);
+        }
 
+        challengeProgressService.addProgress(user, ChallengeGoalType.QUIZ_COUNT, 1);
         badgeService.evaluate(user);
 
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);
@@ -185,6 +224,73 @@ public class ProblemService {
                 .toList();
 
         return ProblemSolutionListResponseDto.of(problem.getProblemId(), solutions);
+    }
+
+    /**
+     * 문제풀이 정답률 조회
+     *
+     * * 로그인한 사용자의 전체 문제 제출 수와 정답 수를 기준으로
+     * 정답률을 퍼센트 단위로 계산해 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 문제풀이 정답률 통계
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public ProblemAccuracyResponseDto findAccuracy(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        int totalSubmissionCount = (int) problemSubmissionRepository.countByUser(user);
+        int correctSubmissionCount = (int) problemSubmissionRepository.countByUserAndCorrectTrue(user);
+
+        return ProblemAccuracyResponseDto.of(totalSubmissionCount, correctSubmissionCount);
+    }
+
+    /**
+     * 문제풀이 정답률 추이 조회
+     *
+     * * KST 기준 오늘을 포함한 최근 7일의 일별 제출 수와 정답 수를 기준으로
+     * 날짜별 정답률을 계산해 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 최근 7일 문제풀이 정답률 추이
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public ProblemAccuracyTrendResponseDto findAccuracyTrend(String loginId) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        LocalDate endDate = LocalDate.now(KST_ZONE);
+        LocalDate startDate = endDate.minusDays(6);
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay();
+
+        Map<LocalDate, List<ProblemSubmission>> submissionsByDate = problemSubmissionRepository
+                .findAllByUserAndCreatedAtBetween(user, startDateTime, endDateTime)
+                .stream()
+                .collect(Collectors.groupingBy(problemSubmission -> problemSubmission.getCreatedAt().toLocalDate()));
+
+        List<DailyProblemAccuracyResponseDto> dailyAccuracies = IntStream.range(0, 7)
+                .mapToObj(index -> {
+                    LocalDate targetDate = startDate.plusDays(index);
+                    List<ProblemSubmission> submissions = submissionsByDate.getOrDefault(targetDate, List.of());
+                    int totalSubmissionCount = submissions.size();
+                    int correctSubmissionCount = (int) submissions.stream()
+                            .filter(ProblemSubmission::isCorrect)
+                            .count();
+                    DayOfWeek dayOfWeek = targetDate.getDayOfWeek();
+
+                    return DailyProblemAccuracyResponseDto.of(
+                            targetDate,
+                            dayOfWeek.name(),
+                            DAY_OF_WEEK_LABELS.get(dayOfWeek.getValue() - 1),
+                            totalSubmissionCount,
+                            correctSubmissionCount
+                    );
+                })
+                .toList();
+
+        return ProblemAccuracyTrendResponseDto.of(startDate, endDate, dailyAccuracies);
     }
 
     /**

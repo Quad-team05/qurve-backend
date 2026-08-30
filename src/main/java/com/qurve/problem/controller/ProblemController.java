@@ -2,11 +2,16 @@ package com.qurve.problem.controller;
 
 import com.qurve.global.common.ApiResponse;
 import com.qurve.problem.dto.request.ProblemListRequestDto;
+import com.qurve.problem.dto.request.ProblemSetCompleteRequestDto;
 import com.qurve.problem.dto.request.ProblemSubmitRequestDto;
+import com.qurve.problem.dto.response.ProblemAccuracyResponseDto;
+import com.qurve.problem.dto.response.ProblemAccuracyTrendResponseDto;
 import com.qurve.problem.dto.response.ProblemListResponseDto;
 import com.qurve.problem.dto.response.ProblemResponseDto;
 import com.qurve.problem.dto.response.ProblemSolutionListResponseDto;
 import com.qurve.problem.dto.response.ProblemSubmitResponseDto;
+import com.qurve.problem.dto.response.ProblemSetCompleteResponseDto;
+import com.qurve.problem.service.ProblemSetService;
 import com.qurve.problem.service.ProblemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +36,7 @@ import java.util.List;
 public class ProblemController {
 
     private final ProblemService problemService;
+    private final ProblemSetService problemSetService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<ProblemListResponseDto>> findAll(
@@ -50,6 +56,19 @@ public class ProblemController {
         );
     }
 
+    /**
+     * 문제 세트 학습 종료 처리
+     */
+    @PostMapping("/sets/complete")
+    public ResponseEntity<ApiResponse<ProblemSetCompleteResponseDto>> completeSet(
+            @Valid @RequestBody ProblemSetCompleteRequestDto requestDto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(
+                problemSetService.complete(authentication.getName(), requestDto)
+        ));
+    }
+
     @GetMapping("/{problemId}/solution")
     public ResponseEntity<ApiResponse<ProblemSolutionListResponseDto>> findSolution(
             @PathVariable Long problemId,
@@ -57,6 +76,24 @@ public class ProblemController {
     ) {
         return ResponseEntity.ok(
                 ApiResponse.success(problemService.findSolution(authentication.getName(), problemId))
+        );
+    }
+
+    @GetMapping("/accuracy")
+    public ResponseEntity<ApiResponse<ProblemAccuracyResponseDto>> findAccuracy(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(problemService.findAccuracy(authentication.getName()))
+        );
+    }
+
+    @GetMapping("/accuracy/trend")
+    public ResponseEntity<ApiResponse<ProblemAccuracyTrendResponseDto>> findAccuracyTrend(
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(problemService.findAccuracyTrend(authentication.getName()))
         );
     }
 
