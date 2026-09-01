@@ -1,0 +1,41 @@
+﻿level,category,subType,questionFormat,questionText,choice1,choice2,choice3,choice4,answerIndex,explanation,targetExpression,targetMeaning
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「確認」の読み方はどれですか。,かくにん,かくねん,かんにん,かくじん,0,確認은 '확인'이며 かくにん이라고 읽는다.,確認,확인
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「環境」の読み方はどれですか。,かんぎょう,かんきょう,かんけい,かんよう,1,環境은 '환경'이며 かんきょう라고 읽는다.,環境,환경
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「経験」の読み方はどれですか。,けいげん,きょうけん,けいけん,けんけい,2,経験은 '경험'이며 けいけん이라고 읽는다.,経験,경험
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「原因」の読み方はどれですか。,けんいん,げいいん,げんにん,げんいん,3,原因은 '원인'이며 げんいん이라고 읽는다.,原因,원인
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「増える」の読み方はどれですか。,ふえる,こえる,ひえる,そえる,0,増える는 '늘다'이며 ふえる라고 읽는다.,増える,늘다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「減る」の読み方はどれですか。,げる,へる,ひる,める,1,減る는 '줄다'이며 へる라고 읽는다.,減る,줄다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「断る」の読み方はどれですか。,かかわる,ことなる,ことわる,おわる,2,断る는 '거절하다'이며 ことわる라고 읽는다.,断る,거절하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「比べる」の読み方はどれですか。,しらべる,ならべる,ころべる,くらべる,3,比べる는 '비교하다'이며 くらべる라고 읽는다.,比べる,비교하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「届く」の読み方はどれですか。,とどく,つづく,とく,とどける,0,"届く는 '도착하다, 닿다'이며 とどく라고 읽는다.",届く,도착하다; 닿다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「選ぶ」の読み方はどれですか。,ならぶ,えらぶ,ころぶ,えらむ,1,選ぶ는 '고르다'이며 えらぶ라고 읽는다.,選ぶ,고르다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「しゅうかん」を『습관』の意味で漢字にするとどれですか。,週間,集慣,習慣,習間,2,습관이라는 뜻의 しゅうかん은 習慣로 쓴다.,習慣,습관
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「かんけい」を漢字にするとどれですか。,関計,間係,関形,関係,3,かんけい는 関係이며 '관계'라는 뜻이다.,関係,관계
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「きぼう」を漢字にするとどれですか。,希望,期望,希防,機望,0,きぼう는 希望이며 '희망'이라는 뜻이다.,希望,희망
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「けっか」を漢字にするとどれですか。,決果,結果,結課,結菓,1,けっか는 結果이며 '결과'라는 뜻이다.,結果,결과
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「じゅんばん」を漢字にするとどれですか。,準番,順版,順番,純番,2,じゅんばん는 順番이며 '순서'라는 뜻이다.,順番,순서
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「へんか」を漢字にするとどれですか。,返化,変花,辺化,変化,3,へんか는 変化이며 '변화'라는 뜻이다.,変化,변화
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「最近」の意味に最も近いものはどれですか。,최근; 요즘,옛날,언젠가,항상,0,"最近은 현재에 가까운 시기인 '최근, 요즘'을 뜻한다.",最近,최근; 요즘
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「かなり」の意味に最も近いものはどれですか。,조금도,꽤; 상당히,거의 안,우연히,1,"かなり는 정도가 높은 '꽤, 상당히'라는 뜻이다.",かなり,꽤; 상당히
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「やっと」の意味に最も近いものはどれですか。,미리,일부러,겨우; 드디어,계속,2,"やっと는 노력 끝에 실현되는 '겨우, 드디어'라는 뜻이다.",やっと,겨우; 드디어
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「しばらく」の意味に最も近いものはどれですか。,영원히,즉시,매번,잠시; 한동안,3,"しばらく는 어느 정도의 기간인 '잠시, 한동안'이다.",しばらく,잠시; 한동안
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「ほとんど」の意味に最も近いものはどれですか。,거의,반드시,갑자기,일부러,0,ほとんど는 전체에 가까운 정도인 '거의'라는 뜻이다.,ほとんど,거의
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「必ず」の意味に最も近いものはどれですか。,아마,반드시,가끔,대체로,1,必ず는 예외 없이 꼭이라는 의미의 '반드시'다.,必ず,반드시
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「申し込む」の意味に最も近いものはどれですか。,취소하다,설명하다,신청하다,거절하다,2,申し込む는 시험·서비스 등에 '신청하다'라는 뜻이다.,申し込む,신청하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「片付ける」の意味に最も近いものはどれですか。,어지르다,빌리다,나누다,정리하다,3,片付ける는 물건이나 장소를 '정리하다'라는 뜻이다.,片付ける,정리하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「確かめる」の意味に最も近いものはどれですか。,확인하다,잊다,기다리다,비교하다,0,確かめる는 사실이나 상태를 '확인하다'라는 뜻이다.,確かめる,확인하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「伝える」の意味に最も近いものはどれですか。,숨기다,전하다,줄이다,고치다,1,伝える는 정보나 말을 상대에게 '전하다'라는 뜻이다.,伝える,전하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「慣れる」の意味に最も近いものはどれですか。,싫증나다,놀라다,익숙해지다,서두르다,2,慣れる는 반복 경험으로 '익숙해지다'라는 뜻이다.,慣れる,익숙해지다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「間に合う」の意味に最も近いものはどれですか。,시간을 정하다,시간을 늦추다,시간을 재다,시간에 맞다,3,間に合う는 정해진 시간에 늦지 않는다는 뜻이다.,間に合う,시간에 맞다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「利用する」の意味に最も近いものはどれですか。,이용하다,발견하다,발명하다,설명하다,0,利用する는 시설이나 서비스를 '이용하다'라는 뜻이다.,利用する,이용하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「変更する」の意味に最も近いものはどれですか。,확정하다,변경하다,반복하다,보관하다,1,変更する는 정해진 것을 다른 것으로 '변경하다'라는 뜻이다.,変更する,변경하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「役に立つ」の意味に最も近いものはどれですか。,방해가 되다,유명해지다,도움이 되다,늦어지다,2,役に立つ는 유용하여 '도움이 되다'라는 뜻이다.,役に立つ,도움이 되다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「進む」の意味に最も近いものはどれですか。,돌아오다,멈추다,떨어지다,나아가다; 진행되다,3,進む는 앞쪽으로 나아가거나 일이 진행되는 것을 뜻한다.,進む,나아가다; 진행되다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「残る」の意味に最も近いものはどれですか。,남다,모이다,없어지다,고치다,0,残る는 일부가 없어지지 않고 '남다'라는 뜻이다.,残る,남다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「似合う」の意味に最も近いものはどれですか。,닮다,어울리다,모자라다,바꾸다,1,似合う는 옷이나 색 등이 사람에게 잘 '어울리다'라는 뜻이다.,似合う,어울리다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「困る」の意味に最も近いものはどれですか。,안심하다,기뻐하다,곤란하다,놀라다,2,困る는 문제 때문에 난처하고 '곤란하다'라는 뜻이다.,困る,곤란하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「安心する」の意味に最も近いものはどれですか。,실망하다,화내다,서두르다,안심하다,3,安心する는 걱정이 사라져 마음을 놓는다는 뜻이다.,安心する,안심하다
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「とうとう」の意味に最も近いものはどれですか。,마침내,가끔,갑자기,미리,0,とうとう는 긴 과정 끝에 '마침내'라는 의미다.,とうとう,마침내
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「たまたま」の意味に最も近いものはどれですか。,반드시,우연히,일부러,결국,1,たまたま는 의도하지 않은 우연을 나타낸다.,たまたま,우연히
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「わざわざ」の意味に最も近いものはどれですか。,어쩔 수 없이,갑자기,일부러; 특별히,대충,2,わざわざ는 특별히 수고를 들여 행동함을 나타낸다.,わざわざ,일부러; 특별히
+N3,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「そろそろ」の意味に最も近いものはどれですか。,절대로,이미 오래전에,계속해서,슬슬; 이제 곧,3,そろそろ는 어떤 행동을 시작할 때가 가까워짐을 나타낸다.,そろそろ,슬슬; 이제 곧

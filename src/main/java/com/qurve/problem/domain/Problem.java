@@ -42,7 +42,7 @@ public class Problem extends BaseEntity {
     private String questionText;
 
     @Lob
-    @Column(name = "passage_text")
+    @Column(name = "passage_text", columnDefinition = "TEXT")
     private String passageText;
 
     @Column(name = "answer_index", nullable = false)

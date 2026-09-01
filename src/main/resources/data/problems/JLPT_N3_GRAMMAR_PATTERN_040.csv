@@ -1,0 +1,41 @@
+﻿level,category,subType,questionFormat,questionText,choice1,choice2,choice3,choice4,answerIndex,explanation,targetGrammar,grammarMeaning
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本に来てから、毎日日本語を話す（　　　）しています。,ように,ために,そうに,ことに,0,의식적으로 습관을 들이는 표현은 ～ようにしています이다.,ようにする,~하도록 하다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,健康のため、できるだけ野菜を食べる（　　　）しています。,そうに,ように,ために,ことに,1,평소 노력이나 습관을 나타내므로 ～ようにしています가 맞다.,ようにする,~하도록 하다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,来月から大阪支店で働く（　　　）なりました。,ように,そうに,ことに,ために,2,외부 결정으로 정해진 사항에는 ～ことになりました를 쓴다.,ことになる,~하게 되다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,私は今年、毎日三十分運動する（　　　）しました。,ように,そうに,ために,ことに,3,자신이 스스로 결정한 사항에는 ～ことにする를 쓴다.,ことにする,~하기로 하다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,田中さんはさっき家を出たので、もうすぐ着く（　　　）です。,はず,わけ,ところ,ため,0,근거에 따른 당연한 예상에는 ～はずです를 쓴다.,はずだ,~일 것이다; ~임이 틀림없다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,今日は日曜日だから、銀行は休みの（　　　）です。,つもり,はず,ところ,こと,1,일요일이라는 근거로 한 판단이므로 はず가 맞다.,はずだ,~일 것이다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この店は人気があるので、週末は込む（　　　）があります。,もの,ところ,こと,ため,2,때때로 그런 일이 생길 수 있음을 나타내는 ～ことがあります가 맞다.,ことがある,~하는 경우가 있다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,春でも急に寒くなる（　　　）があります。,もの,ところ,そう,こと,3,일반적으로 가끔 발생하는 상황에는 ～ことがある를 쓴다.,ことがある,~하는 경우가 있다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,今、出かける（　　　）です。,ところ,ばかり,はず,ため,0,막 행동을 시작하려는 시점에는 ～るところです를 쓴다.,ところだ,막 ~하려는 참이다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,今、昼ご飯を食べている（　　　）です。,ばかり,ところ,はず,こと,1,현재 행동 중인 시점에는 ～ているところです를 쓴다.,ところだ,한창 ~하는 중이다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,たった今、駅に着いた（　　　）です。,はず,ため,ところ,こと,2,방금 행동이 끝난 직후에는 ～たところです를 쓴다.,ところだ,막 ~한 참이다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本に来た（　　　）なので、まだ道がよく分かりません。,ところ,はず,ため,ばかり,3,얼마 지나지 않았음을 나타내는 ～たばかり가 맞다.,たばかり,막 ~했다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,雨が降り（　　　）なので、傘を持って行ったほうがいいですよ。,そう,よう,らしい,はず,0,겉으로 보아 곧 비가 올 것 같은 징후에는 ～そうだ를 쓴다.,そうだ,~할 것 같다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この料理は辛（　　　）ですね。,らしい,そう,よう,はず,1,겉보기 인상을 나타낼 때 い형용사의 い를 빼고 そう를 붙인다.,そうだ,~해 보인다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,天気予報によると、明日は雨が降る（　　　）です。,よう,はず,そう,ところ,2,전해 들은 정보를 나타내는 보통형＋そうです가 맞다.,そうだ,~라고 한다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,外がぬれています。夜に雨が降った（　　　）です。,そう,はず,ため,よう,3,눈앞의 상황을 근거로 추측하므로 ～ようです가 자연스럽다.,ようだ,~인 것 같다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,ニュースによると、来月から電気代が上がる（　　　）です。,らしい,ように,ために,ところ,0,전해진 정보나 소문에 따른 판단에는 ～らしい를 쓸 수 있다.,らしい,~라고 한다; ~인 듯하다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,田中さんは今日は来ない（　　　）ですよ。,ところ,らしい,ため,ばかり,1,간접적으로 얻은 정보에 따른 추측에는 ～らしい가 적절하다.,らしい,~인 듯하다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,電車が遅れた（　　　）、会議に間に合いませんでした。,のに,ところ,ため,ばかり,2,원인 때문에 좋지 않은 결과가 생겼음을 말할 때 ～ため를 쓴다.,ため,~때문에
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,大雪の（　　　）、飛行機が欠航しました。,よう,そう,ところ,ため,3,명사＋のため로 원인을 나타낸다.,ため,~때문에
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本語が上手になる（　　　）、毎日ニュースを聞いています。,ために,ように,そうに,ところに,0,의지적인 목표를 이루기 위한 행동에는 ～ために를 쓴다.,ために,~하기 위해
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,忘れない（　　　）、予定を手帳に書いておきます。,ために,ように,そうに,ところに,1,잊지 않는 상태를 목표로 할 때 ～ように가 자연스럽다.,ように,~하도록
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,先生に相談し（　　　）、進学先を決めました。,ながら,ても,てから,たら,2,한 행동을 완료한 뒤 다음 행동을 했으므로 ～てから가 맞다.,てから,~하고 나서
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本へ来（　　　）、納豆が好きになりました。,ながら,ても,たら,てから,3,일본에 온 이후의 변화를 나타내므로 ～てから가 적절하다.,てから,~한 뒤부터
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,音楽を聞き（　　　）、宿題をしています。,ながら,ために,そうで,ところ,0,두 행동을 동시에 할 때 ます형 어간＋ながら를 쓴다.,ながら,~하면서
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,彼は働き（　　　）、大学に通っています。,ために,ながら,そうに,ところに,1,일하면서 동시에 대학에 다닌다는 병행 행동에 ながら를 쓴다.,ながら,~하면서
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,雨が降っ（　　　）、試合は行われます。,たら,ので,ても,ため,2,조건과 상관없이 결과가 유지되는 양보에는 ～ても를 쓴다.,ても,~해도
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,少し高く（　　　）、品質のいい物を買いたいです。,たら,ので,ため,ても,3,비싸더라도 사고 싶다는 양보 조건이므로 ～ても가 맞다.,ても,~해도
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,駅に着い（　　　）、電話してください。,たら,ても,ながら,ため,0,도착한 후라는 시간·조건에는 ～たら가 적절하다.,たら,~하면; ~했을 때
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,時間があっ（　　　）、この資料を見てください。,ても,たら,ため,ながら,1,시간이 있다면이라는 가정 조건이므로 ～たら를 쓴다.,たら,~하면
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本へ行く（　　　）、京都にも行ってみたいです。,ても,ので,なら,ながら,2,상대의 정보나 가정을 받아 조건을 제시할 때 ～なら를 쓴다.,なら,~라면
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,パソコンを買う（　　　）、この店が安いですよ。,たら,ても,ところ,なら,3,컴퓨터를 살 계획이라는 전제에 조언하므로 ～なら가 적절하다.,なら,~라면
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,このボタンを押す（　　　）、ドアが開きます。,と,なら,ても,のに,0,항상 성립하는 기계 작동 조건에는 ～と를 쓴다.,と,~하면
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,春になる（　　　）、この公園は花でいっぱいになります。,なら,と,ても,ため,1,자연스럽고 반복되는 결과에는 조건형 ～と가 적절하다.,と,~하면
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この仕事は一人ではできない（　　　）思います。,を,に,と,で,2,思う 앞에서 생각의 내용을 인용할 때 조사 と를 쓴다.,と思う,~라고 생각하다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,田中さんは明日来る（　　　）言っていました。,を,に,で,と,3,말의 내용을 인용하는 ～と言う 문형이므로 と가 맞다.,と言う,~라고 말하다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この漢字は読み（　　　）ので、覚えやすいです。,やすい,にくい,すぎる,たい,0,동작하기 쉬운 성질에는 ます형 어간＋やすい를 쓴다.,やすい,~하기 쉽다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この説明は少し分かり（　　　）です。,やすい,にくい,たい,そう,1,이해하기 어렵다는 성질에는 ～にくい를 쓴다.,にくい,~하기 어렵다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,昨日は働き（　　　）て、今日は少し疲れています。,やすく,にくく,すぎ,たく,2,정도를 지나치게 했다는 의미에는 동사 어간＋すぎる를 쓴다.,すぎる,너무 ~하다
+N3,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この問題は私には難し（　　　）ます。,そう,くなり,たがり,すぎ,3,難しい는 い를 빼고 すぎる를 붙여 難しすぎる가 된다.,すぎる,너무 ~하다

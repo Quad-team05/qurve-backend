@@ -253,6 +253,7 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
                   and sub_type = ?
                   and question_format = ?
                   and question_text = ?
+                  and passage_text <=> ?
                 order by problem_id asc
                 """,
                 (resultSet, rowNum) -> resultSet.getLong("problem_id"),
@@ -260,7 +261,8 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
                 problemSeedRow.category(),
                 problemSeedRow.subType(),
                 problemSeedRow.questionFormat(),
-                problemSeedRow.questionText()
+                problemSeedRow.questionText(),
+                problemSeedRow.passageText()
         );
 
         if (problemIds.isEmpty()) {
