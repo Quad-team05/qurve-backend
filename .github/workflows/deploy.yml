@@ -40,4 +40,18 @@ jobs:
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/qurve-backend:latest
             docker stop qurve-app || true
             docker rm qurve-app || true
-            docker run -d --name qurve-app -p 8080:8080 --env-file .env ${{ secrets.DOCKERHUB_USERNAME }}/qurve-backend:latest
+            docker run -d --name qurve-app -p 8080:8080 --env-file .env -e PROBLEM_SEED_ENABLED=true ${{ secrets.DOCKERHUB_USERNAME }}/qurve-backend:latest
+
+            for attempt in $(seq 1 30); do
+              if docker logs qurve-app 2>&1 | grep -q "Problem seed completed"; then
+                break
+              fi
+              sleep 2
+            done
+
+            if ! docker logs qurve-app 2>&1 | grep -q "Problem seed completed"; then
+              docker logs qurve-app
+              exit 1
+            fi
+
+            docker logs qurve-app 2>&1 | grep "Problem seed completed"

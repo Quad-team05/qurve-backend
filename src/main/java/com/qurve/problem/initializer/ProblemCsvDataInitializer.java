@@ -91,7 +91,12 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
             insertedChoiceCount += importResult.insertedChoiceCount();
         }
 
-        log.info("Problem seed completed. insertedProblems={}, insertedChoices={}", insertedProblemCount, insertedChoiceCount);
+        log.info(
+                "Problem seed completed. insertedProblems={}, insertedChoices={}, activeProblems={}",
+                insertedProblemCount,
+                insertedChoiceCount,
+                countActiveProblems()
+        );
     }
 
     private boolean isSeedEnabled() {
@@ -113,6 +118,15 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
         } catch (DataAccessException exception) {
             return false;
         }
+    }
+
+    private int countActiveProblems() {
+        Integer activeProblemCount = jdbcTemplate.queryForObject(
+                "select count(*) from tb_problem where is_active = true",
+                Integer.class
+        );
+
+        return activeProblemCount == null ? 0 : activeProblemCount;
     }
 
     private ImportResult importResource(Resource resource) throws Exception {
