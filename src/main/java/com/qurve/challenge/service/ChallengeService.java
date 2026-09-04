@@ -4,11 +4,14 @@ import com.qurve.badge.service.BadgeService;
 import com.qurve.challenge.domain.Challenge;
 import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.domain.ChallengeProgress;
+import com.qurve.challenge.domain.ChallengeStatus;
 import com.qurve.challenge.dto.request.ChallengeCreateRequestDto;
+import com.qurve.challenge.dto.request.ChallengeUpdateRequestDto;
 import com.qurve.challenge.dto.response.ChallengeCreateResponseDto;
 import com.qurve.challenge.dto.response.ChallengeMainResponseDto;
 import com.qurve.challenge.dto.response.ChallengeManageResponseDto;
 import com.qurve.challenge.dto.response.ChallengeManagementResponseDto;
+import com.qurve.challenge.dto.response.ChallengeUpdateResponseDto;
 import com.qurve.attendance.domain.StudyStatistics;
 import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.challenge.repository.ChallengeProgressRepository;
@@ -147,6 +150,77 @@ public class ChallengeService {
         badgeService.evaluate(user);
 
         return ChallengeCreateResponseDto.from(savedChallenge);
+    }
+
+    /**
+     * 진행 중인 챌린지의 제목, 목표값, 기간을 수정합니다.
+     *
+     * * 목표 유형은 기존 활동 이력의 기준이므로 수정 대상에서 제외합니다.
+     *
+     * @param challengeId 수정할 챌린지 ID
+     * @param requestDto 챌린지 수정 정보
+     * @param loginId 로그인 ID
+     * @return 수정된 챌린지 정보
+     * @throws BusinessException 챌린지가 없거나 수정할 수 없는 상태인 경우
+     */
+    @Transactional
+    public ChallengeUpdateResponseDto update(
+            Long challengeId,
+            ChallengeUpdateRequestDto requestDto,
+            String loginId
+    ) {
+        User user = findUserByLoginId(loginId);
+        Challenge challenge = findChallengeByIdAndUser(challengeId, user);
+
+        if (challenge.getStatus() != ChallengeStatus.ACTIVE) {
+            throw new BusinessException(ErrorCode.CHALLENGE_NOT_EDITABLE);
+        }
+
+        validateChallengePeriod(requestDto.getStartDate(), requestDto.getEndDate());
+        challenge.update(
+                requestDto.getTitle(),
+                requestDto.getTargetValue(),
+                requestDto.getStartDate(),
+                requestDto.getEndDate()
+        );
+
+        challengeProgressRepository.findByChallenge(challenge)
+                .ifPresent(progress -> progress.updateCompletedDays(challenge.getCurrentValue()));
+
+        return ChallengeUpdateResponseDto.from(challenge);
+    }
+
+    /**
+     * 로그인한 사용자의 챌린지와 연결된 진행도 정보를 삭제합니다.
+     *
+     * @param challengeId 삭제할 챌린지 ID
+     * @param loginId 로그인 ID
+     * @throws BusinessException 챌린지가 존재하지 않는 경우
+     */
+    @Transactional
+    public void delete(Long challengeId, String loginId) {
+        User user = findUserByLoginId(loginId);
+        Challenge challenge = findChallengeByIdAndUser(challengeId, user);
+
+        challengeProgressRepository.findByChallenge(challenge)
+                .ifPresent(challengeProgressRepository::delete);
+        challengeRepository.delete(challenge);
+    }
+
+    private User findUserByLoginId(String loginId) {
+        return userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private Challenge findChallengeByIdAndUser(Long challengeId, User user) {
+        return challengeRepository.findByChallengeIdAndUser(challengeId, user)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+    }
+
+    private void validateChallengePeriod(java.time.LocalDate startDate, java.time.LocalDate endDate) {
+        if (endDate.isBefore(startDate)) {
+            throw new BusinessException(ErrorCode.INVALID_CHALLENGE_PERIOD);
+        }
     }
 
     private int calculateProgressRate(int targetValue, int completedDays) {
