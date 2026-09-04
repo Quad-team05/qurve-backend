@@ -1,9 +1,9 @@
 package com.qurve.user.controller;
 
 import com.qurve.global.common.ApiResponse;
+import com.qurve.user.dto.request.LearningLanguageRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import com.qurve.user.dto.request.LearningLanguageRequestDto;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
 import com.qurve.user.dto.request.UserPasswordChangeRequestDto;
 import com.qurve.user.dto.request.UserProfileUpdateRequestDto;
@@ -42,10 +42,7 @@ public class UserController {
 
     @PatchMapping("/password")
     @Operation(summary = "비밀번호 변경", description = "현재 비밀번호를 확인한 뒤 새 비밀번호로 변경합니다.")
-    public ResponseEntity<ApiResponse<Void>> changePassword(
-            @Valid @RequestBody UserPasswordChangeRequestDto requestDto,
-            Authentication authentication
-    ) {
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody UserPasswordChangeRequestDto requestDto, Authentication authentication) {
         userService.changePassword(requestDto, authentication.getName());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
