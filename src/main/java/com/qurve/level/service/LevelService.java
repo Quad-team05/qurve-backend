@@ -1,6 +1,7 @@
 package com.qurve.level.service;
 
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.level.dto.request.LevelTestRequestDto;
 import com.qurve.level.dto.request.LevelTestResultRequestDto;
@@ -23,15 +24,26 @@ public class LevelService {
     private final UserRepository userRepository;
 
     /**
-     * 사전 레벨 테스트 질문 조회
+     * 로그인한 사용자의 학습 언어에 맞는 사전 레벨 테스트 질문 조회
      *
-     * * 레벨 테스트 이전에 사용자의 학습 경험과
-     * 기초 문자 이해도를 파악하기 위한 사전 질문 목록을 반환한다.
+     * 사용자의 학습 경험과 읽기·말하기 능력을 파악하기 위한
+     * 사전 질문 목록을 반환한다.
      *
-     * @return 사전 레벨 테스트 질문 목록
+     * @param loginId 로그인 ID
+     * @return 학습 언어에 맞는 사전 레벨 테스트 질문 목록
+     * @throws BusinessException 사용자가 존재하지 않는 경우
      */
-    public PreQuestionResponseDto getPreQuestions() {
+    public PreQuestionResponseDto getPreQuestions(String loginId) {
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        if (user.getLearningLanguage() == LearningLanguage.ENGLISH) {
+            return getEnglishPreQuestions();
+        }
+        return getJapanesePreQuestions();
+    }
+
+    private PreQuestionResponseDto getJapanesePreQuestions() {
         List<OptionDto> option1 = List.of(
                 new OptionDto(1, "처음 시작해요 (0개월)"),
                 new OptionDto(2, "3개월 미만"),
@@ -52,9 +64,62 @@ public class LevelService {
         );
 
         List<PreQuestionDto> questions = List.of(
-                new PreQuestionDto(1, "일본어를 배워본 기간이 얼마나 되나요?", option1),
-                new PreQuestionDto(2, "히라가나·가타카나를 읽을 수 있나요?", option2),
-                new PreQuestionDto(3, "일본어로 말할 수 있나요?", option3)
+                new PreQuestionDto(
+                        1,
+                        "일본어를 배워본 기간이 얼마나 되나요?",
+                        option1
+                ),
+                new PreQuestionDto(
+                        2,
+                        "히라가나·가타카나를 읽을 수 있나요?",
+                        option2
+                ),
+                new PreQuestionDto(
+                        3,
+                        "일본어로 말할 수 있나요?",
+                        option3
+                )
+        );
+
+        return new PreQuestionResponseDto(questions);
+    }
+
+    private PreQuestionResponseDto getEnglishPreQuestions() {
+        List<OptionDto> option1 = List.of(
+                new OptionDto(1, "학교 수업 외에는 따로 공부해 본 적이 거의 없어요"),
+                new OptionDto(2, "기본 단어와 문법을 중심으로 공부했어요"),
+                new OptionDto(3, "간단한 글을 읽고 문제를 풀 수 있을 정도로 공부했어요"),
+                new OptionDto(4, "다양한 글을 이해하고 영어를 실제 상황에서 사용해 본 경험이 있어요")
+        );
+
+        List<OptionDto> option2 = List.of(
+                new OptionDto(1, "일상적인 주제의 짧은 글은 전체 내용을 이해할 수 있어요"),
+                new OptionDto(2, "익숙한 단어와 간단한 문장은 이해할 수 있어요"),
+                new OptionDto(3, "아는 단어는 있지만 문장의 전체 의미를 이해하기 어려워요")
+        );
+
+        List<OptionDto> option3 = List.of(
+                new OptionDto(1, "일상적인 주제로 간단한 대화를 이어갈 수 있어요"),
+                new OptionDto(2, "자기소개나 익숙한 표현을 짧게 말할 수 있어요"),
+                new OptionDto(3, "단어는 알고 있지만 문장으로 말하기는 어려워요")
+        );
+
+        List<PreQuestionDto> questions = List.of(
+                new PreQuestionDto(
+                        1,
+                        "영어를 어느 정도 공부해 보셨나요?",
+                        option1
+                ),
+                new PreQuestionDto(
+                        2,
+                        "영어로 된 짧은 글을 어느 정도 이해할 수 있나요?",
+                        option2
+                ),
+                new PreQuestionDto(
+                        3,
+                        "영어로 어느 정도 말할 수 있나요?",
+                        option3
+                )
         );
 
         return new PreQuestionResponseDto(questions);
