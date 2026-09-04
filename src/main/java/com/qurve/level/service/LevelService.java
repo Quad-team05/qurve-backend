@@ -34,8 +34,7 @@ public class LevelService {
      * @throws BusinessException 사용자가 존재하지 않는 경우
      */
     public PreQuestionResponseDto getPreQuestions(String loginId) {
-        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = findUser(loginId);
 
         if (user.getLearningLanguage() == LearningLanguage.ENGLISH) {
             return getEnglishPreQuestions();
@@ -132,12 +131,20 @@ public class LevelService {
      * 해당 수준에 맞는 문제 세트를 반환한다.
      *
      * @param dto 사전 질문 응답 정보
+     * @param loginId 로그인 ID
      * @return 사용자 수준에 맞는 레벨 테스트 문제 목록
+     * @throws BusinessException 사용자가 존재하지 않는 경우
      */
-    public LevelTestResponseDto getLevelTestQuestions(LevelTestRequestDto dto) {
-        int caseNumber = determineCase(dto.getPre1Answer(), dto.getPre2Answer(), dto.getPre3Answer());
+    public LevelTestResponseDto getLevelTestQuestions(LevelTestRequestDto dto, String loginId) {
+        User user = findUser(loginId);
 
-        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber);
+        int caseNumber = determineCase(
+                dto.getPre1Answer(),
+                dto.getPre2Answer(),
+                dto.getPre3Answer()
+        );
+
+        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber, user.getLearningLanguage());
 
         return new LevelTestResponseDto(questions);
     }
@@ -178,16 +185,32 @@ public class LevelService {
      * @param caseNumber 문제 세트 번호
      * @return 해당 케이스의 레벨 테스트 문항 목록
      */
-    private List<LevelTestQuestionDto> getQuestionsByCase(int caseNumber) {
+    private List<LevelTestQuestionDto> getQuestionsByCase(int caseNumber, LearningLanguage learningLanguage) {
+        if (learningLanguage == LearningLanguage.ENGLISH) {
+            return getEnglishQuestionsByCase(caseNumber);
+        }
+
+        return getJapaneseQuestionsByCase(caseNumber);
+    }
+
+    private List<LevelTestQuestionDto> getJapaneseQuestionsByCase(int caseNumber) {
         return switch (caseNumber) {
-            case 1 -> getCase1Questions();
-            case 2 -> getCase2Questions();
-            default -> getCase3Questions();
+            case 1 -> getJapaneseCase1Questions();
+            case 2 -> getJapaneseCase2Questions();
+            default -> getJapaneseCase3Questions();
+        };
+    }
+
+    private List<LevelTestQuestionDto> getEnglishQuestionsByCase(int caseNumber) {
+        return switch (caseNumber) {
+            case 1 -> getEnglishCase1Questions();
+            case 2 -> getEnglishCase2Questions();
+            default -> getEnglishCase3Questions();
         };
     }
 
     // Case 1 문제 데이터
-    private List<LevelTestQuestionDto> getCase1Questions() {
+    private List<LevelTestQuestionDto> getJapaneseCase1Questions() {
         return List.of(
                 new LevelTestQuestionDto(1, "「みず」の 뜻은 무엇인가요?", "쉬움",
                         List.of(
@@ -273,7 +296,7 @@ public class LevelService {
     }
 
     // Case 2 문제 데이터
-    private List<LevelTestQuestionDto> getCase2Questions() {
+    private List<LevelTestQuestionDto> getJapaneseCase2Questions() {
         return List.of(
                 new LevelTestQuestionDto(1, "「まいにち 7じ（　）おきます。」에 들어갈 알맞은 것은?", "쉬움",
                         List.of(
@@ -359,7 +382,7 @@ public class LevelService {
     }
 
     // Case 3 문제 데이터
-    private List<LevelTestQuestionDto> getCase3Questions() {
+    private List<LevelTestQuestionDto> getJapaneseCase3Questions() {
         return List.of(
                 new LevelTestQuestionDto(1, "「雨が ふっていた（　）、出かけませんでした。」", "쉬움",
                         List.of(
@@ -444,6 +467,264 @@ public class LevelService {
         );
     }
 
+    // 영어 Case 1: A1 ~ A2 초반 수준
+    private List<LevelTestQuestionDto> getEnglishCase1Questions() {
+        return List.of(
+                new LevelTestQuestionDto(1, "빈칸에 들어갈 가장 알맞은 것은?\nMy sister ___ a teacher.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "am"),
+                                new OptionDto(2, "is"),
+                                new OptionDto(3, "are"),
+                                new OptionDto(4, "be"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(2, "'borrow'의 뜻으로 가장 알맞은 것은?", "쉬움",
+                        List.of(
+                                new OptionDto(1, "빌려주다"),
+                                new OptionDto(2, "구매하다"),
+                                new OptionDto(3, "빌리다"),
+                                new OptionDto(4, "돌려주다"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(3, "빈칸에 들어갈 가장 알맞은 것은?\nTom ___ to school by bus every day.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "go"),
+                                new OptionDto(2, "goes"),
+                                new OptionDto(3, "going"),
+                                new OptionDto(4, "went"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(4, "질문에 가장 자연스러운 대답은?\nHow often do you exercise?", "쉬움",
+                        List.of(
+                                new OptionDto(1, "At the gym."),
+                                new OptionDto(2, "For two hours."),
+                                new OptionDto(3, "Twice a week."),
+                                new OptionDto(4, "With my friend."),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(5, "빈칸에 들어갈 가장 알맞은 것은?\nThe class starts ___ 9 a.m.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "in"),
+                                new OptionDto(2, "on"),
+                                new OptionDto(3, "at"),
+                                new OptionDto(4, "from"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(6, "빈칸에 들어갈 가장 알맞은 것은?\nShe can ___ the piano very well.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "plays"),
+                                new OptionDto(2, "played"),
+                                new OptionDto(3, "playing"),
+                                new OptionDto(4, "play"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 4),
+                new LevelTestQuestionDto(7, "빈칸에 들어갈 가장 알맞은 것은?\nWe ___ to the museum yesterday.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "go"),
+                                new OptionDto(2, "goes"),
+                                new OptionDto(3, "went"),
+                                new OptionDto(4, "going"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(8, "친구가 시험에 합격했다고 말했을 때 가장 자연스러운 표현은?", "쉬움",
+                        List.of(
+                                new OptionDto(1, "I'm sorry to hear that."),
+                                new OptionDto(2, "Congratulations!"),
+                                new OptionDto(3, "Never mind."),
+                                new OptionDto(4, "You're welcome."),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(9, "'No food or drinks.'의 의미로 가장 알맞은 것은?", "쉬움",
+                        List.of(
+                                new OptionDto(1, "음식과 음료를 무료로 제공합니다."),
+                                new OptionDto(2, "음식만 가지고 들어갈 수 있습니다."),
+                                new OptionDto(3, "음료만 가지고 들어갈 수 있습니다."),
+                                new OptionDto(4, "음식과 음료를 가지고 들어갈 수 없습니다."),
+                                new OptionDto(5, "모르겠어요")
+                        ), 4),
+                new LevelTestQuestionDto(10, "글을 읽고 Mina가 버스를 탄 이유를 고르세요.\nIt was raining this morning, so Mina took the bus instead of walking to school.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "늦잠을 자서"),
+                                new OptionDto(2, "비가 와서"),
+                                new OptionDto(3, "학교가 멀어서"),
+                                new OptionDto(4, "친구를 만나서"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2)
+        );
+    }
+
+    // 영어 Case 2: A2 ~ B1 수준
+    private List<LevelTestQuestionDto> getEnglishCase2Questions() {
+        return List.of(
+                new LevelTestQuestionDto(1, "빈칸에 들어갈 가장 알맞은 것은?\nI ___ dinner when you called me.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "cook"),
+                                new OptionDto(2, "cooked"),
+                                new OptionDto(3, "was cooking"),
+                                new OptionDto(4, "am cooking"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(2, "빈칸에 들어갈 가장 알맞은 것은?\nThis book is ___ than the one I read last week.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "interesting"),
+                                new OptionDto(2, "more interesting"),
+                                new OptionDto(3, "most interesting"),
+                                new OptionDto(4, "the interesting"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(3, "빈칸에 들어갈 가장 알맞은 것은?\nWe don't have ___ milk left.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "some"),
+                                new OptionDto(2, "any"),
+                                new OptionDto(3, "many"),
+                                new OptionDto(4, "a few"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(4, "빈칸에 들어갈 가장 알맞은 것은?\nYou ___ use your phone during the exam.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "don't have to"),
+                                new OptionDto(2, "should"),
+                                new OptionDto(3, "mustn't"),
+                                new OptionDto(4, "might"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(5, "대화의 빈칸에 들어갈 가장 자연스러운 것은?\nA: Would you like some coffee?\nB: ___", "쉬움",
+                        List.of(
+                                new OptionDto(1, "Yes, please."),
+                                new OptionDto(2, "It doesn't matter."),
+                                new OptionDto(3, "That's all right."),
+                                new OptionDto(4, "I hope so."),
+                                new OptionDto(5, "모르겠어요")
+                        ), 1),
+                new LevelTestQuestionDto(6, "빈칸에 들어갈 가장 알맞은 것은?\nI ___ in Seoul since 2022.", "중간",
+                        List.of(
+                                new OptionDto(1, "live"),
+                                new OptionDto(2, "lived"),
+                                new OptionDto(3, "have lived"),
+                                new OptionDto(4, "am living yesterday"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(7, "빈칸에 들어갈 가장 알맞은 것은?\nIf it rains tomorrow, we ___ at home.", "중간",
+                        List.of(
+                                new OptionDto(1, "stayed"),
+                                new OptionDto(2, "will stay"),
+                                new OptionDto(3, "have stayed"),
+                                new OptionDto(4, "would have stayed"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(8, "빈칸에 들어갈 가장 알맞은 것은?\nThe woman ___ helped me was very kind.", "중간",
+                        List.of(
+                                new OptionDto(1, "which"),
+                                new OptionDto(2, "where"),
+                                new OptionDto(3, "whose"),
+                                new OptionDto(4, "who"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 4),
+                new LevelTestQuestionDto(9, "문장에서 'afford'의 의미로 가장 알맞은 것은?\nI want to buy the laptop, but I can't afford it right now.", "중간",
+                        List.of(
+                                new OptionDto(1, "노트북을 찾을 수 없다"),
+                                new OptionDto(2, "노트북을 사용할 수 없다"),
+                                new OptionDto(3, "노트북을 살 경제적 여유가 없다"),
+                                new OptionDto(4, "노트북을 선택할 수 없다"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(10, "글을 읽고 내용과 일치하는 것을 고르세요.\nDaniel usually drives to work. However, his car is being repaired this week, so he is taking the subway. He says the subway is more convenient than he expected.", "중간",
+                        List.of(
+                                new OptionDto(1, "Daniel은 항상 지하철로 출근한다."),
+                                new OptionDto(2, "Daniel은 자동차를 새로 구입했다."),
+                                new OptionDto(3, "Daniel은 이번 주에 출근하지 않는다."),
+                                new OptionDto(4, "Daniel은 지하철이 예상보다 편리하다고 생각한다."),
+                                new OptionDto(5, "모르겠어요")
+                        ), 4)
+        );
+    }
+
+    // 영어 Case 3: B1 ~ B2 수준
+    private List<LevelTestQuestionDto> getEnglishCase3Questions() {
+        return List.of(
+                new LevelTestQuestionDto(1, "빈칸에 들어갈 가장 알맞은 것은?\nThis bridge ___ in 1995.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "built"),
+                                new OptionDto(2, "was built"),
+                                new OptionDto(3, "has built"),
+                                new OptionDto(4, "was building"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(2, "빈칸에 들어갈 가장 알맞은 것은?\nI ___ play outside every day when I was a child.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "used to"),
+                                new OptionDto(2, "am used to"),
+                                new OptionDto(3, "was used"),
+                                new OptionDto(4, "use to"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 1),
+                new LevelTestQuestionDto(3, "빈칸에 들어갈 가장 알맞은 것은?\nI met a writer ___ books have been translated into many languages.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "who"),
+                                new OptionDto(2, "which"),
+                                new OptionDto(3, "whose"),
+                                new OptionDto(4, "whom"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(4, "빈칸에 들어갈 가장 알맞은 것은?\nYou won't finish the project on time ___ you start working now.", "쉬움",
+                        List.of(
+                                new OptionDto(1, "if"),
+                                new OptionDto(2, "unless"),
+                                new OptionDto(3, "because"),
+                                new OptionDto(4, "although"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(5, "Jane said, 'I am tired.'를 간접화법으로 바르게 바꾼 것은?", "쉬움",
+                        List.of(
+                                new OptionDto(1, "Jane said that I am tired."),
+                                new OptionDto(2, "Jane said that she is tired yesterday."),
+                                new OptionDto(3, "Jane said that she was tired."),
+                                new OptionDto(4, "Jane said that she has tired."),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(6, "빈칸에 들어갈 가장 알맞은 것은?\nIf I had known about the meeting, I ___ it.", "어려움",
+                        List.of(
+                                new OptionDto(1, "attended"),
+                                new OptionDto(2, "would attend"),
+                                new OptionDto(3, "would have attended"),
+                                new OptionDto(4, "had attended"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(7, "빈칸에 들어갈 가장 알맞은 것은?\nNot until she arrived home ___ that she had lost her wallet.", "어려움",
+                        List.of(
+                                new OptionDto(1, "she realized"),
+                                new OptionDto(2, "did she realize"),
+                                new OptionDto(3, "she had realized"),
+                                new OptionDto(4, "had she realized"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(8, "다음 중 문법적으로 가장 자연스러운 문장은?", "어려움",
+                        List.of(
+                                new OptionDto(1, "Despite the weather was bad, we went hiking."),
+                                new OptionDto(2, "Despite of the bad weather, we went hiking."),
+                                new OptionDto(3, "Despite the bad weather, we went hiking."),
+                                new OptionDto(4, "Despite it was bad weather, we went hiking."),
+                                new OptionDto(5, "모르겠어요")
+                        ), 3),
+                new LevelTestQuestionDto(9, "문장에서 'reluctant'의 의미로 가장 알맞은 것은?\nShe was reluctant to accept the offer because it required moving abroad.", "어려움",
+                        List.of(
+                                new OptionDto(1, "기꺼이 하는"),
+                                new OptionDto(2, "망설이는"),
+                                new OptionDto(3, "자격이 있는"),
+                                new OptionDto(4, "준비가 끝난"),
+                                new OptionDto(5, "모르겠어요")
+                        ), 2),
+                new LevelTestQuestionDto(10, "글을 읽고 가장 타당하게 추론할 수 있는 것을 고르세요.\nThe company introduced remote work expecting productivity to rise immediately. Output remained nearly unchanged during the first month, but employee satisfaction increased significantly. Managers believe productivity may improve once teams become accustomed to the new communication tools.", "어려움",
+                        List.of(
+                                new OptionDto(1, "원격 근무는 첫 달부터 생산성을 크게 높였다."),
+                                new OptionDto(2, "직원 만족도와 생산성이 모두 감소했다."),
+                                new OptionDto(3, "회사는 원격 근무를 즉시 폐지할 예정이다."),
+                                new OptionDto(4, "새로운 도구에 적응한 뒤 생산성이 향상될 가능성이 있다."),
+                                new OptionDto(5, "모르겠어요")
+                        ), 4)
+        );
+    }
+
     /**
      * 레벨 테스트 결과 채점 및 레벨 산정
      *
@@ -453,15 +734,19 @@ public class LevelService {
      * * 이후 문제 세트별 점수 기준에 따라 최종 레벨을 산정한다.
      *
      * @param dto 레벨 테스트 제출 정보
+     * @param loginId 로그인 ID
      * @return 채점 결과 및 레벨 정보
+     * @throws BusinessException 사용자가 존재하지 않는 경우
      */
-    public LevelTestResultResponseDto levelTestResult(LevelTestResultRequestDto dto) {
+    public LevelTestResultResponseDto levelTestResult(LevelTestResultRequestDto dto, String loginId) {
+
+        User user = findUser(loginId);
 
         // 케이스 분류
         int caseNumber = determineCase(dto.getPre1Answer(), dto.getPre2Answer(), dto.getPre3Answer());
 
         // 문제 가져오기
-        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber);
+        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber, user.getLearningLanguage());
 
         int score = 0;
         int correctCount = 0;
@@ -548,5 +833,10 @@ public class LevelService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         user.updateLevel(dto.getLevel());
+    }
+
+    private User findUser(String loginId) {
+        return userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 }
