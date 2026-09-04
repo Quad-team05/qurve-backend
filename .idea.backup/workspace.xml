@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="624ef197-3f4d-4519-add6-49c1b3dabe5c" name="변경" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/qurve/auth/dto/request/SignupRequestDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/qurve/auth/dto/request/SignupRequestDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/qurve/global/security/OAuth2SuccessHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/qurve/global/security/OAuth2SuccessHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/qurve/user/domain/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/qurve/user/domain/User.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="qurve" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Enum" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="3DnMJuMGlnrkDqyxELQ8tfodjdR" />
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle./Users/jeonghyunji/projects/qurve.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.qurve 빌드.executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Spring Boot.QurveApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature-QVE-E-1-1-1&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/jeonghyunji/projects/qurve/src/main/resources/data&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;프로젝트&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/data" />
+      <recent name="$PROJECT_DIR$/src/main/java/com/qurve/global/enums" />
+      <recent name="$PROJECT_DIR$/src/main/java/com/qurve/global/entity" />
+      <recent name="$PROJECT_DIR$/src/main/java/com/qurve/global/common" />
+      <recent name="$PROJECT_DIR$/src/main/java/com/qurve/global/exception" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.qurve.auth.dto.response" />
+      <recent name="com.qurve.auth.dto.request" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.QurveApplication">
+    <configuration name="/Users/jeonghyunji/projects/qurve" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list />
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="QurveApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="qurve.main" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.qurve.QurveApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle./Users/jeonghyunji/projects/qurve" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fdfe4dae3a2d-intellij.indexing.shared.core-IU-243.21565.193" />
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-IU-243.21565.193" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="624ef197-3f4d-4519-add6-49c1b3dabe5c" name="변경" comment="" />
+      <created>1778913314588</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1778913314588</updated>
+      <workItem from="1778913315605" duration="2736000" />
+      <workItem from="1779084517476" duration="847000" />
+      <workItem from="1779104189710" duration="1365000" />
+      <workItem from="1779106231037" duration="42000" />
+      <workItem from="1779107240084" duration="2346000" />
+      <workItem from="1779113775084" duration="1241000" />
+      <workItem from="1779499170825" duration="17355000" />
+      <workItem from="1779779997225" duration="4428000" />
+      <workItem from="1779849035527" duration="11809000" />
+      <workItem from="1780035261096" duration="183000" />
+      <workItem from="1780036041649" duration="7763000" />
+      <workItem from="1780125040589" duration="343000" />
+      <workItem from="1780295479892" duration="9860000" />
+      <workItem from="1780403743018" duration="2820000" />
+      <workItem from="1780648032093" duration="4815000" />
+      <workItem from="1780916466944" duration="14828000" />
+      <workItem from="1781004930030" duration="12000" />
+      <workItem from="1785324007758" duration="8154000" />
+      <workItem from="1785403095638" duration="51997000" />
+      <workItem from="1786531762614" duration="641000" />
+      <workItem from="1786769840155" duration="4659000" />
+      <workItem from="1786775151806" duration="11000" />
+      <workItem from="1786775724326" duration="4139000" />
+      <workItem from="1787047036901" duration="2162000" />
+      <workItem from="1787360480768" duration="2211000" />
+      <workItem from="1787374923488" duration="7204000" />
+      <workItem from="1787931861372" duration="57000" />
+      <workItem from="1787965463839" duration="2752000" />
+      <workItem from="1788097077884" duration="2743000" />
+      <workItem from="1788429758150" duration="1568000" />
+      <workItem from="1788431666942" duration="5329000" />
+      <workItem from="1788521170370" duration="42000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

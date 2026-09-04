@@ -2,6 +2,7 @@ package com.qurve.global.security;
 
 import com.qurve.badge.service.BadgeService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.global.enums.Role;
 import com.qurve.user.domain.User;
@@ -91,6 +92,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                         .nickname(name)
                         .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
                         .role(Role.USER)
+                        .learningLanguage(LearningLanguage.JAPANESE)
                         .emailVerified(true)
                         .build()));
 

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
 import com.qurve.user.dto.request.UserPasswordChangeRequestDto;
 import com.qurve.user.dto.request.UserProfileUpdateRequestDto;
+import com.qurve.user.dto.response.LearningLanguageResponseDto;
 import com.qurve.user.dto.response.LearningProfileResponseDto;
 import com.qurve.user.dto.response.UserProfileResponseDto;
 import com.qurve.user.service.UserService;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -49,6 +51,13 @@ public class UserController {
     }
 
     @PatchMapping("/learning-profile")
+    public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(@Valid @RequestBody LearningProfileRequestDto requestDto, Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(userService.updateLearningProfile(requestDto, authentication.getName())));
+    }
+
+    @PatchMapping("/language")
+    public ResponseEntity<ApiResponse<LearningLanguageResponseDto>> updateLearningLanguage(@Valid @RequestBody LearningLanguageRequestDto requestDto, Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(userService.updateLearningLanguage(requestDto, authentication.getName())));
     @Operation(summary = "학습 목적·단계 설정", description = "사용자의 학습 목적, 현재 레벨, 목표 언어를 저장합니다.")
     public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(
             @Valid @RequestBody LearningProfileRequestDto requestDto,

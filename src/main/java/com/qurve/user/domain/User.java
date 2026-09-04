@@ -1,6 +1,7 @@
 package com.qurve.user.domain;
 
 import com.qurve.global.entity.BaseEntity;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,11 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(name = "learning_language", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'JAPANESE'")
+    private LearningLanguage learningLanguage = LearningLanguage.JAPANESE;
 
     @Column(name = "name", length = 100, nullable = false)
     private String name;
@@ -105,5 +111,9 @@ public class User extends BaseEntity {
         if (currentLevel != null) {
             this.currentLevel = currentLevel;
         }
+    }
+
+    public void updateLearningLanguage(LearningLanguage learningLanguage) {
+        this.learningLanguage = learningLanguage;
     }
 }

@@ -1,0 +1,41 @@
+﻿level,category,subType,questionFormat,questionText,choice1,choice2,choice3,choice4,answerIndex,explanation,targetExpression,targetMeaning
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「促進」の読み方はどれですか。,そくしん,ぞくしん,そくじん,そっしん,0,促進은 '촉진'이며 そくしん이라고 읽는다.,促進,촉진
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「維持」の読み方はどれですか。,いし,いじ,ゆじ,いち,1,維持는 '유지'이며 いじ라고 읽는다.,維持,유지
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「把握」の読み方はどれですか。,はわく,ばあく,はあく,はかく,2,把握은 '파악'이며 はあく라고 읽는다.,把握,파악
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「妥当」の読み方はどれですか。,たとう,だどう,だと,だとう,3,妥当은 '타당'이며 だとう라고 읽는다.,妥当,타당
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「著しい」の読み方はどれですか。,いちじるしい,いちじらしい,ちょしい,いちしるしい,0,著しい는 '현저하다'이며 いちじるしい라고 읽는다.,著しい,현저하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「補う」の読み方はどれですか。,ほなう,おぎなう,おきなう,つぐなう,1,補う는 부족한 것을 '보충하다'이며 おぎなう라고 읽는다.,補う,보충하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「伴う」の読み方はどれですか。,ともらう,はんう,ともなう,ともにう,2,伴う는 '동반하다'이며 ともなう라고 읽는다.,伴う,동반하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「免れる」の読み方はどれですか。,まぬかれる,めんれる,まのがれる,まぬがれる,3,"免れる는 '면하다, 피하다'이며 まぬがれる라고 읽는다.",免れる,면하다; 피하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「著者」の読み方はどれですか。,ちょしゃ,ちょじゃ,しょしゃ,ちょうしゃ,0,著者는 '저자'이며 ちょしゃ라고 읽는다.,著者,저자
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「柔軟」の読み方はどれですか。,じゅなん,じゅうなん,にゅうなん,じゅうねん,1,柔軟은 '유연함'이며 じゅうなん이라고 읽는다.,柔軟,유연함
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「がいとう」を『해당』の意味で漢字にするとどれですか。,概当,該答,該当,外当,2,해당이라는 뜻의 がいとう는 該当로 쓴다.,該当,해당
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「けいこう」を『경향』の意味で漢字にするとどれですか。,経向,傾行,系向,傾向,3,けいこう는 傾向이며 '경향'이라는 뜻이다.,傾向,경향
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「たいおう」を漢字にするとどれですか。,対応,対応,対往,体応,0,たいおう는 対応이며 '대응'이라는 뜻이다.,対応,대응
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「しょうにん」を『승인』の意味で漢字にするとどれですか。,証認,承認,承任,招認,1,승인이라는 뜻의 しょうにん는 承認로 쓴다.,承認,승인
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「こうりつ」を『효율』の意味で漢字にするとどれですか。,功率,効律,効率,校率,2,こうりつ는 効率이며 '효율'이라는 뜻이다.,効率,효율
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「かだい」を『과제』の意味で漢字にするとどれですか。,科題,課台,過題,課題,3,かだい는 課題이며 '과제'라는 뜻이다.,課題,과제
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「あらかじめ」の意味に最も近いものはどれですか。,미리,갑자기,결국,대체로,0,あらかじめ는 일이 일어나기 전에 '미리'라는 뜻이다.,あらかじめ,미리
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「おおむね」の意味に最も近いものはどれですか。,정확히,대체로,전혀,우연히,1,おおむね는 전체적으로 보아 '대체로'라는 뜻이다.,おおむね,대체로
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「直ちに」の意味に最も近いものはどれですか。,천천히,잠시 후,즉시,언젠가,2,直ちに는 지체 없이 '즉시'라는 뜻이다.,直ちに,즉시
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「一層」の意味に最も近いものはどれですか。,조금씩,거의,마침내,한층 더,3,一層은 정도가 이전보다 '한층 더'라는 뜻이다.,一層,한층 더
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「あえて」の意味に最も近いものはどれですか。,굳이; 감히,우연히,자연스럽게,대충,0,あえて는 어려움 등을 알면서도 '굳이' 한다는 뜻이다.,あえて,굳이; 감히
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「いずれ」の意味に最も近いものはどれですか。,방금,언젠가; 어느 쪽이든,반드시 오늘,전혀,1,いずれ는 문맥에 따라 '언젠가' 또는 '어느 쪽이든'을 뜻한다.,いずれ,언젠가; 어느 쪽이든
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「極めて」の意味に最も近いものはどれですか。,조금,가끔,극히; 매우,대략,2,極めて는 정도가 매우 높음을 나타낸다.,極めて,극히; 매우
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「むしろ」の意味に最も近いものはどれですか。,따라서,예를 들어,즉시,오히려,3,むしろ는 비교하여 반대쪽이 더 적절함을 나타내는 '오히려'다.,むしろ,오히려
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「及ぼす」の意味に最も近いものはどれですか。,미치게 하다; 끼치다,회복하다,제거하다,거절하다,0,及ぼす는 영향 등을 어떤 대상에 '미치게 하다'라는 뜻이다.,及ぼす,영향을 미치다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「備える」の意味に最も近いものはどれですか。,버리다,대비하다; 갖추다,감소하다,빌리다,1,備える는 필요한 것을 갖추거나 미래에 대비한다는 뜻이다.,備える,대비하다; 갖추다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「省く」の意味に最も近いものはどれですか。,추가하다,반복하다,생략하다; 덜다,강조하다,2,省く는 불필요한 부분을 빼거나 생략한다는 뜻이다.,省く,생략하다; 덜다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「損なう」の意味に最も近いものはどれですか。,개선하다,유지하다,확대하다,해치다; 손상시키다,3,損なう는 가치나 상태 등을 나쁘게 하거나 해친다는 뜻이다.,損なう,해치다; 손상시키다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「見込む」の意味に最も近いものはどれですか。,예상하다; 기대하다,포기하다,제외하다,확정 취소하다,0,見込む는 가능성이나 수량 등을 예상하거나 기대한다는 뜻이다.,見込む,예상하다; 기대하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「取り組む」の意味に最も近いものはどれですか。,피하다,적극적으로 임하다,중단하다,양보하다,1,取り組む는 과제나 문제에 본격적으로 임한다는 뜻이다.,取り組む,적극적으로 임하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「踏まえる」の意味に最も近いものはどれですか。,무시하다,반대하다,근거로 삼다; 고려하다,삭제하다,2,踏まえる는 사실이나 상황을 근거로 삼아 고려한다는 뜻이다.,踏まえる,근거로 삼다; 고려하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「設ける」の意味に最も近いものはどれですか。,없애다,줄이다,고장내다,마련하다; 설치하다,3,設ける는 제도·장소·기회 등을 마련한다는 뜻이다.,設ける,마련하다; 설치하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「遂げる」の意味に最も近いものはどれですか。,이루다; 완수하다,미루다,잊다,거절하다,0,遂げる는 목표나 임무를 끝까지 이루는 것을 뜻한다.,遂げる,이루다; 완수하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「促す」の意味に最も近いものはどれですか。,방해하다,촉구하다; 재촉하다,숨기다,취소하다,1,促す는 행동이 이루어지도록 재촉하거나 권한다는 뜻이다.,促す,촉구하다; 재촉하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「応じる」の意味に最も近いものはどれですか。,거부하다,도망가다,응하다; 대응하다,보관하다,2,応じる는 요청이나 상황에 맞추어 대응한다는 뜻이다.,応じる,응하다; 대응하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「限る」の意味に最も近いものはどれですか。,확장하다,추천하다,설명하다,제한하다,3,限る는 범위나 수량을 일정하게 제한한다는 뜻이다.,限る,제한하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「伴う」の意味に最も近いものはどれですか。,동반하다,분리하다,대체하다,생략하다,0,伴う는 어떤 현상과 함께 다른 것이 생기는 것을 뜻한다.,伴う,동반하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「妨げる」の意味に最も近いものはどれですか。,촉진하다,방해하다,승인하다,보완하다,1,妨げる는 진행이나 행동을 어렵게 만들어 방해한다는 뜻이다.,妨げる,방해하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「見直す」の意味に最も近いものはどれですか。,완전히 버리다,처음 시작하다,재검토하다,복사하다,2,見直す는 기존 내용이나 방식을 다시 검토한다는 뜻이다.,見直す,재검토하다
+N2,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「補う」の意味に最も近いものはどれですか。,줄이다,거절하다,고정하다,보충하다,3,補う는 부족한 부분을 채운다는 뜻이다.,補う,보충하다
