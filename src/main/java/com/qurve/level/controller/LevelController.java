@@ -12,6 +12,7 @@ import com.qurve.level.dto.response.PreQuestionResponseDto;
 import com.qurve.level.service.LevelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,9 +25,9 @@ public class LevelController {
     private final LevelService levelService;
 
     @GetMapping("/pre-questions")
-    @Operation(summary = "레벨 테스트 사전 질문 조회", description = "레벨 테스트 시작 전 사용자에게 제시할 사전 질문을 조회합니다.")
-    public ResponseEntity<ApiResponse<PreQuestionResponseDto>> getPreQuestions() {
-        return ResponseEntity.ok(ApiResponse.success(levelService.getPreQuestions()));
+    @Operation(summary = "레벨 테스트 사전 질문 조회", description = "로그인한 사용자의 학습 언어에 맞는 사전 질문을 조회합니다.")
+    public ResponseEntity<ApiResponse<PreQuestionResponseDto>> getPreQuestions(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(levelService.getPreQuestions(authentication.getName())));
     }
 
     @PostMapping("/test")
