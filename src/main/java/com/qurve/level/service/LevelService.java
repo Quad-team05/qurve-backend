@@ -144,7 +144,6 @@ public class LevelService {
                 dto.getPre2Answer(),
                 dto.getPre3Answer()
         );
-
         List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber, language);
 
         return new LevelTestResponseDto(language, caseNumber, questions);
