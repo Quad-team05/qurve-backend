@@ -1,6 +1,7 @@
 package com.qurve.user.controller;
 
 import com.qurve.global.common.ApiResponse;
+import com.qurve.user.dto.request.LearningLanguageRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
@@ -14,7 +15,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -42,31 +42,20 @@ public class UserController {
 
     @PatchMapping("/password")
     @Operation(summary = "비밀번호 변경", description = "현재 비밀번호를 확인한 뒤 새 비밀번호로 변경합니다.")
-    public ResponseEntity<ApiResponse<Void>> changePassword(
-            @Valid @RequestBody UserPasswordChangeRequestDto requestDto,
-            Authentication authentication
-    ) {
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody UserPasswordChangeRequestDto requestDto, Authentication authentication) {
         userService.changePassword(requestDto, authentication.getName());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @PatchMapping("/learning-profile")
+    @Operation(summary = "학습 목적·단계 설정", description = "사용자의 학습 목적, 현재 레벨을 저장합니다.")
     public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(@Valid @RequestBody LearningProfileRequestDto requestDto, Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(userService.updateLearningProfile(requestDto, authentication.getName())));
     }
 
     @PatchMapping("/language")
+    @Operation(summary = "학습 언어 변경", description = "사용자가 학습할 언어를 변경합니다.")
     public ResponseEntity<ApiResponse<LearningLanguageResponseDto>> updateLearningLanguage(@Valid @RequestBody LearningLanguageRequestDto requestDto, Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(userService.updateLearningLanguage(requestDto, authentication.getName())));
-    @Operation(summary = "학습 목적·단계 설정", description = "사용자의 학습 목적, 현재 레벨, 목표 언어를 저장합니다.")
-    public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(
-            @Valid @RequestBody LearningProfileRequestDto requestDto,
-            Authentication authentication
-    ) {
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        userService.updateLearningProfile(requestDto, authentication.getName())
-                )
-        );
     }
 }
