@@ -39,7 +39,7 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    @Column(name = "learning_language", nullable = false)
+    @Column(name = "learning_language", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'JAPANESE'")
     private LearningLanguage learningLanguage = LearningLanguage.JAPANESE;
 
     @Column(name = "name", length = 100, nullable = false)
