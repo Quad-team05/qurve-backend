@@ -39,7 +39,7 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    @Column(name = "learning_language", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'JAPANESE'")
+    @Column(name = "learning_language", nullable = false)
     private LearningLanguage learningLanguage = LearningLanguage.JAPANESE;
 
     @Column(name = "name", length = 100, nullable = false)
@@ -48,8 +48,11 @@ public class User extends BaseEntity {
     @Column(name = "nickname", length = 100, nullable = false)
     private String nickname;
 
-    @Column(name = "current_level")
-    private Integer currentLevel;
+    @Column(name = "current_level_japanese")
+    private Integer currentLevelJapanese;
+
+    @Column(name = "current_level_english")
+    private Integer currentLevelEnglish;
 
     @Column(name = "learning_goal", length = 255)
     private String learningGoal;
@@ -81,10 +84,22 @@ public class User extends BaseEntity {
         this.passwordHash = encodedPassword;
     }
 
+    // 현재 학습 언어 기준으로 레벨 갱신
     public void updateLevel(int level) {
-        this.currentLevel = level;
+        if (this.learningLanguage == LearningLanguage.ENGLISH) {
+            this.currentLevelEnglish = level;
+        } else {
+            this.currentLevelJapanese = level;
+        }
     }
-  
+
+    // 현재 학습 언어 기준 레벨 조회
+    public Integer getCurrentLevel() {
+        return this.learningLanguage == LearningLanguage.ENGLISH
+                ? this.currentLevelEnglish
+                : this.currentLevelJapanese;
+    }
+
     public void clearRefreshToken() {
         this.refreshToken = null;
         this.refreshTokenExpiredAt = null;
@@ -92,7 +107,7 @@ public class User extends BaseEntity {
 
     public void updateLearningProfile(String learningGoal, Integer currentLevel) {
         this.learningGoal = learningGoal;
-        this.currentLevel = currentLevel;
+        updateLevel(currentLevel == null ? 0 : currentLevel);
     }
 
     public void updateProfile(String name, String nickname, String learningGoal, Integer currentLevel) {
@@ -109,7 +124,7 @@ public class User extends BaseEntity {
         }
 
         if (currentLevel != null) {
-            this.currentLevel = currentLevel;
+            updateLevel(currentLevel);
         }
     }
 
