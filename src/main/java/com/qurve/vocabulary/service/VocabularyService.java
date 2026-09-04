@@ -3,6 +3,7 @@ package com.qurve.vocabulary.service;
 import com.qurve.badge.service.BadgeService;
 import com.qurve.challenge.domain.Challenge;
 import com.qurve.challenge.domain.ChallengeGoalType;
+import com.qurve.challenge.domain.ChallengeStatus;
 import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
@@ -18,6 +19,8 @@ import com.qurve.vocabulary.domain.VocabularyWord;
 import com.qurve.vocabulary.dto.response.UnitProgressResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordStudyResponseDto;
+import com.qurve.vocabulary.dto.request.ChallengeWordCompleteRequestDto;
+import com.qurve.vocabulary.dto.response.ChallengeWordCompleteResponseDto;
 import com.qurve.vocabulary.enums.UnitStatus;
 import com.qurve.vocabulary.repository.BookmarkRepository;
 import com.qurve.vocabulary.repository.UnitProgressRepository;
@@ -29,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -325,14 +329,72 @@ public class VocabularyService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        Challenge challenge = challengeRepository.findByUserAndGoalType(user, ChallengeGoalType.WORD_COUNT)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+        Challenge challenge = findActiveWordChallenge(user);
 
         List<VocabularyWord> words = vocabularyWordRepository.findRandom(challenge.getTargetValue());
 
         return words.stream()
                 .map(word -> UnitWordResponseDto.from(word, 0))
                 .toList();
+    }
+
+    /**
+     * 챌린지 단어 학습을 완료 처리합니다.
+     *
+     * * 이미 학습한 단어는 다시 저장하거나 챌린지 진행도에 반영하지 않아,
+     * 완료 요청을 재전송해도 중복 적립되지 않습니다.
+     *
+     * @param loginId 로그인 ID
+     * @param requestDto 완료한 단어 ID 목록
+     * @return 요청 단어 수와 새로 학습 처리된 단어 수
+     * @throws BusinessException 사용자가 없거나 단어/진행 중 단어 챌린지가 없는 경우
+     */
+    @Transactional
+    public ChallengeWordCompleteResponseDto completeChallengeWords(
+            String loginId,
+            ChallengeWordCompleteRequestDto requestDto
+    ) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        findActiveWordChallenge(user);
+
+        List<Long> wordIds = new java.util.ArrayList<>(new LinkedHashSet<>(requestDto.getWordIds()));
+        List<VocabularyWord> words = vocabularyWordRepository.findAllById(wordIds);
+
+        if (words.size() != wordIds.size()) {
+            throw new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND);
+        }
+
+        Set<Long> studiedWordIds = userWordStudyRepository.findAllByUserAndWordIn(user, words)
+                .stream()
+                .map(userWordStudy -> userWordStudy.getWord().getWordId())
+                .collect(Collectors.toSet());
+
+        List<UserWordStudy> newStudies = words.stream()
+                .filter(word -> !studiedWordIds.contains(word.getWordId()))
+                .map(word -> UserWordStudy.builder()
+                        .user(user)
+                        .word(word)
+                        .build())
+                .toList();
+
+        if (!newStudies.isEmpty()) {
+            userWordStudyRepository.saveAll(newStudies);
+            challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+            newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
+            badgeService.evaluate(user);
+        }
+
+        return ChallengeWordCompleteResponseDto.of(requestDto.getWordIds().size(), newStudies.size());
+    }
+
+    private Challenge findActiveWordChallenge(User user) {
+        return challengeRepository.findFirstByUserAndGoalTypeAndStatusOrderByCreatedAtDesc(
+                        user,
+                        ChallengeGoalType.WORD_COUNT,
+                        ChallengeStatus.ACTIVE
+                )
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
     }
 
     /**

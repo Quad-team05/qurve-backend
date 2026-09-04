@@ -11,5 +11,8 @@ import java.util.Optional;
 
 public interface WrongNoteRepository extends JpaRepository<WrongNote, Long> {
     Optional<WrongNote> findByUserAndProblem(User user, Problem problem);
+
     List<WrongNote> findAllByUserAndProblemIn(User user, Collection<Problem> problems);
+
+    long countByUser(User user);
 }
