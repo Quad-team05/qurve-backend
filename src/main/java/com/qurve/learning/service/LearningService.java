@@ -3,11 +3,16 @@ package com.qurve.learning.service;
 import com.qurve.attendance.domain.StudyStatistics;
 import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.badge.service.BadgeService;
+import com.qurve.challenge.dto.response.ChallengeMainResponseDto;
+import com.qurve.challenge.service.ChallengeProgressService;
+import com.qurve.challenge.service.ChallengeService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.learning.domain.StudyTimeRecord;
 import com.qurve.learning.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.learning.dto.response.DailyStudyTimeResponseDto;
+import com.qurve.learning.dto.response.CurrentVocabularyResponseDto;
+import com.qurve.learning.dto.response.LearningMainResponseDto;
 import com.qurve.learning.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.learning.dto.response.StudyTimeStatisticsResponseDto;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
@@ -15,6 +20,10 @@ import com.qurve.learning.repository.StudyTimeRecordRepository;
 import com.qurve.problem.repository.ProblemRepository;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.vocabulary.enums.UnitStatus;
+import com.qurve.vocabulary.repository.BookmarkRepository;
+import com.qurve.vocabulary.repository.UnitProgressRepository;
+import com.qurve.wrongnote.repository.WrongNoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +55,38 @@ public class LearningService {
     private final StudyStatisticsRepository studyStatisticsRepository;
     private final ProblemRepository problemRepository;
     private final BadgeService badgeService;
+    private final ChallengeService challengeService;
+    private final ChallengeProgressService challengeProgressService;
+    private final WrongNoteRepository wrongNoteRepository;
+    private final UnitProgressRepository unitProgressRepository;
+    private final BookmarkRepository bookmarkRepository;
+
+    /**
+     * 학습 메인 화면에 필요한 사용자 학습 정보를 한 번에 조회합니다.
+     *
+     * @param loginId 로그인 ID
+     * @return 학습 목적, 레벨, 챌린지, 오늘의 학습, 오답노트 및 단어장 정보
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public LearningMainResponseDto findMain(String loginId) {
+        User user = findUserByLoginId(loginId);
+        TodayLearningResponseDto todayLearning = findTodayLearningOrNull(loginId);
+        List<ChallengeMainResponseDto> challenges = challengeService.findAllForMain(loginId);
+        CurrentVocabularyResponseDto currentVocabulary = CurrentVocabularyResponseDto.from(
+                unitProgressRepository.findFirstByUserAndStatusOrderByUpdatedAtDesc(user, UnitStatus.IN_PROGRESS)
+                        .orElse(null)
+        );
+
+        return LearningMainResponseDto.of(
+                user,
+                mapCurrentLevelToJlptLevel(user.getCurrentLevel()),
+                challenges,
+                todayLearning,
+                wrongNoteRepository.countByUser(user),
+                currentVocabulary,
+                bookmarkRepository.countByUser(user)
+        );
+    }
 
     /**
      * 오늘의 학습 카드 조회
@@ -164,6 +205,7 @@ public class LearningService {
         int studyTimeMinutes = requestDto.getStudyTimeMinutes();
         studyTimeRecord.addStudyTime(studyTimeMinutes);
         studyStatistics.addStudyTime(studyTimeMinutes);
+        challengeProgressService.addProgress(user, com.qurve.challenge.domain.ChallengeGoalType.STUDY_TIME, studyTimeMinutes);
         badgeService.evaluate(user);
 
         return StudyTimeSaveResponseDto.of(studyTimeMinutes, studyStatistics);
@@ -172,6 +214,17 @@ public class LearningService {
     private User findUserByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private TodayLearningResponseDto findTodayLearningOrNull(String loginId) {
+        try {
+            return findTodayLearning(loginId);
+        } catch (BusinessException exception) {
+            if (exception.getErrorCode() == ErrorCode.TODAY_LEARNING_NOT_FOUND) {
+                return null;
+            }
+            throw exception;
+        }
     }
 
     private StudyStatistics findOrCreateStudyStatistics(User user) {

@@ -1,6 +1,7 @@
 package com.qurve.vocabulary.repository;
 
 import com.qurve.vocabulary.domain.UnitProgress;
+import com.qurve.vocabulary.enums.UnitStatus;
 import com.qurve.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,4 +12,5 @@ public interface UnitProgressRepository extends JpaRepository<UnitProgress, Long
     List<UnitProgress> findByUserAndLevel(User user, String level);
     List<UnitProgress> findByUserAndLevelOrderByUnitNumberAsc(User user, String level);
     Optional<UnitProgress> findByUserAndLevelAndUnitNumber(User user, String level, Integer unitNumber);
+    Optional<UnitProgress> findFirstByUserAndStatusOrderByUpdatedAtDesc(User user, UnitStatus status);
 }

@@ -70,4 +70,21 @@ public class Challenge extends BaseEntity {
                 && !date.isBefore(startDate)
                 && !date.isAfter(endDate);
     }
+
+    /**
+     * 진행 중인 챌린지의 기본 정보를 수정합니다.
+     *
+     * * 목표 유형은 기존 학습 이력의 기준이므로 변경하지 않습니다.
+     */
+    public void update(String title, int targetValue, LocalDate startDate, LocalDate endDate) {
+        this.title = title;
+        this.targetValue = targetValue;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.currentValue = Math.min(currentValue, targetValue);
+
+        if (currentValue >= targetValue) {
+            status = ChallengeStatus.COMPLETED;
+        }
+    }
 }

@@ -11,8 +11,14 @@ import java.util.Optional;
 
 public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     List<Challenge> findAllByUser_LoginId(String loginId);
-    Optional<Challenge> findByUserAndGoalType(User user, ChallengeGoalType goalType);
     List<Challenge> findAllByUserAndGoalTypeAndStatus(User user, ChallengeGoalType goalType, ChallengeStatus status);
+    Optional<Challenge> findByUserAndGoalType(User user, ChallengeGoalType goalType);
+    Optional<Challenge> findByChallengeIdAndUser(Long challengeId, User user);
+    Optional<Challenge> findFirstByUserAndGoalTypeAndStatusOrderByCreatedAtDesc(
+            User user,
+            ChallengeGoalType goalType,
+            ChallengeStatus status
+    );
     long countByUser(User user);
     long countByUserAndStatus(User user, ChallengeStatus status);
 }

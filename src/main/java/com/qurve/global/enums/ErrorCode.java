@@ -35,6 +35,8 @@ public enum ErrorCode {
     DUPLICATE_BOOKMARK(409, "DUPLICATE_BOOKMARK", "이미 북마크된 단어입니다."),
     BOOKMARK_NOT_FOUND(404, "BOOKMARK_NOT_FOUND", "북마크를 찾을 수 없습니다."),
     CHALLENGE_NOT_FOUND(404, "CHALLENGE_NOT_FOUND", "챌린지를 찾을 수 없습니다."),
+    CHALLENGE_NOT_EDITABLE(409, "CHALLENGE_NOT_EDITABLE", "진행 중인 챌린지만 수정할 수 있습니다."),
+    INVALID_CHALLENGE_PERIOD(400, "INVALID_CHALLENGE_PERIOD", "챌린지 종료일은 시작일보다 빠를 수 없습니다."),
     GEMINI_API_FAIL(502, "GEMINI_API_FAIL", "AI 응답 생성에 실패했습니다."),
     UNKNOWN_ERROR(500, "UNKNOWN_ERROR", "알 수 없는 오류가 발생했습니다.");
 

@@ -18,7 +18,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Qurve API")
-                        .description("Qurve 백엔드 API 명세서")
+                        .description("Qurve 백엔드 API 명세서입니다. 인증이 필요한 API는 우측 Authorize에 JWT Access Token을 Bearer 형식으로 입력하세요.")
                         .version("v1.0.0"))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
