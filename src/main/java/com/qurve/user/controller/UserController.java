@@ -1,9 +1,9 @@
 package com.qurve.user.controller;
 
 import com.qurve.global.common.ApiResponse;
+import com.qurve.user.dto.request.LearningLanguageRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import com.qurve.user.dto.request.LearningLanguageRequestDto;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
 import com.qurve.user.dto.request.UserPasswordChangeRequestDto;
 import com.qurve.user.dto.request.UserProfileUpdateRequestDto;
