@@ -4,6 +4,7 @@ import com.qurve.global.common.ApiResponse;
 import com.qurve.user.dto.request.LearningLanguageRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.qurve.user.dto.request.LearningLanguageRequestDto;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
 import com.qurve.user.dto.request.UserPasswordChangeRequestDto;
 import com.qurve.user.dto.request.UserProfileUpdateRequestDto;
@@ -48,14 +49,26 @@ public class UserController {
     }
 
     @PatchMapping("/learning-profile")
-    @Operation(summary = "학습 목적·단계 설정", description = "사용자의 학습 목적, 현재 레벨을 저장합니다.")
-    public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(@Valid @RequestBody LearningProfileRequestDto requestDto, Authentication authentication) {
-        return ResponseEntity.ok(ApiResponse.success(userService.updateLearningProfile(requestDto, authentication.getName())));
+    @Operation(summary = "학습 목적·단계 설정", description = "사용자의 학습 목적과 현재 레벨을 저장합니다.")
+    public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(
+            @Valid @RequestBody LearningProfileRequestDto requestDto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        userService.updateLearningProfile(requestDto, authentication.getName())
+                )
+        );
     }
 
     @PatchMapping("/language")
-    @Operation(summary = "학습 언어 변경", description = "사용자가 학습할 언어를 변경합니다.")
-    public ResponseEntity<ApiResponse<LearningLanguageResponseDto>> updateLearningLanguage(@Valid @RequestBody LearningLanguageRequestDto requestDto, Authentication authentication) {
-        return ResponseEntity.ok(ApiResponse.success(userService.updateLearningLanguage(requestDto, authentication.getName())));
+    @Operation(summary = "학습 언어 변경", description = "사용자가 학습할 언어를 JAPANESE 또는 ENGLISH로 변경합니다.")
+    public ResponseEntity<ApiResponse<LearningLanguageResponseDto>> updateLearningLanguage(
+            @Valid @RequestBody LearningLanguageRequestDto requestDto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.updateLearningLanguage(requestDto, authentication.getName()))
+        );
     }
 }

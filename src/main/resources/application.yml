@@ -102,6 +102,13 @@ gemini:
   api-key: ${GEMINI_API_KEY}
   api-url: https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent
 
+server:
+  forward-headers-strategy: framework
+
+app:
+  swagger:
+    server-url: ${SWAGGER_SERVER_URL:https://qurve.duckdns.org}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
