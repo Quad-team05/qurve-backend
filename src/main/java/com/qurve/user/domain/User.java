@@ -107,7 +107,10 @@ public class User extends BaseEntity {
 
     public void updateLearningProfile(String learningGoal, Integer currentLevel) {
         this.learningGoal = learningGoal;
-        updateLevel(currentLevel == null ? 0 : currentLevel);
+
+        if (currentLevel != null) {
+            updateLevel(currentLevel);
+        }
     }
 
     public void updateProfile(String name, String nickname, String learningGoal, Integer currentLevel) {
