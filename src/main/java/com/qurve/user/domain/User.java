@@ -84,9 +84,14 @@ public class User extends BaseEntity {
         this.passwordHash = encodedPassword;
     }
 
-    // 현재 학습 언어 기준으로 레벨 갱신
+    // 현재 선택된 학습 언어에 저장
     public void updateLevel(int level) {
-        if (this.learningLanguage == LearningLanguage.ENGLISH) {
+        updateLevel(this.learningLanguage, level);
+    }
+
+    // 지정한 언어에 저장
+    public void updateLevel(LearningLanguage language, int level) {
+        if (language == LearningLanguage.ENGLISH) {
             this.currentLevelEnglish = level;
         } else {
             this.currentLevelJapanese = level;

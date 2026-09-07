@@ -137,6 +137,7 @@ public class LevelService {
      */
     public LevelTestResponseDto getLevelTestQuestions(LevelTestRequestDto dto, String loginId) {
         User user = findUser(loginId);
+        LearningLanguage language = user.getLearningLanguage();
 
         int caseNumber = determineCase(
                 dto.getPre1Answer(),
@@ -144,9 +145,9 @@ public class LevelService {
                 dto.getPre3Answer()
         );
 
-        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber, user.getLearningLanguage());
+        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber, language);
 
-        return new LevelTestResponseDto(questions);
+        return new LevelTestResponseDto(language, caseNumber, questions);
     }
 
     /**
@@ -739,14 +740,12 @@ public class LevelService {
      * @throws BusinessException 사용자가 존재하지 않는 경우
      */
     public LevelTestResultResponseDto levelTestResult(LevelTestResultRequestDto dto, String loginId) {
+        findUser(loginId); // 사용자 존재 여부만 확인
 
-        User user = findUser(loginId);
+        int caseNumber = dto.getCaseNumber();
+        LearningLanguage language = dto.getLearningLanguage();
 
-        // 케이스 분류
-        int caseNumber = determineCase(dto.getPre1Answer(), dto.getPre2Answer(), dto.getPre3Answer());
-
-        // 문제 가져오기
-        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber, user.getLearningLanguage());
+        List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber, language);
 
         int score = 0;
         int correctCount = 0;
@@ -832,7 +831,7 @@ public class LevelService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        user.updateLevel(dto.getLevel());
+        user.updateLevel(dto.getLearningLanguage(), dto.getLevel());
     }
 
     private User findUser(String loginId) {
