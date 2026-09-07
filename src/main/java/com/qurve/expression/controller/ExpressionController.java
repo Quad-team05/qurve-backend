@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/expressions")
 @RequiredArgsConstructor
-@Tag(name = "오늘의 표현", description = "오늘 학습할 일본어 표현 조회 API")
+@Tag(name = "오늘의 표현", description = "오늘 학습할 언어별 표현 조회 API")
 public class ExpressionController {
 
     private final ExpressionService expressionService;
 
     @GetMapping("/today")
-    @Operation(summary = "오늘의 표현 조회", description = "로그인한 사용자를 위한 오늘의 일본어 표현을 조회합니다.")
+    @Operation(summary = "오늘의 표현 조회", description = "로그인한 사용자의 학습 언어에 맞는 오늘의 표현을 조회합니다.")
     public ResponseEntity<ApiResponse<TodayExpressionResponseDto>> findTodayExpression(
             Authentication authentication
     ) {
