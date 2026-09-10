@@ -38,6 +38,10 @@ public enum ErrorCode {
     CHALLENGE_NOT_EDITABLE(409, "CHALLENGE_NOT_EDITABLE", "진행 중인 챌린지만 수정할 수 있습니다."),
     INVALID_CHALLENGE_PERIOD(400, "INVALID_CHALLENGE_PERIOD", "챌린지 종료일은 시작일보다 빠를 수 없습니다."),
     GEMINI_API_FAIL(502, "GEMINI_API_FAIL", "AI 응답 생성에 실패했습니다."),
+    INVALID_LEARNING_GOAL(400, "INVALID_LEARNING_GOAL", "현재 학습 언어에서 선택할 수 없는 학습 목적입니다."),
+    INVALID_LEARNING_STAGE(400, "INVALID_LEARNING_STAGE", "학습 목적에 맞지 않는 학습 단계입니다."),
+    LEARNING_STAGE_REQUIRED(400, "LEARNING_STAGE_REQUIRED", "해당 학습 목적은 학습 단계 선택이 필요합니다."),
+    LEVEL_TEST_REQUIRED(400, "LEVEL_TEST_REQUIRED", "실생활 학습을 시작하려면 레벨 테스트가 필요합니다."),
     UNKNOWN_ERROR(500, "UNKNOWN_ERROR", "알 수 없는 오류가 발생했습니다.");
 
     private final int status;

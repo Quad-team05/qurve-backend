@@ -7,6 +7,8 @@ import com.qurve.challenge.dto.response.ChallengeMainResponseDto;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.challenge.service.ChallengeService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningGoal;
+import com.qurve.global.enums.LearningStage;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.learning.domain.StudyTimeRecord;
 import com.qurve.learning.dto.request.StudyTimeSaveRequestDto;
@@ -65,7 +67,7 @@ public class LearningService {
      * 학습 메인 화면에 필요한 사용자 학습 정보를 한 번에 조회합니다.
      *
      * @param loginId 로그인 ID
-     * @return 학습 목적, 레벨, 챌린지, 오늘의 학습, 오답노트 및 단어장 정보
+     * @return 학습 목적, 단계, 사용자 레벨 및 학습 현황 정보
      * @throws BusinessException 유저가 존재하지 않는 경우
      */
     public LearningMainResponseDto findMain(String loginId) {
@@ -79,13 +81,38 @@ public class LearningService {
 
         return LearningMainResponseDto.of(
                 user,
-                mapCurrentLevelToJlptLevel(user.getCurrentLevel()),
+                resolveLearningStageLabel(user),
                 challenges,
                 todayLearning,
                 wrongNoteRepository.countByUser(user),
                 currentVocabulary,
                 bookmarkRepository.countByUser(user)
         );
+    }
+
+    /**
+     * 현재 학습 목적에 따라 화면에 표시할 학습 단계 라벨을 반환합니다.
+     *
+     * 실생활 학습은 레벨 테스트 결과를 표시하고,
+     * JLPT 또는 TOEIC 학습은 사용자가 선택한 단계의 라벨을 반환합니다.
+     *
+     * @param user 학습 단계 정보를 조회할 사용자
+     * @return 표시할 학습 단계 라벨 또는 설정되지 않은 경우 null
+     */
+    private String resolveLearningStageLabel(User user) {
+        if (user.getLearningGoal() == null) {
+            return null;
+        }
+
+        if (user.getLearningGoal() == LearningGoal.DAILY_LIFE) {
+            Integer currentLevel = user.getCurrentLevel();
+
+            return currentLevel == null ? null : "Level " + currentLevel;
+        }
+
+        LearningStage learningStage = user.getLearningStage();
+
+        return learningStage == null ? null : learningStage.getLabel();
     }
 
     /**
