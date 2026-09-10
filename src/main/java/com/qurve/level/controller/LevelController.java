@@ -31,15 +31,15 @@ public class LevelController {
     }
 
     @PostMapping("/test")
-    @Operation(summary = "레벨 테스트 문제 조회", description = "사전 질문 응답을 기준으로 레벨 테스트 문제를 조회합니다.")
-    public ResponseEntity<ApiResponse<LevelTestResponseDto>> getLevelTestQuestions(@Validated @RequestBody LevelTestRequestDto levelTestRequestDto) {
-        return ResponseEntity.ok(ApiResponse.success(levelService.getLevelTestQuestions(levelTestRequestDto)));
+    @Operation(summary = "레벨 테스트 문제 조회", description = "로그인한 사용자의 학습 언어와 사전 질문 응답을 기준으로 레벨 테스트 문제를 조회합니다.")
+    public ResponseEntity<ApiResponse<LevelTestResponseDto>> getLevelTestQuestions(@Validated @RequestBody LevelTestRequestDto levelTestRequestDto, Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(levelService.getLevelTestQuestions(levelTestRequestDto, authentication.getName())));
     }
 
     @PostMapping("/test/result")
-    @Operation(summary = "레벨 테스트 결과 계산", description = "제출한 답안을 채점하고 예상 레벨 결과를 반환합니다.")
-    public ResponseEntity<ApiResponse<LevelTestResultResponseDto>> levelTestResult(@Validated @RequestBody LevelTestResultRequestDto levelTestResultRequestDto) {
-        return ResponseEntity.ok(ApiResponse.success(levelService.levelTestResult(levelTestResultRequestDto)));
+    @Operation(summary = "레벨 테스트 결과 계산", description = "로그인한 사용자의 학습 언어에 맞는 문제를 기준으로 제출한 답안을 채점합니다.")
+    public ResponseEntity<ApiResponse<LevelTestResultResponseDto>> levelTestResult(@Validated @RequestBody LevelTestResultRequestDto levelTestResultRequestDto, Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(levelService.levelTestResult(levelTestResultRequestDto, authentication.getName())));
     }
 
     @PostMapping("/save")

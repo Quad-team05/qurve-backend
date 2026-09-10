@@ -1,5 +1,8 @@
 package com.qurve.level.dto.request;
 
+import com.qurve.global.enums.LearningLanguage;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -13,16 +16,15 @@ import java.util.List;
 @AllArgsConstructor
 public class LevelTestResultRequestDto {
 
-    @NotNull(message = "필수로 입력해야 합니다.")
-    private Integer pre1Answer;
+    @NotNull
+    private LearningLanguage learningLanguage;
 
-    @NotNull(message = "필수로 입력해야 합니다.")
-    private Integer pre2Answer;
+    @NotNull
+    @Min(1)
+    @Max(3)
+    private Integer caseNumber;
 
-    @NotNull(message = "필수로 입력해야 합니다.")
-    private Integer pre3Answer;
-
-    @NotNull(message = "필수로 입력해야 합니다.")
-    @Size(min = 10, max = 10, message = "답안은 10개여야 합니다.")
+    @NotNull
+    @Size(min = 10, max = 10)
     private List<Integer> answers;
 }
