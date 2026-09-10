@@ -775,7 +775,7 @@ public class LevelService {
         // 레벨 산정
         int level = calculateLevel(caseNumber, score);
 
-        return new LevelTestResultResponseDto(score, correctCount, wrongCount, level);
+        return new LevelTestResultResponseDto(language, caseNumber, score, correctCount, wrongCount, level);
     }
 
     /**
