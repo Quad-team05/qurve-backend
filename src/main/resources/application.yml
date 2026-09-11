@@ -93,6 +93,7 @@ tts:
   voicerss:
     base-url: https://api.voicerss.org
     language: ja-jp
+    english-language: en-us
     codec: MP3
     format: 44khz_16bit_stereo
     connect-timeout-millis: 3000

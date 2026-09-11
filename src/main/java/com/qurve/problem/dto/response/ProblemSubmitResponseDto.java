@@ -19,6 +19,7 @@ public class ProblemSubmitResponseDto {
     private String answerChoiceText;
     private boolean correct;
     private String explanation;
+    private String koreanTranslation;
 
     public static ProblemSubmitResponseDto of(
             ProblemSubmission problemSubmission,
@@ -34,6 +35,7 @@ public class ProblemSubmitResponseDto {
                 .answerChoiceText(answerChoice.getChoiceText())
                 .correct(problemSubmission.isCorrect())
                 .explanation(problem.getExplanation())
+                .koreanTranslation(problem.getKoreanTranslation())
                 .build();
     }
 }
