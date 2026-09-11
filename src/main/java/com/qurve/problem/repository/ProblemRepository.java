@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface ProblemRepository extends JpaRepository<Problem, Long> {
     interface TodayLearningSetProjection {
+        String getCefrLevel();
         String getCategory();
         String getSubType();
         Long getProblemCount();
@@ -51,10 +52,14 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
                    p.subType as subType,
                    count(p) as problemCount
             from Problem p
-            where p.level = :level
+            where (p.language = :language or (:language = 'JA' and p.language is null))
+              and p.level = :level
               and p.isActive = true
-            group by p.category, p.subType
+            group by p.cefrLevel, p.category, p.subType
             order by p.category asc, p.subType asc
             """)
-    List<TodayLearningSetProjection> findTodayLearningSetsByLevel(String level);
+    List<TodayLearningSetProjection> findTodayLearningSetsByLanguageAndLevel(
+            @Param("language") String language,
+            @Param("level") String level
+    );
 }
