@@ -9,6 +9,8 @@ import com.qurve.global.security.JwtTokenProvider;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -16,15 +18,22 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.qurve.auth.dto.response.AuthLogoutResponseDto;
-
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthService {
+
+    private static final long VERIFICATION_CODE_TTL_MINUTES = 3;
+    private static final long VERIFIED_EMAIL_TTL_MINUTES = 10;
+    private static final String SIGNUP_CODE_KEY_PREFIX = "email:signup:code:";
+    private static final String SIGNUP_VERIFIED_KEY_PREFIX = "email:signup:verified:";
+    private static final String PASSWORD_CODE_KEY_PREFIX = "email:password:code:";
+    private static final String PASSWORD_VERIFIED_KEY_PREFIX = "email:password:verified:";
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -32,6 +41,9 @@ public class AuthService {
     private final JavaMailSender mailSender;
     private final RedisTemplate<String, String> redisTemplate;
     private final BadgeService badgeService;
+
+    @Value("${spring.mail.username}")
+    private String mailUsername;
 
     /**
      * 회원가입
@@ -47,6 +59,12 @@ public class AuthService {
      */
     @Transactional
     public SignupResponseDto save(SignupRequestDto dto) {
+
+        String normalizedEmail = normalizeEmail(dto.getEmail());
+
+        if (!Boolean.TRUE.equals(redisTemplate.hasKey(signupVerifiedKey(normalizedEmail)))) {
+            throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_REQUIRED);
+        }
 
         // 로그인 ID 중복 여부 검증
         if (userRepository.existsByLoginId(dto.getLoginId())) {
@@ -64,6 +82,8 @@ public class AuthService {
         User user = dto.toEntity(encodedPassword);
 
         User savedUser = userRepository.save(user);
+
+        redisTemplate.delete(signupVerifiedKey(normalizedEmail));
 
         return SignupResponseDto.from(savedUser);
     }
@@ -135,30 +155,25 @@ public class AuthService {
     @Transactional
     public SignupEmailResponseDto signupEmailSend(SignupEmailRequestDto dto) {
 
+        String normalizedEmail = normalizeEmail(dto.getEmail());
+
         // 가입된 이메일인지 검증
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
 
-        // 인증번호 생성
-        String code = String.valueOf((int)(Math.random() * 900000) + 100000);
+        String code = createVerificationCode();
+        sendVerificationEmail(normalizedEmail, code);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(dto.getEmail());
-        message.setSubject("인증번호 발송");
-        message.setText("인증번호: " + code);
+        redisTemplate.delete(signupVerifiedKey(normalizedEmail));
+        redisTemplate.opsForValue().set(
+                signupCodeKey(normalizedEmail),
+                code,
+                VERIFICATION_CODE_TTL_MINUTES,
+                TimeUnit.MINUTES
+        );
 
-        try {
-            mailSender.send(message);
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.EMAIL_SEND_FAIL);
-        }
-
-        // 인증번호 재사용 방지 및 보안을 위해 만료 시간을 설정하여 Redis 저장
-        redisTemplate.opsForValue()
-                .set(dto.getEmail(), code, 3, TimeUnit.MINUTES);
-
-        return new SignupEmailResponseDto(dto.getEmail());
+        return new SignupEmailResponseDto(normalizedEmail);
     }
 
     /**
@@ -174,17 +189,35 @@ public class AuthService {
     @Transactional
     public EmailVerifyResponseDto emailVerify(EmailVerifyRequestDto dto) {
 
-        // 서버에 저장된 인증번호 조회
-        String savedCode = redisTemplate.opsForValue().get(dto.getEmail());
+        String normalizedEmail = normalizeEmail(dto.getEmail());
+        String signupCodeKey = signupCodeKey(normalizedEmail);
+        String passwordCodeKey = passwordCodeKey(normalizedEmail);
 
-        // 인증번호가 존재하지 않거나 일치하지 않는 경우 처리
-        if (savedCode == null || !savedCode.equals(dto.getCode())) {
-            throw new BusinessException(ErrorCode.INVALID_VERIFICATION_CODE);
+        String signupCode = redisTemplate.opsForValue().get(signupCodeKey);
+        if (dto.getCode().equals(signupCode)) {
+            redisTemplate.delete(signupCodeKey);
+            redisTemplate.opsForValue().set(
+                    signupVerifiedKey(normalizedEmail),
+                    "true",
+                    VERIFIED_EMAIL_TTL_MINUTES,
+                    TimeUnit.MINUTES
+            );
+            return new EmailVerifyResponseDto(normalizedEmail);
         }
 
-        redisTemplate.delete(dto.getEmail());
+        String passwordCode = redisTemplate.opsForValue().get(passwordCodeKey);
+        if (dto.getCode().equals(passwordCode)) {
+            redisTemplate.delete(passwordCodeKey);
+            redisTemplate.opsForValue().set(
+                    passwordVerifiedKey(normalizedEmail),
+                    "true",
+                    VERIFIED_EMAIL_TTL_MINUTES,
+                    TimeUnit.MINUTES
+            );
+            return new EmailVerifyResponseDto(normalizedEmail);
+        }
 
-        return new EmailVerifyResponseDto(dto.getEmail());
+        throw new BusinessException(ErrorCode.INVALID_VERIFICATION_CODE);
     }
 
     /**
@@ -303,29 +336,24 @@ public class AuthService {
     @Transactional
     public PasswordEmailResponseDto passwordEmailSend(PasswordEmailRequestDto dto) {
 
+        String normalizedEmail = normalizeEmail(dto.getEmail());
+
         // 로그인 ID와 이메일이 모두 일치하는 실제 가입 사용자만 인증 허용
         userRepository.findByLoginIdAndEmailAndIsDeletedFalse(dto.getLoginId(), dto.getEmail())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 인증번호 생성
-        String code = String.valueOf((int)(Math.random() * 900000) + 100000);
+        String code = createVerificationCode();
+        sendVerificationEmail(normalizedEmail, code);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(dto.getEmail());
-        message.setSubject("인증번호 발송");
-        message.setText("인증번호: " + code);
+        redisTemplate.delete(passwordVerifiedKey(normalizedEmail));
+        redisTemplate.opsForValue().set(
+                passwordCodeKey(normalizedEmail),
+                code,
+                VERIFICATION_CODE_TTL_MINUTES,
+                TimeUnit.MINUTES
+        );
 
-        try {
-            mailSender.send(message);
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.EMAIL_SEND_FAIL);
-        }
-
-        // 인증번호 재사용 방지 및 보안을 위해 만료 시간을 설정하여 Redis 저장
-        redisTemplate.opsForValue()
-                .set(dto.getEmail(), code, 3, TimeUnit.MINUTES);
-
-        return new PasswordEmailResponseDto(dto.getEmail());
+        return new PasswordEmailResponseDto(normalizedEmail);
     }
 
     /**
@@ -340,6 +368,12 @@ public class AuthService {
     @Transactional
     public void resetPassword(ResetPasswordRequestDto dto) {
 
+        String normalizedEmail = normalizeEmail(dto.getEmail());
+
+        if (!Boolean.TRUE.equals(redisTemplate.hasKey(passwordVerifiedKey(normalizedEmail)))) {
+            throw new BusinessException(ErrorCode.EMAIL_VERIFICATION_REQUIRED);
+        }
+
         // 로그인 ID와 이메일이 모두 일치하는 사용자만 비밀번호 변경 허용
         User user = userRepository.findByLoginIdAndEmailAndIsDeletedFalse(dto.getLoginId(), dto.getEmail())
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
@@ -349,7 +383,47 @@ public class AuthService {
 
         // 암호화된 새 비밀번호 저장
         user.updatePassword(encodedPassword);
+        redisTemplate.delete(passwordVerifiedKey(normalizedEmail));
     } 
+
+    private String createVerificationCode() {
+        return String.valueOf((int) (Math.random() * 900000) + 100000);
+    }
+
+    private void sendVerificationEmail(String email, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(mailUsername);
+        message.setTo(email);
+        message.setSubject("QURVE 이메일 인증번호");
+        message.setText("인증번호: " + code + "\n인증번호는 3분 동안 유효합니다.");
+
+        try {
+            mailSender.send(message);
+        } catch (Exception exception) {
+            log.warn("Email verification message could not be sent. reason={}", exception.getMessage());
+            throw new BusinessException(ErrorCode.EMAIL_SEND_FAIL);
+        }
+    }
+
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String signupCodeKey(String email) {
+        return SIGNUP_CODE_KEY_PREFIX + email;
+    }
+
+    private String signupVerifiedKey(String email) {
+        return SIGNUP_VERIFIED_KEY_PREFIX + email;
+    }
+
+    private String passwordCodeKey(String email) {
+        return PASSWORD_CODE_KEY_PREFIX + email;
+    }
+
+    private String passwordVerifiedKey(String email) {
+        return PASSWORD_VERIFIED_KEY_PREFIX + email;
+    }
       
      /**
      * 로그아웃

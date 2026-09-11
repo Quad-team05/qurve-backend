@@ -55,9 +55,17 @@ public class AttendanceService {
      */
     public AttendanceResponseDto findOne(String loginId) {
         User user = findUserByLoginId(loginId);
-        StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
-
         LocalDate today = LocalDate.now(KST_ZONE);
+
+        // 출석 조회는 신규 사용자의 통계 레코드를 생성하지 않는다.
+        // 통계는 출석 체크 또는 학습 시간 저장 시점에 생성한다.
+        StudyStatistics studyStatistics = studyStatisticsRepository.findByUser_UserId(user.getUserId())
+                .orElse(null);
+
+        if (studyStatistics == null) {
+            return AttendanceResponseDto.from(0, false, createAttendanceDays(0, null, today));
+        }
+
         LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
         boolean checkedToday = isCheckedToday(lastAttendanceAt, today);
 
@@ -147,7 +155,7 @@ public class AttendanceService {
     }
 
     private User findUserByLoginId(String loginId) {
-        return userRepository.findByLoginId(loginId)
+        return userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
