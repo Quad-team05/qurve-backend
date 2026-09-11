@@ -1,5 +1,6 @@
 package com.qurve.vocabulary.service;
 
+import com.qurve.attendance.service.AttendanceService;
 import com.qurve.badge.service.BadgeService;
 import com.qurve.challenge.domain.Challenge;
 import com.qurve.challenge.domain.ChallengeGoalType;
@@ -55,6 +56,7 @@ public class VocabularyService {
     private final UserWordStudyRepository userWordStudyRepository;
     private final ChallengeProgressService challengeProgressService;
     private final XpService xpService;
+    private final AttendanceService attendanceService;
 
     /**
      * 단어 유닛 목록 조회
@@ -282,6 +284,8 @@ public class VocabularyService {
         unitProgress.updateStatus(UnitStatus.COMPLETED);
         unitProgressRepository.save(unitProgress);
 
+        attendanceService.save(loginId);
+
         if (!alreadyCompleted)
             xpService.grantXp(user, XpActionType.WORD_SET_COMPLETE);
 
@@ -384,6 +388,8 @@ public class VocabularyService {
             newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
             badgeService.evaluate(user);
         }
+
+        attendanceService.save(loginId);
 
         return ChallengeWordCompleteResponseDto.of(requestDto.getWordIds().size(), newStudies.size());
     }
