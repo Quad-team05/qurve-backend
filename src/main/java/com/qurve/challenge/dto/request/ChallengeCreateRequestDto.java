@@ -43,6 +43,7 @@ public class ChallengeCreateRequestDto {
     public Challenge toEntity(User user) {
         return Challenge.builder()
                 .user(user)
+                .learningLanguage(user.getLearningLanguage())
                 .title(title)
                 .goalType(goalType)
                 .targetValue(targetValue)

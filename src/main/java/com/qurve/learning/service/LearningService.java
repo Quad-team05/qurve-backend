@@ -78,7 +78,14 @@ public class LearningService {
         TodayLearningResponseDto todayLearning = findTodayLearningOrNull(loginId);
         List<ChallengeMainResponseDto> challenges = challengeService.findAllForMain(loginId);
         CurrentVocabularyResponseDto currentVocabulary = CurrentVocabularyResponseDto.from(
-                unitProgressRepository.findFirstByUserAndStatusOrderByUpdatedAtDesc(user, UnitStatus.IN_PROGRESS)
+                unitProgressRepository.findAllByUserAndStatusAndLearningLanguageOrderByUpdatedAtDesc(
+                                user,
+                                UnitStatus.IN_PROGRESS,
+                                user.getLearningLanguage(),
+                                LearningLanguage.JAPANESE
+                        )
+                        .stream()
+                        .findFirst()
                         .orElse(null)
         );
 
@@ -87,9 +94,17 @@ public class LearningService {
                 resolveLearningStageLabel(user),
                 challenges,
                 todayLearning,
-                wrongNoteRepository.countByUser(user),
+                wrongNoteRepository.countByUserAndProblemLanguage(
+                        user,
+                        toProblemLanguage(user.getLearningLanguage()),
+                        JAPANESE_PROBLEM_LANGUAGE
+                ),
                 currentVocabulary,
-                bookmarkRepository.countByUser(user)
+                bookmarkRepository.countByUserAndLearningLanguage(
+                        user,
+                        user.getLearningLanguage(),
+                        LearningLanguage.JAPANESE
+                )
         );
     }
 
@@ -456,6 +471,12 @@ public class LearningService {
 
     private String normalizeKeyword(String keyword) {
         return keyword == null ? "" : keyword.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private String toProblemLanguage(LearningLanguage learningLanguage) {
+        return learningLanguage == LearningLanguage.ENGLISH
+                ? ENGLISH_PROBLEM_LANGUAGE
+                : JAPANESE_PROBLEM_LANGUAGE;
     }
 
     private record TodayLearningSet(

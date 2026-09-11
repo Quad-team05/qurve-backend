@@ -17,6 +17,7 @@ import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.challenge.repository.ChallengeProgressRepository;
 import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
@@ -50,7 +51,7 @@ public class ChallengeService {
     public ChallengeManagementResponseDto findManagement(String loginId) {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        List<Challenge> challenges = challengeRepository.findAllByUser_LoginId(loginId);
+        List<Challenge> challenges = findChallengesByCurrentLanguage(user);
 
         List<ChallengeManageResponseDto> challengeResponses = challenges.stream()
                 .map(challenge -> ChallengeManageResponseDto.from(
@@ -96,7 +97,8 @@ public class ChallengeService {
      * @return 메인페이지 챌린지 응답 목록
      */
     public List<ChallengeMainResponseDto> findAllForMain(String loginId) {
-        List<Challenge> challenges = challengeRepository.findAllByUser_LoginId(loginId)
+        User user = findUserByLoginId(loginId);
+        List<Challenge> challenges = findChallengesByCurrentLanguage(user)
                 .stream()
                 .filter(challenge -> challenge.getStatus() == com.qurve.challenge.domain.ChallengeStatus.ACTIVE)
                 .toList();
@@ -215,6 +217,14 @@ public class ChallengeService {
     private Challenge findChallengeByIdAndUser(Long challengeId, User user) {
         return challengeRepository.findByChallengeIdAndUser(challengeId, user)
                 .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+    }
+
+    private List<Challenge> findChallengesByCurrentLanguage(User user) {
+        return challengeRepository.findAllByUserAndLearningLanguage(
+                user,
+                user.getLearningLanguage(),
+                LearningLanguage.JAPANESE
+        );
     }
 
     private void validateChallengePeriod(java.time.LocalDate startDate, java.time.LocalDate endDate) {
