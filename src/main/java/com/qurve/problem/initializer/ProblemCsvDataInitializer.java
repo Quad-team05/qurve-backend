@@ -35,8 +35,7 @@ import java.util.Objects;
  * * 서버 시작 시 resources/data/problems 아래의 CSV 파일을 읽어
  * 문제/선택지 테이블에 초기 데이터를 저장한다.
  *
- * * 같은 문제(level, category, subType, questionFormat, questionText)가 이미 존재하면
- * 중복 저장하지 않는다.
+ * * 문제 본문, 음성 스크립트, 선택지가 모두 같은 문제만 중복으로 판단한다.
  */
 @Slf4j
 @Component
@@ -303,6 +302,7 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
                   and question_format = ?
                   and question_text = ?
                   and passage_text <=> ?
+                  and audio_script <=> ?
                 order by problem_id asc
                 """,
                 (resultSet, rowNum) -> resultSet.getLong("problem_id"),
@@ -312,14 +312,29 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
                 problemSeedRow.subType(),
                 problemSeedRow.questionFormat(),
                 problemSeedRow.questionText(),
-                problemSeedRow.passageText()
+                problemSeedRow.passageText(),
+                problemSeedRow.audioScript()
         );
 
-        if (problemIds.isEmpty()) {
-            return null;
-        }
+        return problemIds.stream()
+                .filter(problemId -> hasSameChoices(problemId, problemSeedRow.choices()))
+                .findFirst()
+                .orElse(null);
+    }
 
-        return problemIds.getFirst();
+    private boolean hasSameChoices(Long problemId, List<String> choices) {
+        List<String> existingChoices = jdbcTemplate.query(
+                """
+                select choice_text
+                from tb_problem_choice
+                where problem_id = ?
+                order by choice_number asc
+                """,
+                (resultSet, rowNum) -> resultSet.getString("choice_text"),
+                problemId
+        );
+
+        return existingChoices.equals(choices);
     }
 
     private Long insertProblem(ProblemSeedRow problemSeedRow) {
