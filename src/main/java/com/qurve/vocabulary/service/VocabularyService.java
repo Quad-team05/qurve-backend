@@ -8,6 +8,7 @@ import com.qurve.challenge.domain.ChallengeStatus;
 import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
@@ -46,6 +47,7 @@ import java.util.stream.IntStream;
 public class VocabularyService {
 
     private static final Set<String> SUPPORTED_LEVELS = Set.of("N1", "N2", "N3", "N4", "N5");
+    private static final Set<String> SUPPORTED_ENGLISH_LEVELS = Set.of("A1", "A2", "B1", "B2", "C1", "C2");
 
     private final UserRepository userRepository;
     private final UnitProgressRepository unitProgressRepository;
@@ -59,34 +61,36 @@ public class VocabularyService {
     private final AttendanceService attendanceService;
 
     /**
-     * 단어 유닛 목록 조회
+     * 사용자의 현재 학습 언어에 해당하는 단어 유닛 목록을 조회한다.
      *
-     * * 단어장 목록은 사용자 학습 기록이 아니라 단어 마스터 데이터를 기준으로 생성한다.
-     *
-     * * 사용자별 학습 기록이 있는 경우에만 해당 유닛의 진행 상태를 반영한다.
+     * 단어 마스터 데이터를 기준으로 유닛 목록을 생성하고,
+     * 사용자 학습 기록이 있는 유닛에는 저장된 진행 상태를 반영한다.
+     * 학습 기록이 없는 유닛은 BEFORE 상태로 반환한다.
      *
      * @param loginId 로그인 ID
-     * @param level 조회할 JLPT 레벨
-     * @return 단어 유닛 목록
-     * @throws BusinessException 유저, 레벨, 단어 유닛 정보가 유효하지 않은 경우
+     * @param level 일본어 JLPT 레벨(N1~N5) 또는 영어 CEFR 레벨(A1~C2)
+     * @return 레벨별 단어 유닛 목록과 사용자 학습 상태
+     * @throws BusinessException 사용자가 없거나 레벨이 유효하지 않거나 유닛이 없는 경우
      */
     public List<UnitProgressResponseDto> getUnitList(String loginId, String level) {
-
-        String normalizedLevel = normalizeLevel(level);
 
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 신규 사용자도 단어장을 볼 수 있도록 단어 마스터 테이블 기준으로 유닛 조회
-        List<Integer> unitNumbers = vocabularyWordRepository.findDistinctUnitNumbersByLevel(normalizedLevel);
+        // 학습 언어가 설정되지 않은 기존 사용자는 일본어로 처리한다.
+        LearningLanguage language = user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage();
+
+        String normalizedLevel = normalizeLevel(level, language);
+
+        // 선택한 학습 언어와 레벨에 해당하는 단어 유닛 조회
+        List<Integer> unitNumbers = vocabularyWordRepository.findUnitNumbersByLanguageAndLevel(language, LearningLanguage.JAPANESE, normalizedLevel);
 
         if (unitNumbers.isEmpty()) {
             throw new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND);
         }
 
-        // 사용자 학습 기록이 있는 유닛만 진행 상태 반영
-        Map<Integer, UnitStatus> savedStatusMap = unitProgressRepository
-                .findByUserAndLevelOrderByUnitNumberAsc(user, normalizedLevel)
+        // 같은 언어와 레벨의 사용자 학습 상태 조회
+        Map<Integer, UnitStatus> savedStatusMap = unitProgressRepository.findProgressByLanguageAndLevel(user,language,LearningLanguage.JAPANESE,normalizedLevel)
                 .stream()
                 .collect(Collectors.toMap(
                         UnitProgress::getUnitNumber,
@@ -119,6 +123,29 @@ public class VocabularyService {
         if (!SUPPORTED_LEVELS.contains(normalizedLevel)) {
             throw new BusinessException(ErrorCode.INVALID_LEVEL);
         }
+
+        return normalizedLevel;
+    }
+
+    /**
+     * 학습 언어에 맞는 레벨인지 검증하고 앞뒤 공백 제거 및 대문자 변환을 수행한다.
+     *
+     * 일본어는 N1~N5, 영어는 A1~C2를 허용한다.
+     *
+     * @param level 요청 레벨
+     * @param language 조회할 학습 언어
+     * @return 정규화된 레벨
+     * @throws BusinessException 해당 언어에서 지원하지 않는 레벨인 경우
+     */
+    private String normalizeLevel(String level, LearningLanguage language) {
+
+        if (language == LearningLanguage.JAPANESE)
+            return normalizeLevel(level);
+
+        String normalizedLevel = level == null ? "" : level.trim().toUpperCase(Locale.ROOT);
+
+        if (!SUPPORTED_ENGLISH_LEVELS.contains(normalizedLevel))
+            throw new BusinessException(ErrorCode.INVALID_LEVEL);
 
         return normalizedLevel;
     }
@@ -321,12 +348,12 @@ public class VocabularyService {
     /**
      * 챌린지 단어 조회
      *
-     * * 챌린지 목표 유형이 단어 암기(WORD_COUNT)인 챌린지의 목표 단어 개수만큼
-     * 전체 단어 데이터셋에서 랜덤으로 단어를 반환한다.
+     * 사용자의 현재 학습 언어에 해당하는 단어 중에서
+     * 진행 중인 WORD_COUNT 챌린지의 목표 개수까지 무작위로 반환한다.
      *
      * @param loginId 로그인 ID
-     * @return 챌린지 단어 목록
-     * @throws BusinessException 유저가 존재하지 않거나 WORD_COUNT 챌린지가 없는 경우
+     * @return 현재 학습 언어의 챌린지 단어 목록
+     * @throws BusinessException 사용자가 없거나 진행 중인 WORD_COUNT 챌린지가 없는 경우
      */
     public List<UnitWordResponseDto> getChallengeWords(String loginId) {
 
@@ -335,7 +362,10 @@ public class VocabularyService {
 
         Challenge challenge = findActiveWordChallenge(user);
 
-        List<VocabularyWord> words = vocabularyWordRepository.findRandom(challenge.getTargetValue());
+        // 학습 언어가 없는 기존 사용자는 일본어로 처리한다.
+        LearningLanguage language = user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage();
+
+        List<VocabularyWord> words = vocabularyWordRepository.findRandomByLanguage(language, LearningLanguage.JAPANESE, challenge.getTargetValue());
 
         return words.stream()
                 .map(word -> UnitWordResponseDto.from(word, 0))
