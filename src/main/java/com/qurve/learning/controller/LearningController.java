@@ -43,7 +43,7 @@ public class LearningController {
     }
 
     @GetMapping("/today")
-    @Operation(summary = "오늘의 학습 조회", description = "사용자 레벨과 기준 날짜에 따라 선택된 오늘의 문제 세트를 조회합니다.")
+    @Operation(summary = "오늘의 학습 조회", description = "현재 학습 언어와 사용자 레벨, 기준 날짜에 따라 선택된 오늘의 문제 세트를 조회합니다. 영어 학습자는 language, cefrLevel, qurveLevel 값으로 문제 조회 API를 호출할 수 있습니다.")
     public ResponseEntity<ApiResponse<TodayLearningResponseDto>> findTodayLearning(
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

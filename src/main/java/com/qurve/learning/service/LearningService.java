@@ -8,6 +8,7 @@ import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.challenge.service.ChallengeService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.enums.LearningGoal;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.LearningStage;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.learning.domain.StudyTimeRecord;
@@ -50,6 +51,8 @@ public class LearningService {
     private static final ZoneId KST_ZONE = ZoneId.of("Asia/Seoul");
     private static final List<String> DAY_OF_WEEK_LABELS = List.of("월", "화", "수", "목", "금", "토", "일");
     private static final List<String> JLPT_LEVELS = List.of("N1", "N2", "N3", "N4", "N5");
+    private static final String JAPANESE_PROBLEM_LANGUAGE = "JA";
+    private static final String ENGLISH_PROBLEM_LANGUAGE = "EN";
     private static final int DEFAULT_TODAY_LEARNING_SET_SIZE = 20;
 
     private final UserRepository userRepository;
@@ -143,12 +146,14 @@ public class LearningService {
     public TodayLearningResponseDto findTodayLearning(String loginId, LocalDate date) {
         User user = findUserByLoginId(loginId);
         LocalDate today = date == null ? LocalDate.now(KST_ZONE) : date;
-        String preferredLevel = mapCurrentLevelToJlptLevel(user.getCurrentLevel());
-
-        TodayLearningSet todayLearningSet = findTodayLearningSet(preferredLevel, today);
+        TodayLearningSet todayLearningSet = findTodayLearningSet(user, today);
 
         return TodayLearningResponseDto.of(
                 todayLearningSet.level(),
+                user.getLearningLanguage(),
+                todayLearningSet.language(),
+                todayLearningSet.cefrLevel(),
+                todayLearningSet.qurveLevel(),
                 todayLearningSet.categoryCode(),
                 todayLearningSet.subTypeCode(),
                 todayLearningSet.offset(),
@@ -264,17 +269,29 @@ public class LearningService {
                 .orElseGet(() -> studyTimeRecordRepository.save(StudyTimeRecord.create(user, studyDate)));
     }
 
-    private TodayLearningSet findTodayLearningSet(String preferredLevel, LocalDate today) {
-        for (String candidateLevel : createLevelFallbackOrder(preferredLevel)) {
+    private TodayLearningSet findTodayLearningSet(User user, LocalDate today) {
+        LearningLanguage learningLanguage = user.getLearningLanguage();
+        String problemLanguage = learningLanguage == LearningLanguage.ENGLISH
+                ? ENGLISH_PROBLEM_LANGUAGE
+                : JAPANESE_PROBLEM_LANGUAGE;
+        List<String> candidateLevels = learningLanguage == LearningLanguage.ENGLISH
+                ? createEnglishLevelFallbackOrder(user.getCurrentLevel())
+                : createLevelFallbackOrder(mapCurrentLevelToJlptLevel(user.getCurrentLevel()));
+
+        for (String candidateLevel : candidateLevels) {
             List<ProblemRepository.TodayLearningSetProjection> learningSets = problemRepository
-                    .findTodayLearningSetsByLevel(candidateLevel);
+                    .findTodayLearningSetsByLanguageAndLevel(problemLanguage, candidateLevel);
 
             if (learningSets.isEmpty()) {
                 continue;
             }
 
-            List<TodayLearningSet> expandedLearningSets = expandTodayLearningSets(candidateLevel, learningSets);
-            shuffleTodayLearningSets(candidateLevel, expandedLearningSets);
+            List<TodayLearningSet> expandedLearningSets = expandTodayLearningSets(
+                    problemLanguage,
+                    candidateLevel,
+                    learningSets
+            );
+            shuffleTodayLearningSets(problemLanguage, candidateLevel, expandedLearningSets);
             int index = Math.floorMod(today.toEpochDay(), expandedLearningSets.size());
             return expandedLearningSets.get(index);
         }
@@ -283,6 +300,7 @@ public class LearningService {
     }
 
     private List<TodayLearningSet> expandTodayLearningSets(
+            String language,
             String level,
             List<ProblemRepository.TodayLearningSetProjection> learningSets
     ) {
@@ -296,11 +314,14 @@ public class LearningService {
 
                 expandedLearningSets.add(new TodayLearningSet(
                         level,
+                        language,
+                        learningSet.getCefrLevel(),
+                        ENGLISH_PROBLEM_LANGUAGE.equals(language) ? level : null,
                         learningSet.getCategory(),
                         learningSet.getSubType(),
                         offset,
-                        toCategoryLabel(learningSet.getCategory(), learningSet.getSubType()),
-                        toTitleLabel(learningSet.getSubType()),
+                        toCategoryLabel(language, learningSet.getCategory(), learningSet.getSubType()),
+                        toTitleLabel(language, learningSet.getSubType()),
                         totalQuestionCount,
                         Math.max(1, (int) Math.ceil(totalQuestionCount / 2.0))
                 ));
@@ -310,9 +331,29 @@ public class LearningService {
         return expandedLearningSets;
     }
 
-    private void shuffleTodayLearningSets(String level, List<TodayLearningSet> learningSets) {
-        long seed = level.hashCode();
+    private void shuffleTodayLearningSets(String language, String level, List<TodayLearningSet> learningSets) {
+        long seed = (language + level).hashCode();
         Collections.shuffle(learningSets, new Random(seed));
+    }
+
+    private List<String> createEnglishLevelFallbackOrder(Integer currentLevel) {
+        int preferredLevel = currentLevel == null ? 1 : Math.clamp(currentLevel, 1, 10);
+        List<String> fallbackOrder = new ArrayList<>();
+
+        for (int distance = 0; distance < 10; distance++) {
+            int lowerLevel = preferredLevel - distance;
+            int higherLevel = preferredLevel + distance;
+
+            if (lowerLevel >= 1) {
+                fallbackOrder.add("Lv" + lowerLevel);
+            }
+
+            if (distance > 0 && higherLevel <= 10) {
+                fallbackOrder.add("Lv" + higherLevel);
+            }
+        }
+
+        return fallbackOrder;
     }
 
     private String mapCurrentLevelToJlptLevel(Integer currentLevel) {
@@ -350,9 +391,20 @@ public class LearningService {
         return fallbackOrder;
     }
 
-    private String toCategoryLabel(String categoryCode, String subTypeCode) {
+    private String toCategoryLabel(String language, String categoryCode, String subTypeCode) {
         String normalizedCategoryCode = normalizeKeyword(categoryCode);
         String normalizedSubTypeCode = normalizeKeyword(subTypeCode);
+
+        if (ENGLISH_PROBLEM_LANGUAGE.equals(language)) {
+            return switch (normalizedCategoryCode) {
+                case "VOCABULARY" -> "어휘";
+                case "GRAMMAR" -> "문법";
+                case "READING" -> "독해";
+                case "LISTENING" -> "듣기";
+                case "DAILY_ENGLISH" -> "실생활 영어";
+                default -> normalizedCategoryCode;
+            };
+        }
 
         return switch (normalizedCategoryCode) {
             case "READING" -> "독해";
@@ -365,11 +417,48 @@ public class LearningService {
         };
     }
 
-    private String toTitleLabel(String subTypeCode) {
+    private String toTitleLabel(String language, String subTypeCode) {
         String normalizedSubTypeCode = normalizeKeyword(subTypeCode);
+
+        if (ENGLISH_PROBLEM_LANGUAGE.equals(language)) {
+            return switch (normalizedSubTypeCode) {
+                case "WORD_MEANING" -> "단어 의미";
+                case "WORD_RECOGNITION" -> "단어 인식";
+                case "CONTEXT_VOCABULARY" -> "문맥 어휘";
+                case "VOCABULARY_BLANK" -> "어휘 빈칸";
+                case "SYNONYM" -> "유의어";
+                case "GRAMMAR_BLANK" -> "문법 빈칸";
+                case "CORRECT_SENTENCE" -> "문장 고르기";
+                case "ERROR_FINDING" -> "오류 찾기";
+                case "SENTENCE_ORDER" -> "문장 순서";
+                case "SENTENCE_RECOGNITION" -> "문장 인식";
+                case "SHORT_MESSAGE" -> "짧은 메시지";
+                case "NOTICE" -> "안내문";
+                case "DETAIL" -> "세부 내용";
+                case "MAIN_IDEA" -> "주제 찾기";
+                case "PURPOSE" -> "글의 목적";
+                case "INFERENCE" -> "추론";
+                case "INTENTION" -> "의도 파악";
+                case "SITUATION_EXPRESSION" -> "상황 표현";
+                case "POLITE_EXPRESSION" -> "공손한 표현";
+                case "SIMILAR_EXPRESSION" -> "유사 표현";
+                case "KOREAN_TO_ENGLISH" -> "영작";
+                case "DIALOGUE_BLANK" -> "대화 빈칸";
+                case "DIALOGUE_ORDER" -> "대화 순서";
+                case "NATURAL_RESPONSE" -> "자연스러운 응답";
+                case "LISTENING_INFORMATION" -> "듣기 정보";
+                case "LISTENING_DIALOGUE" -> "듣기 대화";
+                case "LISTENING_RESPONSE" -> "듣기 응답";
+                case "LIFE_LISTENING" -> "일상 듣기";
+                case "DICTATION" -> "받아쓰기";
+                case "PRONUNCIATION_DISTINCTION" -> "발음 구별";
+                default -> normalizedSubTypeCode;
+            };
+        }
 
         return switch (normalizedSubTypeCode) {
             case "KANJI_READING" -> "한자 읽기";
+            case "VOCABULARY_KANJI" -> "한자 어휘";
             case "CONTEXT_VOCABULARY" -> "문맥 규정";
             case "USAGE" -> "용법";
             case "GRAMMAR_PATTERN" -> "문법";
@@ -384,6 +473,9 @@ public class LearningService {
 
     private record TodayLearningSet(
             String level,
+            String language,
+            String cefrLevel,
+            String qurveLevel,
             String categoryCode,
             String subTypeCode,
             int offset,
