@@ -55,9 +55,13 @@ public class UserController {
     }
 
     @PatchMapping("/language")
-    @Operation(summary = "학습 언어 변경", description = "사용자가 학습할 언어를 변경합니다.")
-    public ResponseEntity<ApiResponse<LearningLanguageResponseDto>> updateLearningLanguage(@Valid @RequestBody LearningLanguageRequestDto requestDto, Authentication authentication) {
-        return ResponseEntity.ok(ApiResponse.success(userService.updateLearningLanguage(requestDto, authentication.getName())));
+    @Operation(summary = "학습 언어 변경", description = "사용자가 학습할 언어를 JAPANESE 또는 ENGLISH로 변경합니다.")
+    public ResponseEntity<ApiResponse<LearningLanguageResponseDto>> updateLearningLanguage(
+            @Valid @RequestBody LearningLanguageRequestDto requestDto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.updateLearningLanguage(requestDto, authentication.getName()))
+        );
     }
-
 }
