@@ -1,6 +1,8 @@
 package com.qurve.user.dto.response;
 
+import com.qurve.global.enums.LearningGoal;
 import com.qurve.global.enums.LearningLanguage;
+import com.qurve.global.enums.LearningStage;
 import com.qurve.global.enums.Role;
 import com.qurve.user.domain.User;
 import lombok.AllArgsConstructor;
@@ -18,7 +20,9 @@ public class UserProfileResponseDto {
     private String email;
     private String name;
     private String nickname;
-    private String learningGoal;
+    private LearningGoal learningGoal;
+    private LearningStage learningStage;
+    private boolean learningStageEditable;
     private Integer currentLevel;
     private LearningLanguage learningLanguage;
     private boolean emailVerified;
@@ -33,6 +37,8 @@ public class UserProfileResponseDto {
                 .name(user.getName())
                 .nickname(user.getNickname())
                 .learningGoal(user.getLearningGoal())
+                .learningStage(user.getLearningStage())
+                .learningStageEditable(user.isLearningStageEditable())
                 .currentLevel(user.getCurrentLevel())
                 .learningLanguage(user.getLearningLanguage())
                 .emailVerified(user.isEmailVerified())

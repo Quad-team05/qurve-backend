@@ -17,6 +17,7 @@ public enum ErrorCode {
     EMPTY_TOKEN(401, "EMPTY_TOKEN", "토큰이 비어있습니다."),
     EMAIL_SEND_FAIL(500, "EMAIL_SEND_FAIL", "이메일 발송에 실패했습니다."),
     INVALID_VERIFICATION_CODE(400, "INVALID_VERIFICATION_CODE", "인증코드가 일치하지 않습니다."),
+    EMAIL_VERIFICATION_REQUIRED(400, "EMAIL_VERIFICATION_REQUIRED", "이메일 인증이 필요합니다."),
     TATOEBA_API_FAIL(502, "TATOEBA_API_FAIL", "오늘의 표현 조회에 실패했습니다."),
     TODAY_EXPRESSION_NOT_FOUND(404, "TODAY_EXPRESSION_NOT_FOUND", "오늘의 표현을 찾을 수 없습니다."),
     TODAY_LEARNING_NOT_FOUND(404, "TODAY_LEARNING_NOT_FOUND", "오늘의 학습 세트를 찾을 수 없습니다."),
@@ -38,6 +39,10 @@ public enum ErrorCode {
     CHALLENGE_NOT_EDITABLE(409, "CHALLENGE_NOT_EDITABLE", "진행 중인 챌린지만 수정할 수 있습니다."),
     INVALID_CHALLENGE_PERIOD(400, "INVALID_CHALLENGE_PERIOD", "챌린지 종료일은 시작일보다 빠를 수 없습니다."),
     GEMINI_API_FAIL(502, "GEMINI_API_FAIL", "AI 응답 생성에 실패했습니다."),
+    INVALID_LEARNING_GOAL(400, "INVALID_LEARNING_GOAL", "현재 학습 언어에서 선택할 수 없는 학습 목적입니다."),
+    INVALID_LEARNING_STAGE(400, "INVALID_LEARNING_STAGE", "학습 목적에 맞지 않는 학습 단계입니다."),
+    LEARNING_STAGE_REQUIRED(400, "LEARNING_STAGE_REQUIRED", "해당 학습 목적은 학습 단계 선택이 필요합니다."),
+    LEVEL_TEST_REQUIRED(400, "LEVEL_TEST_REQUIRED", "실생활 학습을 시작하려면 레벨 테스트가 필요합니다."),
     UNKNOWN_ERROR(500, "UNKNOWN_ERROR", "알 수 없는 오류가 발생했습니다.");
 
     private final int status;

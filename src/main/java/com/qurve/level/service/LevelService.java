@@ -137,6 +137,7 @@ public class LevelService {
      */
     public LevelTestResponseDto getLevelTestQuestions(LevelTestRequestDto dto, String loginId) {
         User user = findUser(loginId);
+        LearningLanguage language = user.getLearningLanguage();
 
         int caseNumber = determineCase(
                 dto.getPre1Answer(),
@@ -146,7 +147,7 @@ public class LevelService {
 
         List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber, user.getLearningLanguage());
 
-        return new LevelTestResponseDto(questions);
+        return new LevelTestResponseDto(language, caseNumber, questions);
     }
 
     /**
@@ -742,8 +743,8 @@ public class LevelService {
 
         User user = findUser(loginId);
 
-        // 케이스 분류
-        int caseNumber = determineCase(dto.getPre1Answer(), dto.getPre2Answer(), dto.getPre3Answer());
+        int caseNumber = dto.getCaseNumber();
+        LearningLanguage language = dto.getLearningLanguage();
 
         // 문제 가져오기
         List<LevelTestQuestionDto> questions = getQuestionsByCase(caseNumber, user.getLearningLanguage());
@@ -776,7 +777,7 @@ public class LevelService {
         // 레벨 산정
         int level = calculateLevel(caseNumber, score);
 
-        return new LevelTestResultResponseDto(score, correctCount, wrongCount, level);
+        return new LevelTestResultResponseDto(language, caseNumber, score, correctCount, wrongCount, level);
     }
 
     /**
@@ -832,7 +833,12 @@ public class LevelService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        user.updateLevel(dto.getLevel());
+        user.updateLevel(dto.getLearningLanguage(), dto.getLevel());
+    }
+
+    private User findUser(String loginId) {
+        return userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     private User findUser(String loginId) {

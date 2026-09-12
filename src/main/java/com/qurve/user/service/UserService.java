@@ -1,6 +1,9 @@
 package com.qurve.user.service;
 
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningGoal;
+import com.qurve.global.enums.LearningLanguage;
+import com.qurve.global.enums.LearningStage;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.dto.request.LearningLanguageRequestDto;
@@ -56,12 +59,7 @@ public class UserService {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        user.updateProfile(
-                requestDto.getName(),
-                requestDto.getNickname(),
-                requestDto.getLearningGoal(),
-                requestDto.getCurrentLevel()
-        );
+        user.updateProfile(requestDto.getName(), requestDto.getNickname());
 
         return UserProfileResponseDto.from(user);
     }
@@ -79,19 +77,40 @@ public class UserService {
     }
 
     @Transactional
-    public LearningProfileResponseDto updateLearningProfile(
-            LearningProfileRequestDto requestDto,
-            String loginId
-    ) {
+    public LearningProfileResponseDto updateLearningProfile(LearningProfileRequestDto requestDto, String loginId) {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        user.updateLearningProfile(
-                requestDto.getLearningGoal(),
-                requestDto.getCurrentLevel()
-        );
+        LearningLanguage language = user.getLearningLanguage();
+        LearningGoal goal = requestDto.getLearningGoal();
+        LearningStage stage = requestDto.getLearningStage();
+
+        validateLearningProfile(user, language, goal, stage);
+        user.updateLearningProfile(goal, stage);
 
         return LearningProfileResponseDto.from(user);
+    }
+
+    private void validateLearningProfile(User user, LearningLanguage language, LearningGoal goal, LearningStage stage) {
+        if (!goal.supports(language)) {
+            throw new BusinessException(ErrorCode.INVALID_LEARNING_GOAL);
+        }
+
+        if (goal == LearningGoal.DAILY_LIFE) {
+            if (stage != null)
+                throw new BusinessException(ErrorCode.INVALID_LEARNING_STAGE);
+
+            if (user.getCurrentLevel() == null)
+                throw new BusinessException(ErrorCode.LEVEL_TEST_REQUIRED);
+
+            return;
+        }
+
+        if (stage == null)
+            throw new BusinessException(ErrorCode.LEARNING_STAGE_REQUIRED);
+
+        if (!stage.matches(language, goal))
+            throw new BusinessException(ErrorCode.INVALID_LEARNING_STAGE);
     }
 
     /**
