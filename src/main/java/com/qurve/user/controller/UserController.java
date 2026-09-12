@@ -1,9 +1,9 @@
 package com.qurve.user.controller;
 
 import com.qurve.global.common.ApiResponse;
-import com.qurve.user.dto.request.LearningLanguageRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.qurve.user.dto.request.LearningLanguageRequestDto;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
 import com.qurve.user.dto.request.UserPasswordChangeRequestDto;
 import com.qurve.user.dto.request.UserProfileUpdateRequestDto;
@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -57,5 +58,16 @@ public class UserController {
     @Operation(summary = "학습 언어 변경", description = "사용자가 학습할 언어를 변경합니다.")
     public ResponseEntity<ApiResponse<LearningLanguageResponseDto>> updateLearningLanguage(@Valid @RequestBody LearningLanguageRequestDto requestDto, Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(userService.updateLearningLanguage(requestDto, authentication.getName())));
+    }
+
+    @PatchMapping("/language")
+    @Operation(summary = "학습 언어 변경", description = "사용자가 학습할 언어를 JAPANESE 또는 ENGLISH로 변경합니다.")
+    public ResponseEntity<ApiResponse<LearningLanguageResponseDto>> updateLearningLanguage(
+            @Valid @RequestBody LearningLanguageRequestDto requestDto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.updateLearningLanguage(requestDto, authentication.getName()))
+        );
     }
 }
