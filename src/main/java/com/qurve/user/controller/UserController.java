@@ -49,16 +49,9 @@ public class UserController {
     }
 
     @PatchMapping("/learning-profile")
-    @Operation(summary = "학습 목적·단계 설정", description = "사용자의 학습 목적과 현재 레벨을 저장합니다.")
-    public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(
-            @Valid @RequestBody LearningProfileRequestDto requestDto,
-            Authentication authentication
-    ) {
-        return ResponseEntity.ok(
-                ApiResponse.success(
-                        userService.updateLearningProfile(requestDto, authentication.getName())
-                )
-        );
+    @Operation(summary = "학습 목적·단계 설정", description = "현재 학습 언어에 맞는 학습 목적과 단계를 설정합니다.")
+    public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(@Valid @RequestBody LearningProfileRequestDto requestDto, Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(userService.updateLearningProfile(requestDto, authentication.getName())));
     }
 
     @PatchMapping("/language")

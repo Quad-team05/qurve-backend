@@ -43,7 +43,7 @@ public class LevelController {
     }
 
     @PostMapping("/save")
-    @Operation(summary = "사용자 레벨 저장", description = "레벨 테스트 결과 또는 선택한 학습 레벨을 사용자 정보에 저장합니다.")
+    @Operation(summary = "사용자 레벨 저장", description = "레벨 테스트 결과로 산정된 사용자 레벨을 저장합니다.")
     public ResponseEntity<ApiResponse<Void>> saveLevel(@Validated @RequestBody SaveLevelRequestDto levelSaveRequestDto) {
         levelService.saveLevel(levelSaveRequestDto);
         return ResponseEntity.ok(ApiResponse.success(null));

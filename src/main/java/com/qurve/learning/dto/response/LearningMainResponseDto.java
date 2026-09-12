@@ -1,6 +1,8 @@
 package com.qurve.learning.dto.response;
 
 import com.qurve.challenge.dto.response.ChallengeMainResponseDto;
+import com.qurve.global.enums.LearningGoal;
+import com.qurve.global.enums.LearningStage;
 import com.qurve.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,9 +16,11 @@ import java.util.List;
 @Builder
 public class LearningMainResponseDto {
 
-    private String learningGoal;
+    private LearningGoal learningGoal;
     private Integer currentLevel;
     private String currentLevelLabel;
+    private LearningStage learningStage;
+    private boolean learningStageEditable;
     private List<ChallengeMainResponseDto> challenges;
     private TodayLearningResponseDto todayLearning;
     private Long wrongNoteCount;
@@ -36,6 +40,8 @@ public class LearningMainResponseDto {
                 .learningGoal(user.getLearningGoal())
                 .currentLevel(user.getCurrentLevel())
                 .currentLevelLabel(currentLevelLabel)
+                .learningStage(user.getLearningStage())
+                .learningStageEditable(user.isLearningStageEditable())
                 .challenges(challenges)
                 .todayLearning(todayLearning)
                 .wrongNoteCount(wrongNoteCount)

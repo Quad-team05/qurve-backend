@@ -1,7 +1,9 @@
 package com.qurve.user.domain;
 
 import com.qurve.global.entity.BaseEntity;
+import com.qurve.global.enums.LearningGoal;
 import com.qurve.global.enums.LearningLanguage;
+import com.qurve.global.enums.LearningStage;
 import com.qurve.global.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -54,8 +56,21 @@ public class User extends BaseEntity {
     @Column(name = "current_level_english")
     private Integer currentLevelEnglish;
 
-    @Column(name = "learning_goal", length = 255)
-    private String learningGoal;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "learning_goal_japanese", length = 30)
+    private LearningGoal learningGoalJapanese;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "learning_goal_english", length = 30)
+    private LearningGoal learningGoalEnglish;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "learning_stage_japanese", length = 30)
+    private LearningStage learningStageJapanese;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "learning_stage_english", length = 30)
+    private LearningStage learningStageEnglish;
 
     @Builder.Default
     @Column(name = "email_verified", nullable = false)
@@ -110,15 +125,17 @@ public class User extends BaseEntity {
         this.refreshTokenExpiredAt = null;
     }
 
-    public void updateLearningProfile(String learningGoal, Integer currentLevel) {
-        this.learningGoal = learningGoal;
-
-        if (currentLevel != null) {
-            updateLevel(currentLevel);
+    public void updateLearningProfile(LearningGoal learningGoal, LearningStage learningStage) {
+        if (learningLanguage == LearningLanguage.ENGLISH) {
+            this.learningGoalEnglish = learningGoal;
+            this.learningStageEnglish = learningGoal.requiresStageSelection() ? learningStage : null;
+        } else {
+            this.learningGoalJapanese = learningGoal;
+            this.learningStageJapanese = learningGoal.requiresStageSelection() ? learningStage : null;
         }
     }
 
-    public void updateProfile(String name, String nickname, String learningGoal, Integer currentLevel) {
+    public void updateProfile(String name, String nickname) {
         if (name != null) {
             this.name = name;
         }
@@ -126,17 +143,22 @@ public class User extends BaseEntity {
         if (nickname != null) {
             this.nickname = nickname;
         }
-
-        if (learningGoal != null) {
-            this.learningGoal = learningGoal;
-        }
-
-        if (currentLevel != null) {
-            updateLevel(currentLevel);
-        }
     }
 
     public void updateLearningLanguage(LearningLanguage learningLanguage) {
         this.learningLanguage = learningLanguage;
+    }
+
+    public LearningGoal getLearningGoal() {
+        return learningLanguage == LearningLanguage.ENGLISH ? learningGoalEnglish : learningGoalJapanese;
+    }
+
+    public LearningStage getLearningStage() {
+        return learningLanguage == LearningLanguage.ENGLISH ? learningStageEnglish : learningStageJapanese;
+    }
+
+    public boolean isLearningStageEditable() {
+        LearningGoal goal = getLearningGoal();
+        return goal != null && goal.requiresStageSelection();
     }
 }
