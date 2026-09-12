@@ -56,6 +56,9 @@ public class User extends BaseEntity {
     @Column(name = "current_level_english")
     private Integer currentLevelEnglish;
 
+    @Column(name = "current_level_english")
+    private Integer currentLevelEnglish;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "learning_goal_japanese", length = 30)
     private LearningGoal learningGoalJapanese;
