@@ -841,8 +841,4 @@ public class LevelService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
-    private User findUser(String loginId) {
-        return userRepository.findByLoginIdAndIsDeletedFalse(loginId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-    }
 }
