@@ -7,6 +7,7 @@ import com.qurve.challenge.domain.ChallengeStatus;
 import com.qurve.challenge.repository.ChallengeProgressRepository;
 import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.global.enums.XpActionType;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.user.domain.User;
 import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
@@ -39,12 +40,24 @@ public class ChallengeProgressService {
      */
     @Transactional
     public void addProgress(User user, ChallengeGoalType goalType, int amount) {
+        addProgress(user, user.getLearningLanguage(), goalType, amount);
+    }
+
+    /** 활동이 발생한 학습 언어의 챌린지에만 진행도를 반영합니다. */
+    @Transactional
+    public void addProgress(User user, LearningLanguage learningLanguage, ChallengeGoalType goalType, int amount) {
         if (amount <= 0) {
             return;
         }
 
         LocalDate today = LocalDate.now(KST_ZONE);
-        challengeRepository.findAllByUserAndGoalTypeAndStatus(user, goalType, ChallengeStatus.ACTIVE)
+        challengeRepository.findAllActiveByUserAndGoalTypeForLanguage(
+                        user,
+                        goalType,
+                        ChallengeStatus.ACTIVE,
+                        learningLanguage,
+                        LearningLanguage.JAPANESE
+                )
                 .stream()
                 .filter(challenge -> challenge.isActiveOn(today))
                 .forEach(challenge -> updateProgress(challenge, amount));

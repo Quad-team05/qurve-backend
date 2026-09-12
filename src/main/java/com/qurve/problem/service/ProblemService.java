@@ -5,6 +5,7 @@ import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.enums.XpActionType;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.problem.domain.Problem;
 import com.qurve.problem.domain.ProblemBookmark;
@@ -283,7 +284,12 @@ public class ProblemService {
             wrongNoteService.saveWrongAnswer(user, problem);
         }
 
-        challengeProgressService.addProgress(user, ChallengeGoalType.QUIZ_COUNT, 1);
+        challengeProgressService.addProgress(
+                user,
+                "EN".equals(problem.getLanguage()) ? LearningLanguage.ENGLISH : LearningLanguage.JAPANESE,
+                ChallengeGoalType.QUIZ_COUNT,
+                1
+        );
         badgeService.evaluate(user);
 
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);

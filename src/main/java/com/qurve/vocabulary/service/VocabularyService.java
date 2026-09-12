@@ -8,6 +8,7 @@ import com.qurve.challenge.domain.ChallengeStatus;
 import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
@@ -46,6 +47,7 @@ import java.util.stream.IntStream;
 public class VocabularyService {
 
     private static final Set<String> SUPPORTED_LEVELS = Set.of("N1", "N2", "N3", "N4", "N5");
+    private static final LearningLanguage VOCABULARY_LANGUAGE = LearningLanguage.JAPANESE;
 
     private final UserRepository userRepository;
     private final UnitProgressRepository unitProgressRepository;
@@ -188,6 +190,7 @@ public class VocabularyService {
         bookmarkRepository.save(Bookmark.builder()
                 .user(user)
                 .wordId(wordId)
+                .learningLanguage(VOCABULARY_LANGUAGE)
                 .createdAt(LocalDateTime.now())
                 .build());
 
@@ -240,6 +243,7 @@ public class VocabularyService {
                 .orElse(UnitProgress.builder()
                         .user(user)
                         .level(normalizedLevel)
+                        .learningLanguage(VOCABULARY_LANGUAGE)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
                         .updatedAt(LocalDateTime.now())
@@ -274,6 +278,7 @@ public class VocabularyService {
                 .orElse(UnitProgress.builder()
                         .user(user)
                         .level(normalizedLevel)
+                        .learningLanguage(VOCABULARY_LANGUAGE)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
                         .updatedAt(LocalDateTime.now())
@@ -314,7 +319,7 @@ public class VocabularyService {
         }
 
         userWordStudyRepository.saveAll(newStudies);
-        challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+        challengeProgressService.addProgress(user, VOCABULARY_LANGUAGE, ChallengeGoalType.WORD_COUNT, newStudies.size());
         newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
     }
 
@@ -384,7 +389,7 @@ public class VocabularyService {
 
         if (!newStudies.isEmpty()) {
             userWordStudyRepository.saveAll(newStudies);
-            challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+            challengeProgressService.addProgress(user, VOCABULARY_LANGUAGE, ChallengeGoalType.WORD_COUNT, newStudies.size());
             newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
             badgeService.evaluate(user);
         }
@@ -395,11 +400,15 @@ public class VocabularyService {
     }
 
     private Challenge findActiveWordChallenge(User user) {
-        return challengeRepository.findFirstByUserAndGoalTypeAndStatusOrderByCreatedAtDesc(
+        return challengeRepository.findAllActiveByUserAndGoalTypeForLanguage(
                         user,
                         ChallengeGoalType.WORD_COUNT,
-                        ChallengeStatus.ACTIVE
+                        ChallengeStatus.ACTIVE,
+                        VOCABULARY_LANGUAGE,
+                        LearningLanguage.JAPANESE
                 )
+                .stream()
+                .findFirst()
                 .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
     }
 
@@ -418,7 +427,11 @@ public class VocabularyService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByUserAndLearningLanguage(
+                user,
+                user.getLearningLanguage(),
+                LearningLanguage.JAPANESE
+        );
 
         // 북마크된 단어 ID 목록 추출
         List<Long> wordIds = bookmarks.stream()

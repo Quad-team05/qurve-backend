@@ -27,7 +27,7 @@ public class ChallengeController {
     private final ChallengeService challengeService;
 
     @GetMapping("/main")
-    @Operation(summary = "메인 챌린지 조회", description = "학습 메인 화면에 표시할 진행 중 챌린지와 달성률을 조회합니다.")
+    @Operation(summary = "메인 챌린지 조회", description = "현재 학습 언어에서 생성한 진행 중 챌린지와 달성률을 조회합니다.")
     public ResponseEntity<ApiResponse<List<ChallengeMainResponseDto>>> findAllForMain(
             Authentication authentication
     ) {

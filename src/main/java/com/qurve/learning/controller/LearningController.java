@@ -35,7 +35,7 @@ public class LearningController {
      * 학습 메인 화면 조회
      */
     @GetMapping("/main")
-    @Operation(summary = "학습 메인 조회", description = "학습 목적과 단계, 챌린지 및 학습 현황을 조회합니다.")
+    @Operation(summary = "학습 메인 조회", description = "현재 학습 언어 기준의 학습 목적·단계, 챌린지, 오늘의 학습, 오답노트·단어장·북마크 현황을 조회합니다.")
     public ResponseEntity<ApiResponse<LearningMainResponseDto>> findMain(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(
                 learningService.findMain(authentication.getName())

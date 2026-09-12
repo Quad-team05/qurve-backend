@@ -2,6 +2,7 @@ package com.qurve.learning.dto.response;
 
 import com.qurve.challenge.dto.response.ChallengeMainResponseDto;
 import com.qurve.global.enums.LearningGoal;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.LearningStage;
 import com.qurve.user.domain.User;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import java.util.List;
 @Builder
 public class LearningMainResponseDto {
 
+    private LearningLanguage learningLanguage;
     private LearningGoal learningGoal;
     private Integer currentLevel;
     private String currentLevelLabel;
@@ -37,6 +39,7 @@ public class LearningMainResponseDto {
             long bookmarkCount
     ) {
         return LearningMainResponseDto.builder()
+                .learningLanguage(user.getLearningLanguage())
                 .learningGoal(user.getLearningGoal())
                 .currentLevel(user.getCurrentLevel())
                 .currentLevelLabel(currentLevelLabel)
