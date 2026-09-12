@@ -18,6 +18,7 @@ import com.qurve.xp.repository.XpHistoryRepository;
 import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -39,7 +40,12 @@ public class AiService {
     @Value("${gemini.api-url}")
     private String apiUrl;
 
-    private final RestClient restClient = RestClient.create();
+    private static final int GEMINI_CONNECT_TIMEOUT_MILLIS = 3_000;
+    private static final int GEMINI_READ_TIMEOUT_MILLIS = 30_000;
+
+    private final RestClient restClient = RestClient.builder()
+            .requestFactory(createRequestFactory())
+            .build();
     private final UserRepository userRepository;
     private final AiChatRoomRepository aiChatRoomRepository;
     private final AiChatMessageRepository aiChatMessageRepository;
@@ -209,6 +215,19 @@ public class AiService {
         }
     }
 
+    /**
+     * Gemini API 연결 및 응답 타임아웃을 설정한다.
+     */
+    private static SimpleClientHttpRequestFactory createRequestFactory() {
+
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+
+        requestFactory.setConnectTimeout(GEMINI_CONNECT_TIMEOUT_MILLIS);
+        requestFactory.setReadTimeout(GEMINI_READ_TIMEOUT_MILLIS);
+
+        return requestFactory;
+    }
+
     private String buildSystemPrompt(LearningLanguage learningLanguage, String personalizedInfo) {
 
         return switch (learningLanguage) {
@@ -327,12 +346,52 @@ public class AiService {
             """.formatted(personalizedInfo);
     }
 
-    @SuppressWarnings("unchecked")
-    private String extractAnswer(Map response) {
-        List<Map> candidates = (List<Map>) response.get("candidates");
-        Map content = (Map) candidates.get(0).get("content");
-        List<Map> parts = (List<Map>) content.get("parts");
-        return (String) parts.get(0).get("text");
+    private String extractAnswer(Map<?, ?> response) {
+
+        if (response == null) {
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
+
+        Object candidatesValue = response.get("candidates");
+
+        if (!(candidatesValue instanceof List<?> candidates)
+                || candidates.isEmpty()) {
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
+
+        Object candidateValue = candidates.get(0);
+
+        if (!(candidateValue instanceof Map<?, ?> candidate)) {
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
+
+        Object contentValue = candidate.get("content");
+
+        if (!(contentValue instanceof Map<?, ?> content)) {
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
+
+        Object partsValue = content.get("parts");
+
+        if (!(partsValue instanceof List<?> parts)
+                || parts.isEmpty()) {
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
+
+        Object partValue = parts.get(0);
+
+        if (!(partValue instanceof Map<?, ?> part)) {
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
+
+        Object textValue = part.get("text");
+
+        if (!(textValue instanceof String text)
+                || text.isBlank()) {
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
+
+        return text;
     }
 
     /**
