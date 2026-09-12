@@ -5,11 +5,18 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+
 @Configuration
 public class SwaggerConfig {
+
+    @Value("${app.swagger.server-url:https://qurve.duckdns.org}")
+    private String swaggerServerUrl;
 
     @Bean
     public OpenAPI qurveOpenAPI() {
@@ -20,6 +27,11 @@ public class SwaggerConfig {
                         .title("Qurve API")
                         .description("Qurve 백엔드 API 명세서입니다. 인증이 필요한 API는 우측 Authorize에 JWT Access Token을 Bearer 형식으로 입력하세요.")
                         .version("v1.0.0"))
+                .servers(List.of(
+                        new Server()
+                                .url(swaggerServerUrl)
+                                .description("Qurve API 서버")
+                ))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName,
