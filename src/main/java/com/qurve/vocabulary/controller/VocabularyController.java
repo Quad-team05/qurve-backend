@@ -29,7 +29,7 @@ public class VocabularyController {
     private final VocabularyService vocabularyService;
 
     @GetMapping("/units")
-    @Operation(summary = "단어 유닛 목록 조회", description = "JLPT 레벨별 단어 유닛과 사용자 학습 상태를 조회합니다.")
+    @Operation(summary = "단어 유닛 목록 조회", description = "사용자의 현재 학습 언어에 따라 일본어 JLPT(N1~N5) 또는 영어 CEFR(A1~C2) 레벨별 단어 유닛과 학습 상태를 조회합니다.")
     public ResponseEntity<ApiResponse<List<UnitProgressResponseDto>>> getUnitList(@NotBlank @RequestParam("level") String level, Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(vocabularyService.getUnitList(authentication.getName(), level)));
     }

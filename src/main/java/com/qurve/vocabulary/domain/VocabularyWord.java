@@ -1,5 +1,6 @@
 package com.qurve.vocabulary.domain;
 
+import com.qurve.global.enums.LearningLanguage;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,13 @@ public class VocabularyWord {
     @Column(name = "word_id")
     private Long wordId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "learning_language", length = 20)
+    private LearningLanguage learningLanguage;
+
+    @Column(name = "source_entry_id", length = 100)
+    private String sourceEntryId;
+
     @Column(name = "level", length = 10, nullable = false)
     private String level;
 
@@ -28,7 +36,7 @@ public class VocabularyWord {
     @Column(name = "expression", length = 100, nullable = false)
     private String expression;
 
-    @Column(name = "reading", length = 100, nullable = false)
+    @Column(name = "reading", length = 100)
     private String reading;
 
     @Column(name = "meaning", length = 500)
