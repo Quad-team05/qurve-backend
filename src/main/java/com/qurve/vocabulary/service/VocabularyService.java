@@ -165,6 +165,27 @@ public class VocabularyService {
     }
 
     /**
+     * 북마크 대상 단어 검증
+     *
+     * * 단어의 존재 여부와 사용자의 현재 학습 언어 일치 여부를 검증한다.
+     * * 학습 언어가 없는 기존 단어는 일본어로 처리한다.
+     *
+     * @param user 로그인 사용자
+     * @param wordId 북마크 대상 단어 ID
+     * @throws BusinessException 단어가 없거나 현재 학습 언어와 다른 경우
+     */
+    private void validateBookmarkWord(User user, Long wordId) {
+        VocabularyWord word = vocabularyWordRepository.findById(wordId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
+
+        LearningLanguage wordLanguage = word.getLearningLanguage() == null ? LearningLanguage.JAPANESE : word.getLearningLanguage();
+
+        if (wordLanguage != resolveLearningLanguage(user)) {
+            throw new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND);
+        }
+    }
+
+    /**
      * 유닛 존재 검증 및 단어 조회
      *
      * * 실제로 존재하는 유닛인지 검증하고 해당 유닛의 단어를 조회한다.
@@ -224,12 +245,12 @@ public class VocabularyService {
     /**
      * 단어 북마크 추가
      *
-     * * 단어 학습 중 북마크 버튼 클릭 시 해당 단어를 북마크에 추가한다.
+     * * 사용자의 현재 학습 언어에 해당하는 단어를 북마크에 추가한다.
      * * 이미 북마크된 단어인 경우 예외를 발생시킨다.
      *
      * @param loginId 로그인 ID
      * @param wordId 북마크할 단어 ID
-     * @throws BusinessException 유저가 존재하지 않거나 이미 북마크된 단어인 경우
+     * @throws BusinessException 사용자가 없거나 단어가 유효하지 않거나 이미 북마크된 경우
      */
     @Transactional
     public void addBookmark(String loginId, Long wordId) {
@@ -237,8 +258,7 @@ public class VocabularyService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        vocabularyWordRepository.findById(wordId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND));
+        validateBookmarkWord(user, wordId);
 
         if (bookmarkRepository.existsByUserAndWordId(user, wordId)) {
             throw new BusinessException(ErrorCode.DUPLICATE_BOOKMARK);
@@ -258,17 +278,20 @@ public class VocabularyService {
     /**
      * 단어 북마크 삭제
      *
-     * * 북마크된 단어를 북마크에서 제거한다.
+     * * 사용자의 현재 학습 언어에 해당하는 단어의 북마크를 삭제한다.
+     * * 로그인한 사용자 본인의 북마크만 삭제한다.
      *
      * @param loginId 로그인 ID
      * @param wordId 북마크 삭제할 단어 ID
-     * @throws BusinessException 유저가 존재하지 않거나 북마크가 존재하지 않는 경우
+     * @throws BusinessException 사용자가 없거나 단어가 유효하지 않거나 북마크가 없는 경우
      */
     @Transactional
     public void removeBookmark(String loginId, Long wordId) {
 
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        validateBookmarkWord(user, wordId);
 
         Bookmark bookmark = bookmarkRepository.findByUserAndWordId(user, wordId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BOOKMARK_NOT_FOUND));
