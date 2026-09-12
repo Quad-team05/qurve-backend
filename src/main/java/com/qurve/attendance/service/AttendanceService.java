@@ -1,17 +1,20 @@
 package com.qurve.attendance.service;
 
 import com.qurve.attendance.domain.DailyStudyLog;
+import com.qurve.attendance.domain.AttendanceRecord;
 import com.qurve.attendance.domain.StudyStatistics;
 import com.qurve.attendance.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.attendance.dto.response.AttendanceDayResponseDto;
 import com.qurve.attendance.dto.response.AttendanceResponseDto;
 import com.qurve.attendance.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.attendance.repository.DailyStudyLogRepository;
+import com.qurve.attendance.repository.AttendanceRecordRepository;
 import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.badge.service.BadgeService;
 import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
@@ -38,6 +41,7 @@ public class AttendanceService {
 
     private final UserRepository userRepository;
     private final DailyStudyLogRepository dailyStudyLogRepository;
+    private final AttendanceRecordRepository attendanceRecordRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
     private final BadgeService badgeService;
     private final XpService xpService;
@@ -59,7 +63,7 @@ public class AttendanceService {
 
         LocalDate today = LocalDate.now(KST_ZONE);
         LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
-        boolean checkedToday = isCheckedToday(lastAttendanceAt, today);
+        boolean checkedToday = isCheckedToday(user, user.getLearningLanguage(), today);
 
         return AttendanceResponseDto.from(
                 studyStatistics.getStreakDays(),
@@ -87,25 +91,35 @@ public class AttendanceService {
 
         LocalDate today = LocalDate.now(KST_ZONE);
         LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
+        LearningLanguage learningLanguage = user.getLearningLanguage();
 
+        boolean alreadyCheckedLanguageToday = isCheckedToday(user, learningLanguage, today);
         boolean alreadyCheckedToday = isCheckedToday(lastAttendanceAt, today);
 
-        int updatedStreakDays = calculateUpdatedStreakDays(
-                studyStatistics.getStreakDays(),
-                lastAttendanceAt,
-                today
-        );
-
-        LocalDateTime attendedAt = LocalDateTime.now(KST_ZONE);
-        studyStatistics.updateAttendance(updatedStreakDays, attendedAt);
+        int updatedStreakDays = studyStatistics.getStreakDays();
+        LocalDateTime attendedAt = lastAttendanceAt;
 
         if (!alreadyCheckedToday) {
+            updatedStreakDays = calculateUpdatedStreakDays(
+                    studyStatistics.getStreakDays(),
+                    lastAttendanceAt,
+                    today
+            );
+            attendedAt = LocalDateTime.now(KST_ZONE);
+            studyStatistics.updateAttendance(updatedStreakDays, attendedAt);
+        }
+
+        if (!alreadyCheckedLanguageToday) {
+            attendanceRecordRepository.save(AttendanceRecord.create(user, learningLanguage, today));
             xpService.grantXp(user, XpActionType.DAILY_ATTENDANCE);
-            if (updatedStreakDays == 3)
+            challengeProgressService.addProgress(user, learningLanguage, ChallengeGoalType.ATTENDANCE, 1);
+
+            if (!alreadyCheckedToday && updatedStreakDays == 3) {
                 xpService.grantXp(user, XpActionType.STREAK_3_DAYS);
-            if (updatedStreakDays == 7)
+            }
+            if (!alreadyCheckedToday && updatedStreakDays == 7) {
                 xpService.grantXp(user, XpActionType.STREAK_7_DAYS);
-            challengeProgressService.addProgress(user, ChallengeGoalType.ATTENDANCE, 1);
+            }
         }
 
         badgeService.evaluate(user);
@@ -179,12 +193,16 @@ public class AttendanceService {
         }
     }
 
-    private boolean isCheckedToday(LocalDateTime updatedAt, LocalDate today) {
-        if (updatedAt == null) {
-            return false;
-        }
+    private boolean isCheckedToday(User user, LearningLanguage learningLanguage, LocalDate today) {
+        return attendanceRecordRepository.existsByUserAndLearningLanguageAndAttendanceDate(
+                user,
+                learningLanguage,
+                today
+        );
+    }
 
-        return updatedAt.toLocalDate().isEqual(today);
+    private boolean isCheckedToday(LocalDateTime attendanceAt, LocalDate today) {
+        return attendanceAt != null && attendanceAt.toLocalDate().isEqual(today);
     }
 
     private int calculateUpdatedStreakDays(int streakDays, LocalDateTime updatedAt, LocalDate today) {
