@@ -29,9 +29,14 @@ import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import com.qurve.wrongnote.service.WrongNoteService;
 import com.qurve.xp.service.XpService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -42,9 +47,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.nio.charset.StandardCharsets;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProblemService {
 
@@ -60,11 +65,53 @@ public class ProblemService {
     private final XpService xpService;
     private final ChallengeProgressService challengeProgressService;
     private final WrongNoteService wrongNoteService;
+    private final RestClient voiceRssRestClient;
+    private final String voiceRssApiKey;
+    private final String voiceRssEnglishLanguage;
+    private final String voiceRssCodec;
+    private final String voiceRssFormat;
+
+    public ProblemService(
+            ProblemRepository problemRepository,
+            ProblemChoiceRepository problemChoiceRepository,
+            ProblemSubmissionRepository problemSubmissionRepository,
+            ProblemBookmarkRepository problemBookmarkRepository,
+            UserRepository userRepository,
+            BadgeService badgeService,
+            XpService xpService,
+            ChallengeProgressService challengeProgressService,
+            WrongNoteService wrongNoteService,
+            @Value("${tts.voicerss.base-url:https://api.voicerss.org}") String voiceRssBaseUrl,
+            @Value("${tts.voicerss.api-key:}") String voiceRssApiKey,
+            @Value("${tts.voicerss.english-language:en-us}") String voiceRssEnglishLanguage,
+            @Value("${tts.voicerss.codec:MP3}") String voiceRssCodec,
+            @Value("${tts.voicerss.format:44khz_16bit_stereo}") String voiceRssFormat,
+            @Value("${tts.voicerss.connect-timeout-millis:3000}") int connectTimeoutMillis,
+            @Value("${tts.voicerss.read-timeout-millis:5000}") int readTimeoutMillis
+    ) {
+        this.problemRepository = problemRepository;
+        this.problemChoiceRepository = problemChoiceRepository;
+        this.problemSubmissionRepository = problemSubmissionRepository;
+        this.problemBookmarkRepository = problemBookmarkRepository;
+        this.userRepository = userRepository;
+        this.badgeService = badgeService;
+        this.xpService = xpService;
+        this.challengeProgressService = challengeProgressService;
+        this.wrongNoteService = wrongNoteService;
+        this.voiceRssRestClient = RestClient.builder()
+                .baseUrl(voiceRssBaseUrl)
+                .requestFactory(createRequestFactory(connectTimeoutMillis, readTimeoutMillis))
+                .build();
+        this.voiceRssApiKey = voiceRssApiKey;
+        this.voiceRssEnglishLanguage = voiceRssEnglishLanguage;
+        this.voiceRssCodec = voiceRssCodec;
+        this.voiceRssFormat = voiceRssFormat;
+    }
 
     /**
      * 문제 목록 조회
      *
-     * * JLPT 레벨, 문제 유형, 세부 유형을 기준으로 문제와 선택지를 함께 조회한다.
+     * * 언어, 난이도, 문제 유형, 주제를 기준으로 문제와 선택지를 함께 조회한다.
      *
      * * 문제 풀이 화면에서는 정답과 해설을 숨기고 문제 본문과 선택지만 반환한다.
      *
@@ -73,14 +120,22 @@ public class ProblemService {
      * @throws BusinessException 조회 조건에 맞는 문제가 없는 경우
      */
     public ProblemListResponseDto findAll(ProblemListRequestDto requestDto) {
-        String normalizedLevel = normalizeKeyword(requestDto.getLevel());
+        String normalizedLanguage = normalizeKeyword(requestDto.getLanguage());
+        String normalizedCefrLevel = normalizeKeyword(requestDto.getCefrLevel());
+        String normalizedLevel = resolveLevel(requestDto);
+        String normalizedUsageType = normalizeKeyword(requestDto.getUsageType());
         String normalizedCategory = normalizeKeyword(requestDto.getCategory());
         String normalizedSubType = normalizeKeyword(requestDto.getSubType());
+        String normalizedTopic = normalizeKeyword(requestDto.getTopic());
 
-        List<Problem> allProblems = problemRepository.findAllByLevelAndCategoryAndSubTypeOrderByProblemIdAsc(
+        List<Problem> allProblems = problemRepository.findAllByConditionsOrderByProblemIdAsc(
+                normalizedLanguage,
+                normalizedCefrLevel,
                 normalizedLevel,
+                normalizedUsageType,
                 normalizedCategory,
-                normalizedSubType
+                normalizedSubType,
+                normalizedTopic
         );
 
         if (allProblems.isEmpty()) {
@@ -126,12 +181,56 @@ public class ProblemService {
 
         return ProblemListResponseDto.of(
                 normalizedLevel,
+                normalizedLanguage,
+                normalizedCefrLevel,
+                normalizedUsageType,
                 normalizedCategory,
                 normalizedSubType,
+                normalizedTopic,
                 totalProblemCount,
                 offset,
                 problemResponseDtos
         );
+    }
+
+    /** 듣기 문제의 음성 원문을 VoiceRSS로 변환해 MP3로 반환한다. */
+    public byte[] findAudio(String loginId, Long problemId) {
+        userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        if (!StringUtils.hasText(problem.getAudioScript())) {
+            throw new BusinessException(ErrorCode.PROBLEM_AUDIO_NOT_AVAILABLE);
+        }
+
+        if (!StringUtils.hasText(voiceRssApiKey)) {
+            throw new BusinessException(ErrorCode.PROBLEM_AUDIO_FAIL);
+        }
+
+        try {
+            ResponseEntity<byte[]> response = voiceRssRestClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/")
+                            .queryParam("key", voiceRssApiKey)
+                            .queryParam("hl", voiceRssEnglishLanguage)
+                            .queryParam("src", problem.getAudioScript())
+                            .queryParam("c", voiceRssCodec)
+                            .queryParam("f", voiceRssFormat)
+                            .build())
+                    .retrieve()
+                    .toEntity(byte[].class);
+
+            byte[] audio = response.getBody();
+            if (audio == null || audio.length == 0 || isVoiceRssError(audio)) {
+                throw new BusinessException(ErrorCode.PROBLEM_AUDIO_FAIL);
+            }
+
+            return audio;
+        } catch (RestClientException exception) {
+            throw new BusinessException(ErrorCode.PROBLEM_AUDIO_FAIL);
+        }
     }
 
     /**
@@ -393,7 +492,33 @@ public class ProblemService {
      * @param value 요청으로 전달된 조회 값
      * @return 정규화된 조회 값
      */
+    private String resolveLevel(ProblemListRequestDto requestDto) {
+        String level = normalizeKeyword(requestDto.getLevel());
+        String qurveLevel = normalizeKeyword(requestDto.getQurveLevel());
+
+        if (level != null && qurveLevel != null && !level.equals(qurveLevel)) {
+            throw new BusinessException(ErrorCode.INVALID_PROBLEM_QUERY);
+        }
+
+        return qurveLevel == null ? level : qurveLevel;
+    }
+
     private String normalizeKeyword(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
         return value.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private SimpleClientHttpRequestFactory createRequestFactory(int connectTimeoutMillis, int readTimeoutMillis) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(connectTimeoutMillis);
+        requestFactory.setReadTimeout(readTimeoutMillis);
+        return requestFactory;
+    }
+
+    private boolean isVoiceRssError(byte[] audio) {
+        return new String(audio, StandardCharsets.UTF_8).startsWith("ERROR:");
     }
 }
