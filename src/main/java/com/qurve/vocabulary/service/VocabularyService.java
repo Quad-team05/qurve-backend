@@ -512,28 +512,34 @@ public class VocabularyService {
     /**
      * 북마크 단어 조회
      *
-     * * 사용자가 북마크한 단어 목록을 조회한다.
-     * * 북마크 테이블의 wordId를 기반으로 단어 정보를 조회하여 반환한다.
+     * * 사용자의 현재 학습 언어에 해당하는 북마크 단어 목록을 조회한다.
+     * * 학습 언어가 없는 기존 사용자와 단어는 일본어로 처리한다.
+     * * 단어 ID 오름차순으로 조회하고 응답에 1부터 시작하는 순서 번호를 부여한다.
+     * * 현재 학습 언어에 해당하는 북마크 단어가 없으면 빈 목록을 반환한다.
      *
      * @param loginId 로그인 ID
-     * @return 북마크 단어 목록
-     * @throws BusinessException 유저가 존재하지 않는 경우
+     * @return 현재 학습 언어의 북마크 단어 목록
+     * @throws BusinessException 사용자가 존재하지 않는 경우
      */
     public List<UnitWordResponseDto> getBookmarks(String loginId) {
 
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        LearningLanguage language = resolveLearningLanguage(user);
+
         List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
 
-        // 북마크된 단어 ID 목록 추출
         List<Long> wordIds = bookmarks.stream()
                 .map(Bookmark::getWordId)
                 .toList();
 
-        List<VocabularyWord> words = vocabularyWordRepository.findAllById(wordIds);
+        if (wordIds.isEmpty()) {
+            return List.of();
+        }
 
-        // 순서 번호(1부터) 부여하여 반환
+        List<VocabularyWord> words = vocabularyWordRepository.findBookmarkedWordsByLanguage(wordIds, language, LearningLanguage.JAPANESE);
+
         return IntStream.range(0, words.size())
                 .mapToObj(i -> UnitWordResponseDto.from(words.get(i), i + 1))
                 .toList();

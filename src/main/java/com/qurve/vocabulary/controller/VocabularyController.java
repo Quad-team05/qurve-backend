@@ -90,7 +90,7 @@ public class VocabularyController {
     }
 
     @GetMapping("/bookmarks")
-    @Operation(summary = "단어 북마크 목록 조회", description = "로그인한 사용자가 북마크한 단어 목록을 조회합니다.")
+    @Operation(summary = "단어 북마크 목록 조회", description = "로그인한 사용자의 현재 학습 언어에 해당하는 북마크 단어 목록을 단어 ID 오름차순으로 조회합니다.")
     public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getBookmarks(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(vocabularyService.getBookmarks(authentication.getName())));
     }
