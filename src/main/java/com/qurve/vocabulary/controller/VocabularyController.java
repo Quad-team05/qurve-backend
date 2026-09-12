@@ -73,7 +73,7 @@ public class VocabularyController {
     }
 
     @GetMapping("/challenge-words")
-    @Operation(summary = "챌린지 단어 조회", description = "진행 중인 단어 암기 챌린지의 목표 개수만큼 무작위 단어를 조회합니다.")
+    @Operation(summary = "챌린지 단어 조회", description = "현재 날짜에 진행 중인 단어 암기 챌린지 중 가장 최근 생성된 챌린지를 기준으로, 사용자 학습 언어의 단어를 목표 개수까지 무작위로 조회합니다.")
     public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getChallengeWords(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(vocabularyService.getChallengeWords(authentication.getName())));
     }

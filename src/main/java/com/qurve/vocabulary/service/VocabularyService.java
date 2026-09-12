@@ -32,12 +32,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -48,6 +46,8 @@ public class VocabularyService {
 
     private static final Set<String> SUPPORTED_LEVELS = Set.of("N1", "N2", "N3", "N4", "N5");
     private static final Set<String> SUPPORTED_ENGLISH_LEVELS = Set.of("A1", "A2", "B1", "B2", "C1", "C2");
+
+    private static final ZoneId KST_ZONE = ZoneId.of("Asia/Seoul");
 
     private final UserRepository userRepository;
     private final UnitProgressRepository unitProgressRepository;
@@ -412,9 +412,7 @@ public class VocabularyService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         Challenge challenge = findActiveWordChallenge(user);
-
-        // 학습 언어가 없는 기존 사용자는 일본어로 처리한다.
-        LearningLanguage language = user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage();
+        LearningLanguage language = resolveLearningLanguage(user);
 
         List<VocabularyWord> words = vocabularyWordRepository.findRandomByLanguage(language, LearningLanguage.JAPANESE, challenge.getTargetValue());
 
@@ -477,12 +475,24 @@ public class VocabularyService {
         return ChallengeWordCompleteResponseDto.of(requestDto.getWordIds().size(), newStudies.size());
     }
 
+    /**
+     * 진행 중인 단어 챌린지 조회
+     *
+     * * 한국 날짜 기준으로 챌린지 기간에 포함되는 ACTIVE 상태의 단어 챌린지를 조회한다.
+     * * 여러 개가 있으면 가장 최근에 생성된 챌린지를 선택한다.
+     *
+     * @param user 조회할 사용자
+     * @return 현재 진행 중인 단어 챌린지
+     * @throws BusinessException 현재 진행 중인 단어 챌린지가 없는 경우
+     */
     private Challenge findActiveWordChallenge(User user) {
-        return challengeRepository.findFirstByUserAndGoalTypeAndStatusOrderByCreatedAtDesc(
-                        user,
-                        ChallengeGoalType.WORD_COUNT,
-                        ChallengeStatus.ACTIVE
-                )
+        LocalDate today = LocalDate.now(KST_ZONE);
+
+        return challengeRepository
+                .findAllByUserAndGoalTypeAndStatus(user, ChallengeGoalType.WORD_COUNT, ChallengeStatus.ACTIVE)
+                .stream()
+                .filter(challenge -> challenge.isActiveOn(today))
+                .max(Comparator.comparing(Challenge::getCreatedAt))
                 .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
     }
 
