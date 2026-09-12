@@ -61,11 +61,11 @@ public class VocabularyService {
     private final AttendanceService attendanceService;
 
     /**
-     * 사용자의 현재 학습 언어에 해당하는 단어 유닛 목록을 조회한다.
+     * 단어 유닛 목록 조회
      *
-     * 단어 마스터 데이터를 기준으로 유닛 목록을 생성하고,
-     * 사용자 학습 기록이 있는 유닛에는 저장된 진행 상태를 반영한다.
-     * 학습 기록이 없는 유닛은 BEFORE 상태로 반환한다.
+     * * 단어 마스터 데이터를 기준으로 유닛 목록을 생성하고,
+     * * 사용자 학습 기록이 있는 유닛에는 저장된 진행 상태를 반영한다.
+     * * 학습 기록이 없는 유닛은 BEFORE 상태로 반환한다.
      *
      * @param loginId 로그인 ID
      * @param level 일본어 JLPT 레벨(N1~N5) 또는 영어 CEFR 레벨(A1~C2)
@@ -111,7 +111,7 @@ public class VocabularyService {
      * JLPT 레벨 값 검증
      *
      * * 사용자가 소문자나 공백이 포함된 값으로 요청해도
-     * DB에 저장된 레벨 형식과 비교할 수 있도록 N1~N5 형태로 변환한다.
+     * * DB에 저장된 레벨 형식과 비교할 수 있도록 N1~N5 형태로 변환한다.
      *
      * @param level 요청으로 전달된 JLPT 레벨
      * @return 검증이 완료된 JLPT 레벨
@@ -128,9 +128,11 @@ public class VocabularyService {
     }
 
     /**
-     * 학습 언어에 맞는 레벨인지 검증하고 앞뒤 공백 제거 및 대문자 변환을 수행한다.
+     * 학습 언어별 레벨 검증 및 정규화
      *
-     * 일본어는 N1~N5, 영어는 A1~C2를 허용한다.
+     * * 학습 언어에 맞는 레벨인지 검증하고 앞뒤 공백 제거 및 대문자 변환을 수행한다.
+     *
+     * * 일본어는 N1~N5, 영어는 A1~C2를 허용한다.
      *
      * @param level 요청 레벨
      * @param language 조회할 학습 언어
@@ -151,38 +153,68 @@ public class VocabularyService {
     }
 
     /**
-     * 유닛 단어 학습 조회
+     * 사용자 학습 언어 조회
      *
-     * * 단어 학습 화면에서 사용할 단어 목록을 조회한다.
-     *
-     * * 단어는 레벨과 유닛 번호를 기준으로 조회하며,
-     * 화면 표시 순서를 위해 조회된 순서대로 번호를 부여한다.
-     *
-     * @param loginId 로그인 ID
-     * @param level 조회할 JLPT 레벨
-     * @param unitNumber 조회할 유닛 번호
-     * @return 유닛 단어 학습 정보
-     * @throws BusinessException 유저, 레벨, 유닛 정보가 유효하지 않은 경우
+     * * 사용자의 현재 학습 언어를 반환한다.
+     * * 학습 언어가 없는 기존 사용자는 일본어로 처리한다.
      */
-    public UnitWordStudyResponseDto getUnitWords(String loginId, String level, Integer unitNumber) {
+    private LearningLanguage resolveLearningLanguage(User user) {
+        return user.getLearningLanguage() == null
+                ? LearningLanguage.JAPANESE
+                : user.getLearningLanguage();
+    }
 
-        String normalizedLevel = normalizeLevel(level);
-
-        userRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
+    /**
+     * 유닛 존재 검증 및 단어 조회
+     *
+     * * 실제로 존재하는 유닛인지 검증하고 해당 유닛의 단어를 조회한다.
+     */
+    private List<VocabularyWord> getUnitWordsOrThrow(
+            LearningLanguage language,
+            String normalizedLevel,
+            Integer unitNumber
+    ) {
         if (unitNumber == null || unitNumber < 1) {
             throw new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND);
         }
 
         List<VocabularyWord> words = vocabularyWordRepository
-                .findByLevelAndUnitNumberOrderByWordIdAsc(normalizedLevel, unitNumber);
+                .findWordsByLanguageAndLevelAndUnitNumber(
+                        language,
+                        LearningLanguage.JAPANESE,
+                        normalizedLevel,
+                        unitNumber
+                );
 
         if (words.isEmpty()) {
             throw new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND);
         }
 
-        List<UnitWordResponseDto> wordResponses = java.util.stream.IntStream.range(0, words.size())
+        return words;
+    }
+
+    /**
+     * 유닛 단어 조회
+     *
+     * * 단어 ID 순으로 조회하고 응답에 1부터 시작하는 순서 번호를 부여한다.
+     * * 조회만으로 유닛의 학습 상태를 변경하지 않는다.
+     *
+     * @param loginId 로그인 ID
+     * @param level 일본어 JLPT 레벨(N1~N5) 또는 영어 CEFR 레벨(A1~C2)
+     * @param unitNumber 조회할 유닛 번호
+     * @return 유닛의 단어 목록과 단어 수
+     * @throws BusinessException 사용자가 없거나 레벨 또는 유닛이 유효하지 않은 경우
+     */
+    public UnitWordStudyResponseDto getUnitWords(String loginId, String level, Integer unitNumber) {
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        LearningLanguage language = resolveLearningLanguage(user);
+        String normalizedLevel = normalizeLevel(level, language);
+
+        List<VocabularyWord> words = getUnitWordsOrThrow(language, normalizedLevel, unitNumber);
+
+        List<UnitWordResponseDto> wordResponses = IntStream.range(0, words.size())
                 .mapToObj(index -> UnitWordResponseDto.from(words.get(index), index + 1))
                 .toList();
 
@@ -247,25 +279,37 @@ public class VocabularyService {
     /**
      * 유닛 학습 시작
      *
-     * * 단어보기 클릭 시 해당 유닛의 학습 상태를 IN_PROGRESS로 변경한다.
-     * * UnitProgress가 없는 경우 새로 생성 후 IN_PROGRESS로 저장한다.
+     * * 실제 유닛이 존재하는지 확인한 뒤 진행 기록을 조회하거나 생성한다.
+     * * 이미 완료한 유닛은 COMPLETED 상태를 유지한다.
      *
      * @param loginId 로그인 ID
-     * @param level 조회할 JLPT 레벨
+     * @param level 일본어 JLPT 레벨(N1~N5) 또는 영어 CEFR 레벨(A1~C2)
      * @param unitNumber 학습 시작할 유닛 번호
-     * @throws BusinessException 유저가 존재하지 않거나 레벨이 유효하지 않은 경우
+     * @throws BusinessException 사용자가 없거나 레벨 또는 유닛이 유효하지 않은 경우
      */
     @Transactional
-    public void startUnit(String loginId, String level, Integer unitNumber){
-
-        String normalizedLevel = normalizeLevel(level);
+    public void startUnit(String loginId, String level, Integer unitNumber) {
 
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        UnitProgress unitProgress = unitProgressRepository.findByUserAndLevelAndUnitNumber(user, normalizedLevel, unitNumber)
-                .orElse(UnitProgress.builder()
+        LearningLanguage language = resolveLearningLanguage(user);
+        String normalizedLevel = normalizeLevel(level, language);
+
+        // 존재하지 않는 유닛의 진행 기록이 생성되지 않도록 먼저 검증한다.
+        getUnitWordsOrThrow(language, normalizedLevel, unitNumber);
+
+        UnitProgress unitProgress = unitProgressRepository
+                .findProgressByLanguageAndLevelAndUnitNumber(
+                        user,
+                        language,
+                        LearningLanguage.JAPANESE,
+                        normalizedLevel,
+                        unitNumber
+                )
+                .orElseGet(() -> UnitProgress.builder()
                         .user(user)
+                        .learningLanguage(language)
                         .level(normalizedLevel)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
@@ -281,25 +325,38 @@ public class VocabularyService {
     /**
      * 유닛 학습 완료
      *
-     * * 학습완료 버튼 클릭 시 해당 유닛의 학습 상태를 COMPLETED로 변경한다.
-     * * UnitProgress가 없는 경우 새로 생성 후 COMPLETED로 저장한다.
+     * * 실제 유닛이 존재하는지 확인한 뒤 진행 상태를 COMPLETED로 저장한다.
+     * * 이전에 완료되지 않은 유닛에 완료 XP를 지급하고,
+     * * 새로 학습한 단어만 학습 기록·단어 XP·기존 챌린지 진행도에 반영한다.
      *
      * @param loginId 로그인 ID
-     * @param level 조회할 JLPT 레벨
+     * @param level 일본어 JLPT 레벨(N1~N5) 또는 영어 CEFR 레벨(A1~C2)
      * @param unitNumber 학습 완료할 유닛 번호
-     * @throws BusinessException 유저가 존재하지 않거나 레벨이 유효하지 않은 경우
+     * @throws BusinessException 사용자가 없거나 레벨 또는 유닛이 유효하지 않은 경우
      */
     @Transactional
-    public void completeUnit(String loginId, String level, Integer unitNumber){
-
-        String normalizedLevel = normalizeLevel(level);
+    public void completeUnit(String loginId, String level, Integer unitNumber) {
 
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        UnitProgress unitProgress = unitProgressRepository.findByUserAndLevelAndUnitNumber(user, normalizedLevel, unitNumber)
-                .orElse(UnitProgress.builder()
+        LearningLanguage language = resolveLearningLanguage(user);
+        String normalizedLevel = normalizeLevel(level, language);
+
+        // 상태 변경과 보상 처리 전에 해당 언어의 유닛이 존재하는지 확인한다.
+        List<VocabularyWord> words = getUnitWordsOrThrow(language, normalizedLevel, unitNumber);
+
+        UnitProgress unitProgress = unitProgressRepository
+                .findProgressByLanguageAndLevelAndUnitNumber(
+                        user,
+                        language,
+                        LearningLanguage.JAPANESE,
+                        normalizedLevel,
+                        unitNumber
+                )
+                .orElseGet(() -> UnitProgress.builder()
                         .user(user)
+                        .learningLanguage(language)
                         .level(normalizedLevel)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
@@ -313,14 +370,8 @@ public class VocabularyService {
 
         attendanceService.save(loginId);
 
-        if (!alreadyCompleted)
+        if (!alreadyCompleted) {
             xpService.grantXp(user, XpActionType.WORD_SET_COMPLETE);
-
-        List<VocabularyWord> words = vocabularyWordRepository
-                .findByLevelAndUnitNumberOrderByWordIdAsc(normalizedLevel, unitNumber);
-
-        if (words.isEmpty()) {
-            throw new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND);
         }
 
         Set<Long> studiedWordIds = userWordStudyRepository.findAllByUserAndWordIn(user, words)
@@ -348,8 +399,8 @@ public class VocabularyService {
     /**
      * 챌린지 단어 조회
      *
-     * 사용자의 현재 학습 언어에 해당하는 단어 중에서
-     * 진행 중인 WORD_COUNT 챌린지의 목표 개수까지 무작위로 반환한다.
+     * * 사용자의 현재 학습 언어에 해당하는 단어 중에서
+     * * 진행 중인 WORD_COUNT 챌린지의 목표 개수까지 무작위로 반환한다.
      *
      * @param loginId 로그인 ID
      * @return 현재 학습 언어의 챌린지 단어 목록
@@ -373,10 +424,12 @@ public class VocabularyService {
     }
 
     /**
-     * 챌린지 단어 학습을 완료 처리합니다.
+     * 챌린지 단어 학습 완료
+     *
+     * * 챌린지 단어 학습을 완료 처리합니다.
      *
      * * 이미 학습한 단어는 다시 저장하거나 챌린지 진행도에 반영하지 않아,
-     * 완료 요청을 재전송해도 중복 적립되지 않습니다.
+     * * 완료 요청을 재전송해도 중복 적립되지 않습니다.
      *
      * @param loginId 로그인 ID
      * @param requestDto 완료한 단어 ID 목록

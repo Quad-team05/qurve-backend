@@ -26,8 +26,37 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
     List<VocabularyWord> findByLevelAndUnitNumberOrderByWordIdAsc(String level, Integer unitNumber);
 
     /**
-     * 선택한 학습 언어의 단어를 지정한 개수까지 무작위로 조회한다.
-     * 일본어 조회 시 학습 언어가 null인 기존 데이터도 포함한다.
+     * 학습 언어별 유닛 단어 조회
+     *
+     * * 학습 언어·레벨·유닛에 해당하는 단어를 ID 순으로 조회한다.
+     * * 일본어 조회 시 학습 언어가 null인 기존 단어도 포함한다.
+     */
+    @Query("""
+        select w
+        from VocabularyWord w
+        where w.level = :level
+          and w.unitNumber = :unitNumber
+          and (
+              w.learningLanguage = :language
+              or (
+                  :language = :legacyLanguage
+                  and w.learningLanguage is null
+              )
+          )
+        order by w.wordId asc
+        """)
+    List<VocabularyWord> findWordsByLanguageAndLevelAndUnitNumber(
+            @Param("language") LearningLanguage language,
+            @Param("legacyLanguage") LearningLanguage legacyLanguage,
+            @Param("level") String level,
+            @Param("unitNumber") Integer unitNumber
+    );
+
+    /**
+     * 학습 언어별 무작위 단어 조회
+     *
+     * * 선택한 학습 언어의 단어를 지정한 개수까지 무작위로 조회한다.
+     * * 일본어 조회 시 학습 언어가 null인 기존 데이터도 포함한다.
      */
     @Query("""
         select v
@@ -47,8 +76,10 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
     );
 
     /**
-     * 학습 언어와 레벨에 해당하는 유닛 번호를 오름차순으로 조회한다.
-     * language가 legacyLanguage와 같으면 학습 언어가 null인 기존 데이터도 포함한다.
+     * 학습 언어별 유닛 번호 목록 조회
+     *
+     * * 학습 언어와 레벨에 해당하는 유닛 번호를 오름차순으로 조회한다.
+     * * language가 legacyLanguage와 같으면 학습 언어가 null인 기존 데이터도 포함한다.
      *
      * @param legacyLanguage 언어가 null인 기존 데이터에 적용할 언어
      */

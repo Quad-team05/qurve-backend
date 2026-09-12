@@ -22,11 +22,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 영어 단어 CSV를 읽어 단어 마스터 데이터를 초기화한다.
+ * 영어 단어 데이터 초기화
  *
- * 출처와 원본 항목 ID를 기준으로 기존 단어를 식별한다.
- * 없는 단어는 추가하고, 기존 단어는 한국어 뜻만 갱신한다.
- * 레벨과 유닛 번호는 CSV에 지정된 값을 사용한다.
+ * * 영어 단어 CSV를 읽어 단어 마스터 데이터를 초기화한다.
+ *
+ * * 출처와 원본 항목 ID를 기준으로 기존 단어를 식별한다.
+ * * 없는 단어는 추가하고, 기존 단어는 한국어 뜻만 갱신한다.
+ * * 레벨과 유닛 번호는 CSV에 지정된 값을 사용한다.
  */
 @Component
 @RequiredArgsConstructor
@@ -50,11 +52,13 @@ public class EnglishVocabularyDataInitializer implements ApplicationRunner {
     private final VocabularyWordRepository vocabularyWordRepository;
 
     /**
-     * 애플리케이션 시작 시 영어 단어 데이터를 저장한다.
+     * 영어 단어 CSV 데이터 저장
      *
-     * CSV의 헤더, 필수 값과 식별자 중복을 검증한다.
-     * 기존 단어의 한국어 뜻 변경은 트랜잭션의 변경 감지로 반영하고,
-     * 신규 단어는 일괄 저장한다.
+     * * 애플리케이션 시작 시 영어 단어 데이터를 저장한다.
+     *
+     * * CSV의 헤더, 필수 값과 식별자 중복을 검증한다.
+     * * 기존 단어의 한국어 뜻 변경은 트랜잭션의 변경 감지로 반영하고,
+     * * 신규 단어는 일괄 저장한다.
      *
      * @param args 애플리케이션 실행 인자
      * @throws Exception CSV 읽기, 데이터 검증 또는 저장에 실패한 경우
@@ -148,8 +152,10 @@ public class EnglishVocabularyDataInitializer implements ApplicationRunner {
     }
 
     /**
-     * 지정한 출처의 기존 단어를 원본 항목 ID 기준으로 조회한다.
-     * 원본 항목 ID가 없는 데이터는 매핑 대상에서 제외한다.
+     * 출처별 기존 단어 조회
+     *
+     * * 지정한 출처의 기존 단어를 원본 항목 ID 기준으로 조회한다.
+     * * 원본 항목 ID가 없는 데이터는 매핑 대상에서 제외한다.
      */
     private Map<String, VocabularyWord> loadExistingWords(String source) {
         return vocabularyWordRepository.findBySource(source)
@@ -162,8 +168,10 @@ public class EnglishVocabularyDataInitializer implements ApplicationRunner {
     }
 
     /**
-     * 따옴표 안의 쉼표와 이스케이프된 따옴표를 처리한다.
-     * 현재 CSV처럼 각 항목이 한 줄에 저장된 형식을 대상으로 한다.
+     * CSV 한 줄 파싱
+     *
+     * * 따옴표 안의 쉼표와 이스케이프된 따옴표를 처리한다.
+     * * 현재 CSV처럼 각 항목이 한 줄에 저장된 형식을 대상으로 한다.
      */
     private List<String> parseCsvLine(String line) {
         List<String> result = new ArrayList<>();
