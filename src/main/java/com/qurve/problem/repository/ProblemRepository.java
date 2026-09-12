@@ -28,7 +28,11 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
             select p
             from Problem p
             where p.isActive = true
-              and (:language is null or p.language = :language)
+              and (
+                    :language is null
+                    or p.language = :language
+                    or (:language = 'JA' and p.language is null)
+              )
               and (:cefrLevel is null or p.cefrLevel = :cefrLevel)
               and (:level is null or p.level = :level)
               and (:usageType is null or p.usageType = :usageType)
@@ -48,7 +52,8 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
     );
 
     @Query("""
-            select p.category as category,
+            select p.cefrLevel as cefrLevel,
+                   p.category as category,
                    p.subType as subType,
                    count(p) as problemCount
             from Problem p

@@ -423,6 +423,7 @@ public class LearningService {
         if (ENGLISH_PROBLEM_LANGUAGE.equals(language)) {
             return switch (normalizedSubTypeCode) {
                 case "WORD_MEANING" -> "단어 의미";
+                case "WORD_RECOGNITION" -> "단어 인식";
                 case "CONTEXT_VOCABULARY" -> "문맥 어휘";
                 case "VOCABULARY_BLANK" -> "어휘 빈칸";
                 case "SYNONYM" -> "유의어";
@@ -430,22 +431,34 @@ public class LearningService {
                 case "CORRECT_SENTENCE" -> "문장 고르기";
                 case "ERROR_FINDING" -> "오류 찾기";
                 case "SENTENCE_ORDER" -> "문장 순서";
+                case "SENTENCE_RECOGNITION" -> "문장 인식";
                 case "SHORT_MESSAGE" -> "짧은 메시지";
                 case "NOTICE" -> "안내문";
                 case "DETAIL" -> "세부 내용";
                 case "MAIN_IDEA" -> "주제 찾기";
                 case "PURPOSE" -> "글의 목적";
                 case "INFERENCE" -> "추론";
+                case "INTENTION" -> "의도 파악";
                 case "SITUATION_EXPRESSION" -> "상황 표현";
+                case "POLITE_EXPRESSION" -> "공손한 표현";
+                case "SIMILAR_EXPRESSION" -> "유사 표현";
+                case "KOREAN_TO_ENGLISH" -> "영작";
                 case "DIALOGUE_BLANK" -> "대화 빈칸";
+                case "DIALOGUE_ORDER" -> "대화 순서";
                 case "NATURAL_RESPONSE" -> "자연스러운 응답";
                 case "LISTENING_INFORMATION" -> "듣기 정보";
+                case "LISTENING_DIALOGUE" -> "듣기 대화";
+                case "LISTENING_RESPONSE" -> "듣기 응답";
+                case "LIFE_LISTENING" -> "일상 듣기";
+                case "DICTATION" -> "받아쓰기";
+                case "PRONUNCIATION_DISTINCTION" -> "발음 구별";
                 default -> normalizedSubTypeCode;
             };
         }
 
         return switch (normalizedSubTypeCode) {
             case "KANJI_READING" -> "한자 읽기";
+            case "VOCABULARY_KANJI" -> "한자 어휘";
             case "CONTEXT_VOCABULARY" -> "문맥 규정";
             case "USAGE" -> "용법";
             case "GRAMMAR_PATTERN" -> "문법";
