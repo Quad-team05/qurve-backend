@@ -8,6 +8,7 @@ import com.qurve.challenge.repository.ChallengeProgressRepository;
 import com.qurve.challenge.repository.ChallengeRepository;
 import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.XpActionType;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.user.domain.User;
 import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
@@ -42,25 +43,38 @@ public class ChallengeProgressService {
      */
     @Transactional
     public void addProgress(User user, ChallengeGoalType goalType, int amount) {
-        if (amount <= 0) {
-            return;
-        }
-
-        LocalDate today = LocalDate.now(KST_ZONE);
-
-        LearningLanguage language = user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage();
-
-        challengeRepository.findActiveChallengesByLanguage(
-                        user,
-                        goalType,
-                        ChallengeStatus.ACTIVE,
-                        language,
-                        LearningLanguage.JAPANESE
-                )
-                .stream()
-                .filter(challenge -> challenge.isActiveOn(today))
-                .forEach(challenge -> updateProgress(challenge, amount));
+        addProgress(user, user.getLearningLanguage(), goalType, amount);
     }
+
+    /** 활동이 발생한 학습 언어의 활성 챌린지에 진행도를 반영합니다. */
+@Transactional
+public void addProgress(
+        User user,
+        LearningLanguage learningLanguage,
+        ChallengeGoalType goalType,
+        int amount
+) {
+    if (amount <= 0) {
+        return;
+    }
+
+    LocalDate today = LocalDate.now(KST_ZONE);
+
+    LearningLanguage language = learningLanguage == null
+            ? LearningLanguage.JAPANESE
+            : learningLanguage;
+
+    challengeRepository.findAllActiveByUserAndGoalTypeForLanguage(
+                    user,
+                    goalType,
+                    ChallengeStatus.ACTIVE,
+                    language,
+                    LearningLanguage.JAPANESE
+            )
+            .stream()
+            .filter(challenge -> challenge.isActiveOn(today))
+            .forEach(challenge -> updateProgress(challenge, amount));
+}
 
     private void updateProgress(Challenge challenge, int amount) {
         boolean wasActive = challenge.getStatus() == ChallengeStatus.ACTIVE;

@@ -247,6 +247,7 @@ public class VocabularyService {
         bookmarkRepository.save(Bookmark.builder()
                 .user(user)
                 .wordId(wordId)
+                .learningLanguage(VOCABULARY_LANGUAGE)
                 .createdAt(LocalDateTime.now())
                 .build());
 
@@ -311,6 +312,7 @@ public class VocabularyService {
                         .user(user)
                         .learningLanguage(language)
                         .level(normalizedLevel)
+                        .learningLanguage(VOCABULARY_LANGUAGE)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
                         .updatedAt(LocalDateTime.now())
@@ -358,6 +360,7 @@ public class VocabularyService {
                         .user(user)
                         .learningLanguage(language)
                         .level(normalizedLevel)
+                        .learningLanguage(VOCABULARY_LANGUAGE)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
                         .updatedAt(LocalDateTime.now())
@@ -392,7 +395,7 @@ public class VocabularyService {
         }
 
         userWordStudyRepository.saveAll(newStudies);
-        challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+        challengeProgressService.addProgress(user, VOCABULARY_LANGUAGE, ChallengeGoalType.WORD_COUNT, newStudies.size());
         newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
     }
 
@@ -470,7 +473,7 @@ public class VocabularyService {
 
         if (!newStudies.isEmpty()) {
             userWordStudyRepository.saveAll(newStudies);
-            challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+            challengeProgressService.addProgress(user, VOCABULARY_LANGUAGE, ChallengeGoalType.WORD_COUNT, newStudies.size());
             newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
             badgeService.evaluate(user);
         }
@@ -481,17 +484,17 @@ public class VocabularyService {
     }
 
     private Challenge findActiveWordChallenge(User user) {
-        return challengeRepository.findActiveChallengesByLanguage(
-                        user,
-                        ChallengeGoalType.WORD_COUNT,
-                        ChallengeStatus.ACTIVE,
-                        resolveLearningLanguage(user),
-                        LearningLanguage.JAPANESE
-                )
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
-    }
+    return challengeRepository.findAllActiveByUserAndGoalTypeForLanguage(
+                    user,
+                    ChallengeGoalType.WORD_COUNT,
+                    ChallengeStatus.ACTIVE,
+                    resolveLearningLanguage(user),
+                    LearningLanguage.JAPANESE
+            )
+            .stream()
+            .findFirst()
+            .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+}
 
     /**
      * 북마크 단어 조회
@@ -508,7 +511,11 @@ public class VocabularyService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
+        List<Bookmark> bookmarks = bookmarkRepository.findAllByUserAndLearningLanguage(
+                user,
+                user.getLearningLanguage(),
+                LearningLanguage.JAPANESE
+        );
 
         // 북마크된 단어 ID 목록 추출
         List<Long> wordIds = bookmarks.stream()

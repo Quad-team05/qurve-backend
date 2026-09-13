@@ -22,46 +22,44 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
             ChallengeGoalType goalType,
             ChallengeStatus status
     );
+    Optional<Challenge> findFirstByUserAndGoalTypeAndStatusAndLearningLanguageOrderByCreatedAtDesc(
+            User user,
+            ChallengeGoalType goalType,
+            ChallengeStatus status,
+            LearningLanguage learningLanguage
+    );
     long countByUser(User user);
     long countByUserAndStatus(User user, ChallengeStatus status);
+
     @Query("""
-    select c
-    from Challenge c
-    where c.user = :user
-      and c.goalType = :goalType
-      and c.status = :status
-      and (
-          c.learningLanguage = :language
-          or (
-              :language = :legacyLanguage
-              and c.learningLanguage is null
-          )
-      )
-    order by c.createdAt desc
-    """)
-    List<Challenge> findActiveChallengesByLanguage(
+            select c
+            from Challenge c
+            where c.user = :user
+              and (c.learningLanguage = :learningLanguage
+                   or (:learningLanguage = :legacyLanguage and c.learningLanguage is null))
+            order by c.createdAt desc
+            """)
+    List<Challenge> findAllByUserAndLearningLanguage(
             @Param("user") User user,
-            @Param("goalType") ChallengeGoalType goalType,
-            @Param("status") ChallengeStatus status,
-            @Param("language") LearningLanguage language,
+            @Param("learningLanguage") LearningLanguage learningLanguage,
             @Param("legacyLanguage") LearningLanguage legacyLanguage
     );
 
     @Query("""
-    select c
-    from Challenge c
-    where c.user = :user
-      and (
-          c.learningLanguage = :language
-          or (
-              :language = :legacyLanguage
-              and c.learningLanguage is null
-          )
-      )
-    """)
-    List<Challenge> findAllByUserAndLanguage(
+            select c
+            from Challenge c
+            where c.user = :user
+              and c.goalType = :goalType
+              and c.status = :status
+              and (c.learningLanguage = :learningLanguage
+                   or (:learningLanguage = :legacyLanguage and c.learningLanguage is null))
+            order by c.createdAt desc
+            """)
+    List<Challenge> findAllActiveByUserAndGoalTypeForLanguage(
             @Param("user") User user,
-            @Param("language") LearningLanguage language,
+            @Param("goalType") ChallengeGoalType goalType,
+            @Param("status") ChallengeStatus status,
+            @Param("learningLanguage") LearningLanguage learningLanguage,
             @Param("legacyLanguage") LearningLanguage legacyLanguage
     );
 }

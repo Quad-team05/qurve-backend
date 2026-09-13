@@ -49,9 +49,9 @@ public class ChallengeService {
      * @throws BusinessException 유저가 존재하지 않는 경우
      */
     public ChallengeManagementResponseDto findManagement(String loginId) {
-        User user = findUserByLoginId(loginId);
-
-        List<Challenge> challenges = challengeRepository.findAllByUserAndLanguage(user, resolveLearningLanguage(user), LearningLanguage.JAPANESE);
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        List<Challenge> challenges = findChallengesByCurrentLanguage(user);
 
         List<ChallengeManageResponseDto> challengeResponses = challenges.stream()
                 .map(challenge -> ChallengeManageResponseDto.from(
@@ -94,11 +94,10 @@ public class ChallengeService {
      */
     public List<ChallengeMainResponseDto> findAllForMain(String loginId) {
         User user = findUserByLoginId(loginId);
-
-        List<Challenge> challenges = challengeRepository.findAllByUserAndLanguage(user, resolveLearningLanguage(user), LearningLanguage.JAPANESE)
-                        .stream()
-                        .filter(challenge -> challenge.getStatus() == ChallengeStatus.ACTIVE)
-                        .toList();
+        List<Challenge> challenges = findChallengesByCurrentLanguage(user)
+                .stream()
+                .filter(challenge -> challenge.getStatus() == com.qurve.challenge.domain.ChallengeStatus.ACTIVE)
+                .toList();
 
         if (challenges.isEmpty()) {
             return List.of();
@@ -226,14 +225,25 @@ public class ChallengeService {
                 );
     }
 
-    /**
-     * 학습 언어가 없는 기존 사용자는 일본어로 처리합니다.
-     */
+    /** 학습 언어가 없는 기존 사용자는 일본어로 처리합니다. */
     private LearningLanguage resolveLearningLanguage(User user) {
-        return user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage();
+        return user.getLearningLanguage() == null
+                ? LearningLanguage.JAPANESE
+                : user.getLearningLanguage();
     }
 
-    private void validateChallengePeriod(LocalDate startDate, LocalDate endDate) {
+    private List<Challenge> findChallengesByCurrentLanguage(User user) {
+        return challengeRepository.findAllByUserAndLearningLanguage(
+                user,
+                resolveLearningLanguage(user),
+                LearningLanguage.JAPANESE
+        );
+    }
+
+    private void validateChallengePeriod(
+            java.time.LocalDate startDate,
+            java.time.LocalDate endDate
+    ) {
         if (endDate.isBefore(startDate)) {
             throw new BusinessException(ErrorCode.INVALID_CHALLENGE_PERIOD);
         }
