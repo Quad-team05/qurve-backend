@@ -45,14 +45,14 @@ public class VocabularyController {
     }
 
     @PostMapping("/bookmarks/{wordId}")
-    @Operation(summary = "단어 북마크 추가", description = "단어를 사용자 북마크 목록에 추가합니다.")
+    @Operation(summary = "단어 북마크 추가", description = "현재 학습 언어에 해당하는 단어를 사용자 북마크 목록에 추가합니다.")
     public ResponseEntity<ApiResponse<Void>> addBookmark(@PathVariable Long wordId, Authentication authentication) {
         vocabularyService.addBookmark(authentication.getName(), wordId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @DeleteMapping("/bookmarks/{wordId}")
-    @Operation(summary = "단어 북마크 삭제", description = "단어를 사용자 북마크 목록에서 삭제합니다.")
+    @Operation(summary = "단어 북마크 삭제", description = "현재 학습 언어에 해당하는 단어를 사용자 북마크 목록에서 삭제합니다.")
     public ResponseEntity<ApiResponse<Void>> deleteBookmark(@PathVariable Long wordId, Authentication authentication) {
         vocabularyService.removeBookmark(authentication.getName(), wordId);
         return ResponseEntity.ok(ApiResponse.success(null));
@@ -73,13 +73,24 @@ public class VocabularyController {
     }
 
     @GetMapping("/challenge-words")
-    @Operation(summary = "챌린지 단어 조회", description = "현재 날짜에 진행 중인 단어 암기 챌린지 중 가장 최근 생성된 챌린지를 기준으로, 사용자 학습 언어의 단어를 목표 개수까지 무작위로 조회합니다.")
+    @Operation(
+            summary = "챌린지 단어 조회",
+            description = "현재 학습 언어에 해당하며 KST 기준 오늘 진행 중인 단어 챌린지 중 "
+                    + "가장 최근 생성된 챌린지를 기준으로 같은 언어의 단어를 목표 개수까지 무작위로 조회합니다."
+    )
     public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getChallengeWords(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(vocabularyService.getChallengeWords(authentication.getName())));
     }
 
     @PostMapping("/challenge-words/complete")
-    @Operation(summary = "챌린지 단어 완료", description = "챌린지에서 학습한 단어를 완료 처리하고 새 단어 수만큼 진행도를 반영합니다.")
+    @Operation(
+            summary = "챌린지 단어 완료",
+            description = "현재 학습 언어의 진행 중인 WORD_COUNT 챌린지가 있는지 확인하고, "
+                    + "요청한 단어가 모두 현재 학습 언어에 속하는지 검증합니다. "
+                    + "존재하지 않거나 다른 언어의 단어가 포함되면 요청 전체를 거절합니다. "
+                    + "새로 학습한 단어를 저장하고, 현재 학습 언어의 활성 단어 챌린지 중 "
+                    + "오늘이 챌린지 기간에 포함되는 챌린지에 진행도를 반영합니다."
+    )
     public ResponseEntity<ApiResponse<ChallengeWordCompleteResponseDto>> completeChallengeWords(
             @Valid @RequestBody ChallengeWordCompleteRequestDto requestDto,
             Authentication authentication
@@ -90,7 +101,7 @@ public class VocabularyController {
     }
 
     @GetMapping("/bookmarks")
-    @Operation(summary = "단어 북마크 목록 조회", description = "로그인한 사용자가 북마크한 단어 목록을 조회합니다.")
+    @Operation(summary = "단어 북마크 목록 조회", description = "로그인한 사용자의 현재 학습 언어에 해당하는 북마크 단어 목록을 단어 ID 오름차순으로 조회합니다.")
     public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getBookmarks(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(vocabularyService.getBookmarks(authentication.getName())));
     }

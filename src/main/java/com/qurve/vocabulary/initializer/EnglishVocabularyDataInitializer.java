@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
  *
  * * 영어 단어 CSV를 읽어 단어 마스터 데이터를 초기화한다.
  *
- * * 출처와 원본 항목 ID를 기준으로 기존 단어를 식별한다.
+ * * 영어 데이터 내에서 출처와 원본 항목 ID로 기존 단어를 식별한다.
+ * * 학습 언어·출처·원본 항목 ID의 DB 유니크 제약으로 중복 저장을 방지한다.
  * * 없는 단어는 추가하고, 기존 단어는 한국어 뜻만 갱신한다.
  * * 레벨과 유닛 번호는 CSV에 지정된 값을 사용한다.
  */
@@ -69,7 +70,8 @@ public class EnglishVocabularyDataInitializer implements ApplicationRunner {
 
         ClassPathResource resource = new ClassPathResource(FILE_PATH);
 
-        // 출처별 기존 데이터를 한 번씩 조회해 중복 저장을 방지한다.
+        // 출처별 기존 영어 데이터를 한 번씩 조회해 신규 단어와 갱신 대상을 구분한다.
+        // 동시 실행에 따른 중복 저장은 DB 유니크 제약으로 차단한다.
         Map<String, Map<String, VocabularyWord>> existingBySource = new HashMap<>();
 
         // DB 중복 여부와 별개로, CSV 내부의 출처·항목 ID 중복을 검증한다.
@@ -152,19 +154,14 @@ public class EnglishVocabularyDataInitializer implements ApplicationRunner {
     }
 
     /**
-     * 출처별 기존 단어 조회
-     *
-     * * 지정한 출처의 기존 단어를 원본 항목 ID 기준으로 조회한다.
-     * * 원본 항목 ID가 없는 데이터는 매핑 대상에서 제외한다.
+     * 지정한 출처의 기존 영어 단어를 원본 항목 ID 기준으로 조회한다.
+     * 원본 항목 ID가 없는 데이터는 매핑 대상에서 제외한다.
      */
     private Map<String, VocabularyWord> loadExistingWords(String source) {
-        return vocabularyWordRepository.findBySource(source)
+        return vocabularyWordRepository.findByLearningLanguageAndSource(LearningLanguage.ENGLISH, source)
                 .stream()
                 .filter(word -> word.getSourceEntryId() != null)
-                .collect(Collectors.toMap(
-                        VocabularyWord::getSourceEntryId,
-                        word -> word
-                ));
+                .collect(Collectors.toMap(VocabularyWord::getSourceEntryId, word -> word));
     }
 
     /**

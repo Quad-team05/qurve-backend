@@ -32,12 +32,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +51,6 @@ public class VocabularyService {
 
     private static final Set<String> SUPPORTED_LEVELS = Set.of("N1", "N2", "N3", "N4", "N5");
     private static final Set<String> SUPPORTED_ENGLISH_LEVELS = Set.of("A1", "A2", "B1", "B2", "C1", "C2");
-
     private static final ZoneId KST_ZONE = ZoneId.of("Asia/Seoul");
 
     private final UserRepository userRepository;
@@ -165,6 +169,27 @@ public class VocabularyService {
     }
 
     /**
+     * 북마크 대상 단어 검증
+     *
+     * * 단어의 존재 여부와 사용자의 현재 학습 언어 일치 여부를 검증한다.
+     * * 학습 언어가 없는 기존 단어는 일본어로 처리한다.
+     *
+     * @param user 로그인 사용자
+     * @param wordId 북마크 대상 단어 ID
+     * @throws BusinessException 단어가 없거나 현재 학습 언어와 다른 경우
+     */
+    private void validateBookmarkWord(User user, Long wordId) {
+        VocabularyWord word = vocabularyWordRepository.findById(wordId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
+
+        LearningLanguage wordLanguage = word.getLearningLanguage() == null ? LearningLanguage.JAPANESE : word.getLearningLanguage();
+
+        if (wordLanguage != resolveLearningLanguage(user)) {
+            throw new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND);
+        }
+    }
+
+    /**
      * 유닛 존재 검증 및 단어 조회
      *
      * * 실제로 존재하는 유닛인지 검증하고 해당 유닛의 단어를 조회한다.
@@ -224,12 +249,12 @@ public class VocabularyService {
     /**
      * 단어 북마크 추가
      *
-     * * 단어 학습 중 북마크 버튼 클릭 시 해당 단어를 북마크에 추가한다.
+     * * 사용자의 현재 학습 언어에 해당하는 단어를 북마크에 추가한다.
      * * 이미 북마크된 단어인 경우 예외를 발생시킨다.
      *
      * @param loginId 로그인 ID
      * @param wordId 북마크할 단어 ID
-     * @throws BusinessException 유저가 존재하지 않거나 이미 북마크된 단어인 경우
+     * @throws BusinessException 사용자가 없거나 단어가 유효하지 않거나 이미 북마크된 경우
      */
     @Transactional
     public void addBookmark(String loginId, Long wordId) {
@@ -237,8 +262,7 @@ public class VocabularyService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        vocabularyWordRepository.findById(wordId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.VOCABULARY_UNIT_NOT_FOUND));
+        validateBookmarkWord(user, wordId);
 
         if (bookmarkRepository.existsByUserAndWordId(user, wordId)) {
             throw new BusinessException(ErrorCode.DUPLICATE_BOOKMARK);
@@ -247,6 +271,7 @@ public class VocabularyService {
         bookmarkRepository.save(Bookmark.builder()
                 .user(user)
                 .wordId(wordId)
+                .learningLanguage(resolveLearningLanguage(user))
                 .createdAt(LocalDateTime.now())
                 .build());
 
@@ -258,17 +283,20 @@ public class VocabularyService {
     /**
      * 단어 북마크 삭제
      *
-     * * 북마크된 단어를 북마크에서 제거한다.
+     * * 사용자의 현재 학습 언어에 해당하는 단어의 북마크를 삭제한다.
+     * * 로그인한 사용자 본인의 북마크만 삭제한다.
      *
      * @param loginId 로그인 ID
      * @param wordId 북마크 삭제할 단어 ID
-     * @throws BusinessException 유저가 존재하지 않거나 북마크가 존재하지 않는 경우
+     * @throws BusinessException 사용자가 없거나 단어가 유효하지 않거나 북마크가 없는 경우
      */
     @Transactional
     public void removeBookmark(String loginId, Long wordId) {
 
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        validateBookmarkWord(user, wordId);
 
         Bookmark bookmark = bookmarkRepository.findByUserAndWordId(user, wordId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BOOKMARK_NOT_FOUND));
@@ -392,15 +420,15 @@ public class VocabularyService {
         }
 
         userWordStudyRepository.saveAll(newStudies);
-        challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+        challengeProgressService.addProgress(user, language, ChallengeGoalType.WORD_COUNT, newStudies.size());
         newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
     }
 
     /**
      * 챌린지 단어 조회
      *
-     * * 사용자의 현재 학습 언어에 해당하는 단어 중에서
-     * * 진행 중인 WORD_COUNT 챌린지의 목표 개수까지 무작위로 반환한다.
+     * * 현재 학습 언어의 활성 WORD_COUNT 챌린지를 조회하고,
+     * * 같은 언어의 단어를 챌린지 목표 개수까지 무작위로 반환합니다.
      *
      * @param loginId 로그인 ID
      * @return 현재 학습 언어의 챌린지 단어 목록
@@ -412,7 +440,9 @@ public class VocabularyService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         Challenge challenge = findActiveWordChallenge(user);
-        LearningLanguage language = resolveLearningLanguage(user);
+
+        // 학습 언어가 없는 기존 사용자는 일본어로 처리한다.
+        LearningLanguage language = user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage();
 
         List<VocabularyWord> words = vocabularyWordRepository.findRandomByLanguage(language, LearningLanguage.JAPANESE, challenge.getTargetValue());
 
@@ -428,23 +458,26 @@ public class VocabularyService {
      *
      * * 이미 학습한 단어는 다시 저장하거나 챌린지 진행도에 반영하지 않아,
      * * 완료 요청을 재전송해도 중복 적립되지 않습니다.
+     * * 현재 학습 언어의 활성 WORD_COUNT 챌린지가 있는지 확인합니다.
+     * * 요청 단어가 모두 현재 학습 언어에 속하는지 검증합니다.
+     * * 존재하지 않거나 다른 언어의 단어가 포함되면 요청 전체를 거절합니다.
      *
      * @param loginId 로그인 ID
      * @param requestDto 완료한 단어 ID 목록
      * @return 요청 단어 수와 새로 학습 처리된 단어 수
-     * @throws BusinessException 사용자가 없거나 단어/진행 중 단어 챌린지가 없는 경우
+     * @throws BusinessException 사용자가 없거나, 현재 학습 언어의 활성 단어 챌린지가 없거나, 요청 단어가 없거나 현재 학습 언어와 다른 경우
      */
     @Transactional
-    public ChallengeWordCompleteResponseDto completeChallengeWords(
-            String loginId,
-            ChallengeWordCompleteRequestDto requestDto
-    ) {
+    public ChallengeWordCompleteResponseDto completeChallengeWords(String loginId, ChallengeWordCompleteRequestDto requestDto) {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         findActiveWordChallenge(user);
 
+        LearningLanguage language = resolveLearningLanguage(user);
+
         List<Long> wordIds = new java.util.ArrayList<>(new LinkedHashSet<>(requestDto.getWordIds()));
-        List<VocabularyWord> words = vocabularyWordRepository.findAllById(wordIds);
+
+        List<VocabularyWord> words = vocabularyWordRepository.findAllByWordIdsAndLanguage(wordIds, language, LearningLanguage.JAPANESE);
 
         if (words.size() != wordIds.size()) {
             throw new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND);
@@ -465,7 +498,7 @@ public class VocabularyService {
 
         if (!newStudies.isEmpty()) {
             userWordStudyRepository.saveAll(newStudies);
-            challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+            challengeProgressService.addProgress(user, language, ChallengeGoalType.WORD_COUNT, newStudies.size());
             newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
             badgeService.evaluate(user);
         }
@@ -476,51 +509,64 @@ public class VocabularyService {
     }
 
     /**
-     * 진행 중인 단어 챌린지 조회
+     * 학습 언어별 진행 중인 단어 챌린지 조회
      *
-     * * 한국 날짜 기준으로 챌린지 기간에 포함되는 ACTIVE 상태의 단어 챌린지를 조회한다.
-     * * 여러 개가 있으면 가장 최근에 생성된 챌린지를 선택한다.
+     * * 현재 학습 언어에 해당하는 ACTIVE 상태의 단어 챌린지를 조회한다.
+     * * KST 기준 오늘이 챌린지 기간에 포함되는 경우만 선택한다.
+     * * 생성 시간이 가장 최근인 항목을 선택하고, 같으면 ID가 큰 항목을 선택한다.
      *
      * @param user 조회할 사용자
-     * @return 현재 진행 중인 단어 챌린지
-     * @throws BusinessException 현재 진행 중인 단어 챌린지가 없는 경우
+     * @return 현재 학습 언어의 진행 중인 단어 챌린지
+     * @throws BusinessException 조건에 해당하는 단어 챌린지가 없는 경우
      */
     private Challenge findActiveWordChallenge(User user) {
         LocalDate today = LocalDate.now(KST_ZONE);
 
-        return challengeRepository
-                .findAllByUserAndGoalTypeAndStatus(user, ChallengeGoalType.WORD_COUNT, ChallengeStatus.ACTIVE)
+        return challengeRepository.findAllActiveByUserAndGoalTypeForLanguage(
+                        user,
+                        ChallengeGoalType.WORD_COUNT,
+                        ChallengeStatus.ACTIVE,
+                        resolveLearningLanguage(user),
+                        LearningLanguage.JAPANESE
+                )
                 .stream()
                 .filter(challenge -> challenge.isActiveOn(today))
-                .max(Comparator.comparing(Challenge::getCreatedAt))
+                .max(Comparator.comparing(Challenge::getCreatedAt)
+                        .thenComparing(Challenge::getChallengeId))
                 .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
     }
 
     /**
      * 북마크 단어 조회
      *
-     * * 사용자가 북마크한 단어 목록을 조회한다.
-     * * 북마크 테이블의 wordId를 기반으로 단어 정보를 조회하여 반환한다.
+     * * 사용자의 현재 학습 언어에 해당하는 북마크 단어 목록을 조회한다.
+     * * 학습 언어가 없는 기존 사용자와 단어는 일본어로 처리한다.
+     * * 단어 ID 오름차순으로 조회하고 응답에 1부터 시작하는 순서 번호를 부여한다.
+     * * 현재 학습 언어에 해당하는 북마크 단어가 없으면 빈 목록을 반환한다.
      *
      * @param loginId 로그인 ID
-     * @return 북마크 단어 목록
-     * @throws BusinessException 유저가 존재하지 않는 경우
+     * @return 현재 학습 언어의 북마크 단어 목록
+     * @throws BusinessException 사용자가 존재하지 않는 경우
      */
     public List<UnitWordResponseDto> getBookmarks(String loginId) {
 
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        LearningLanguage language = resolveLearningLanguage(user);
+
         List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
 
-        // 북마크된 단어 ID 목록 추출
         List<Long> wordIds = bookmarks.stream()
                 .map(Bookmark::getWordId)
                 .toList();
 
-        List<VocabularyWord> words = vocabularyWordRepository.findAllById(wordIds);
+        if (wordIds.isEmpty()) {
+            return List.of();
+        }
 
-        // 순서 번호(1부터) 부여하여 반환
+        List<VocabularyWord> words = vocabularyWordRepository.findBookmarkedWordsByLanguage(wordIds, language, LearningLanguage.JAPANESE);
+
         return IntStream.range(0, words.size())
                 .mapToObj(i -> UnitWordResponseDto.from(words.get(i), i + 1))
                 .toList();
