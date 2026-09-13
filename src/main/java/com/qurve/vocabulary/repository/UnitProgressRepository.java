@@ -43,14 +43,7 @@ public interface UnitProgressRepository extends JpaRepository<UnitProgress, Long
             @Param("unitNumber") Integer unitNumber
     );
     Optional<UnitProgress> findFirstByUserAndStatusOrderByUpdatedAtDesc(User user, UnitStatus status);
-    /**
-     * 학습 언어별 유닛 진행 상태 목록 조회
-     *
-     * * 사용자의 학습 언어와 레벨에 해당하는 유닛 진행 상태를 조회한다.
-     * * language가 legacyLanguage와 같으면 학습 언어가 null인 기존 기록도 포함한다.
-     *
-     * @param legacyLanguage 언어가 null인 기존 기록에 적용할 언어
-     */
+    /** 학습 언어와 레벨에 해당하는 유닛 진행 상태를 조회합니다. */
     @Query("""
         select up
         from UnitProgress up
@@ -70,5 +63,27 @@ public interface UnitProgressRepository extends JpaRepository<UnitProgress, Long
             @Param("language") LearningLanguage language,
             @Param("legacyLanguage") LearningLanguage legacyLanguage,
             @Param("level") String level
+    );
+
+    /** 학습 언어와 진행 상태에 해당하는 유닛을 최근 갱신 순으로 조회합니다. */
+    @Query("""
+        select up
+        from UnitProgress up
+        where up.user = :user
+          and up.status = :status
+          and (
+              up.learningLanguage = :learningLanguage
+              or (
+                  :learningLanguage = :legacyLanguage
+                  and up.learningLanguage is null
+              )
+          )
+        order by up.updatedAt desc
+        """)
+    List<UnitProgress> findAllByUserAndStatusAndLearningLanguageOrderByUpdatedAtDesc(
+            @Param("user") User user,
+            @Param("status") UnitStatus status,
+            @Param("learningLanguage") LearningLanguage learningLanguage,
+            @Param("legacyLanguage") LearningLanguage legacyLanguage
     );
 }

@@ -12,8 +12,8 @@ import java.util.Optional;
 public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, Long> {
 
     long countBySource(String source);
-
     List<VocabularyWord> findBySource(String source);
+    List<VocabularyWord> findByLearningLanguageAndSource(LearningLanguage learningLanguage, String source);
 
     @Query("""
             select distinct w.unitNumber
@@ -21,8 +21,8 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
             where w.level = :level
             order by w.unitNumber asc
             """)
-    List<Integer> findDistinctUnitNumbersByLevel(@Param("level") String level);
 
+    List<Integer> findDistinctUnitNumbersByLevel(@Param("level") String level);
     List<VocabularyWord> findByLevelAndUnitNumberOrderByWordIdAsc(String level, Integer unitNumber);
 
     /**

@@ -12,7 +12,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "tb_vocabulary_word")
+@Table(name = "tb_vocabulary_word",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_vocabulary_language_source_entry",
+                        columnNames = {
+                                "learning_language",
+                                "source",
+                                "source_entry_id"})})
 public class VocabularyWord {
 
     @Id

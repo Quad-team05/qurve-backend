@@ -18,6 +18,7 @@ import com.qurve.problem.service.ProblemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,18 +36,29 @@ import java.util.List;
 @Validated
 @RequestMapping("/api/problems")
 @RequiredArgsConstructor
-@Tag(name = "문제", description = "JLPT 문제 조회, 제출, 풀이 이력, 북마크 및 정답률 API")
+@Tag(name = "문제", description = "일본어·영어 문제 조회, 제출, 풀이 이력, 북마크 및 정답률 API")
 public class ProblemController {
 
     private final ProblemService problemService;
     private final ProblemSetService problemSetService;
 
     @GetMapping
-    @Operation(summary = "문제 목록 조회", description = "레벨, 카테고리, 세부 유형 조건으로 문제와 선택지를 조회합니다.")
+    @Operation(
+            summary = "문제 목록 조회",
+            description = "문제와 선택지를 조회합니다. 영어 문제는 language=EN, cefrLevel, qurveLevel, usageType, category, subType, topic으로 필터링할 수 있으며 정답·해설·번역·음성 원문은 노출하지 않습니다."
+    )
     public ResponseEntity<ApiResponse<ProblemListResponseDto>> findAll(
             @Valid @ModelAttribute ProblemListRequestDto requestDto
     ) {
         return ResponseEntity.ok(ApiResponse.success(problemService.findAll(requestDto)));
+    }
+
+    @GetMapping(value = "/{problemId}/audio", produces = "audio/mpeg")
+    @Operation(summary = "듣기 문제 음성 조회", description = "듣기 문제의 음성 원문을 노출하지 않고 영어 TTS MP3 데이터를 반환합니다.")
+    public ResponseEntity<byte[]> findAudio(@PathVariable Long problemId, Authentication authentication) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.valueOf("audio/mpeg"))
+                .body(problemService.findAudio(authentication.getName(), problemId));
     }
 
     @PostMapping("/{problemId}/submit")

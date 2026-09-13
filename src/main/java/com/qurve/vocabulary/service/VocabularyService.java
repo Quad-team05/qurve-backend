@@ -267,6 +267,7 @@ public class VocabularyService {
         bookmarkRepository.save(Bookmark.builder()
                 .user(user)
                 .wordId(wordId)
+                .learningLanguage(VOCABULARY_LANGUAGE)
                 .createdAt(LocalDateTime.now())
                 .build());
 
@@ -334,6 +335,7 @@ public class VocabularyService {
                         .user(user)
                         .learningLanguage(language)
                         .level(normalizedLevel)
+                        .learningLanguage(VOCABULARY_LANGUAGE)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
                         .updatedAt(LocalDateTime.now())
@@ -381,6 +383,7 @@ public class VocabularyService {
                         .user(user)
                         .learningLanguage(language)
                         .level(normalizedLevel)
+                        .learningLanguage(VOCABULARY_LANGUAGE)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
                         .updatedAt(LocalDateTime.now())
@@ -415,15 +418,15 @@ public class VocabularyService {
         }
 
         userWordStudyRepository.saveAll(newStudies);
-        challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+        challengeProgressService.addProgress(user, VOCABULARY_LANGUAGE, ChallengeGoalType.WORD_COUNT, newStudies.size());
         newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
     }
 
     /**
      * 챌린지 단어 조회
      *
-     * * 사용자의 현재 학습 언어에 해당하는 단어 중에서
-     * * 진행 중인 WORD_COUNT 챌린지의 목표 개수까지 무작위로 반환한다.
+     * * 현재 학습 언어의 활성 WORD_COUNT 챌린지를 조회하고,
+     * * 같은 언어의 단어를 챌린지 목표 개수까지 무작위로 반환합니다.
      *
      * @param loginId 로그인 ID
      * @return 현재 학습 언어의 챌린지 단어 목록
@@ -453,23 +456,26 @@ public class VocabularyService {
      *
      * * 이미 학습한 단어는 다시 저장하거나 챌린지 진행도에 반영하지 않아,
      * * 완료 요청을 재전송해도 중복 적립되지 않습니다.
+     * * 현재 학습 언어의 활성 WORD_COUNT 챌린지가 있는지 확인합니다.
+     * * 요청 단어가 모두 현재 학습 언어에 속하는지 검증합니다.
+     * * 존재하지 않거나 다른 언어의 단어가 포함되면 요청 전체를 거절합니다.
      *
      * @param loginId 로그인 ID
      * @param requestDto 완료한 단어 ID 목록
      * @return 요청 단어 수와 새로 학습 처리된 단어 수
-     * @throws BusinessException 사용자가 없거나 단어/진행 중 단어 챌린지가 없는 경우
+     * @throws BusinessException 사용자가 없거나, 현재 학습 언어의 활성 단어 챌린지가 없거나, 요청 단어가 없거나 현재 학습 언어와 다른 경우
      */
     @Transactional
-    public ChallengeWordCompleteResponseDto completeChallengeWords(
-            String loginId,
-            ChallengeWordCompleteRequestDto requestDto
-    ) {
+    public ChallengeWordCompleteResponseDto completeChallengeWords(String loginId, ChallengeWordCompleteRequestDto requestDto) {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         findActiveWordChallenge(user);
 
+        LearningLanguage language = resolveLearningLanguage(user);
+
         List<Long> wordIds = new java.util.ArrayList<>(new LinkedHashSet<>(requestDto.getWordIds()));
-        List<VocabularyWord> words = vocabularyWordRepository.findAllById(wordIds);
+
+        List<VocabularyWord> words = vocabularyWordRepository.findAllByWordIdsAndLanguage(wordIds, language, LearningLanguage.JAPANESE);
 
         if (words.size() != wordIds.size()) {
             throw new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND);
@@ -490,7 +496,7 @@ public class VocabularyService {
 
         if (!newStudies.isEmpty()) {
             userWordStudyRepository.saveAll(newStudies);
-            challengeProgressService.addProgress(user, ChallengeGoalType.WORD_COUNT, newStudies.size());
+            challengeProgressService.addProgress(user, VOCABULARY_LANGUAGE, ChallengeGoalType.WORD_COUNT, newStudies.size());
             newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
             badgeService.evaluate(user);
         }
@@ -501,13 +507,17 @@ public class VocabularyService {
     }
 
     private Challenge findActiveWordChallenge(User user) {
-        return challengeRepository.findFirstByUserAndGoalTypeAndStatusOrderByCreatedAtDesc(
-                        user,
-                        ChallengeGoalType.WORD_COUNT,
-                        ChallengeStatus.ACTIVE
-                )
-                .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
-    }
+    return challengeRepository.findAllActiveByUserAndGoalTypeForLanguage(
+                    user,
+                    ChallengeGoalType.WORD_COUNT,
+                    ChallengeStatus.ACTIVE,
+                    resolveLearningLanguage(user),
+                    LearningLanguage.JAPANESE
+            )
+            .stream()
+            .findFirst()
+            .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+}
 
     /**
      * 북마크 단어 조회
