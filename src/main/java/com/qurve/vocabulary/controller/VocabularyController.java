@@ -45,14 +45,14 @@ public class VocabularyController {
     }
 
     @PostMapping("/bookmarks/{wordId}")
-    @Operation(summary = "단어 북마크 추가", description = "단어를 사용자 북마크 목록에 추가합니다.")
+    @Operation(summary = "단어 북마크 추가", description = "현재 학습 언어에 해당하는 단어를 사용자 북마크 목록에 추가합니다.")
     public ResponseEntity<ApiResponse<Void>> addBookmark(@PathVariable Long wordId, Authentication authentication) {
         vocabularyService.addBookmark(authentication.getName(), wordId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @DeleteMapping("/bookmarks/{wordId}")
-    @Operation(summary = "단어 북마크 삭제", description = "단어를 사용자 북마크 목록에서 삭제합니다.")
+    @Operation(summary = "단어 북마크 삭제", description = "현재 학습 언어에 해당하는 단어를 사용자 북마크 목록에서 삭제합니다.")
     public ResponseEntity<ApiResponse<Void>> deleteBookmark(@PathVariable Long wordId, Authentication authentication) {
         vocabularyService.removeBookmark(authentication.getName(), wordId);
         return ResponseEntity.ok(ApiResponse.success(null));
