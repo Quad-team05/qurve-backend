@@ -42,10 +42,6 @@ public class UnitProgress {
     @Column(name = "level", length = 10, nullable = false)
     private String level;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "learning_language", length = 20)
-    private LearningLanguage learningLanguage;
-
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 

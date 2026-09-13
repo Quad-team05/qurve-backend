@@ -267,7 +267,7 @@ public class VocabularyService {
         bookmarkRepository.save(Bookmark.builder()
                 .user(user)
                 .wordId(wordId)
-                .learningLanguage(VOCABULARY_LANGUAGE)
+                .learningLanguage(resolveLearningLanguage(user))
                 .createdAt(LocalDateTime.now())
                 .build());
 
@@ -335,7 +335,6 @@ public class VocabularyService {
                         .user(user)
                         .learningLanguage(language)
                         .level(normalizedLevel)
-                        .learningLanguage(VOCABULARY_LANGUAGE)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
                         .updatedAt(LocalDateTime.now())
@@ -383,7 +382,6 @@ public class VocabularyService {
                         .user(user)
                         .learningLanguage(language)
                         .level(normalizedLevel)
-                        .learningLanguage(VOCABULARY_LANGUAGE)
                         .unitNumber(unitNumber)
                         .status(UnitStatus.BEFORE)
                         .updatedAt(LocalDateTime.now())
@@ -418,7 +416,7 @@ public class VocabularyService {
         }
 
         userWordStudyRepository.saveAll(newStudies);
-        challengeProgressService.addProgress(user, VOCABULARY_LANGUAGE, ChallengeGoalType.WORD_COUNT, newStudies.size());
+        challengeProgressService.addProgress(user, language, ChallengeGoalType.WORD_COUNT, newStudies.size());
         newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
     }
 
@@ -496,7 +494,7 @@ public class VocabularyService {
 
         if (!newStudies.isEmpty()) {
             userWordStudyRepository.saveAll(newStudies);
-            challengeProgressService.addProgress(user, VOCABULARY_LANGUAGE, ChallengeGoalType.WORD_COUNT, newStudies.size());
+            challengeProgressService.addProgress(user, language, ChallengeGoalType.WORD_COUNT, newStudies.size());
             newStudies.forEach(ignored -> xpService.grantXp(user, XpActionType.WORD_LEARN));
             badgeService.evaluate(user);
         }
