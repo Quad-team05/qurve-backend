@@ -35,6 +35,10 @@ public class UnitProgress {
     @Column(name = "status", nullable = false)
     private UnitStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "learning_language", length = 20)
+    private LearningLanguage learningLanguage;
+
     @Column(name = "level", length = 10, nullable = false)
     private String level;
 

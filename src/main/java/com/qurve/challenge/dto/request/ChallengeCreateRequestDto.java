@@ -3,6 +3,7 @@ package com.qurve.challenge.dto.request;
 import com.qurve.challenge.domain.Challenge;
 import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.domain.ChallengeStatus;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.user.domain.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -43,7 +44,7 @@ public class ChallengeCreateRequestDto {
     public Challenge toEntity(User user) {
         return Challenge.builder()
                 .user(user)
-                .learningLanguage(user.getLearningLanguage())
+                .learningLanguage(user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage())
                 .title(title)
                 .goalType(goalType)
                 .targetValue(targetValue)
