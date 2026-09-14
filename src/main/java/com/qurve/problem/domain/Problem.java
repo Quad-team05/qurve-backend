@@ -1,6 +1,7 @@
 package com.qurve.problem.domain;
 
 import com.qurve.global.entity.BaseEntity;
+import com.qurve.global.enums.LearningLanguage;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -85,4 +86,15 @@ public class Problem extends BaseEntity {
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
+
+    /**
+     * 기존에 언어 정보가 없는 문제는 일본어 문제로 처리한다.
+     */
+    public boolean belongsTo(LearningLanguage learningLanguage) {
+        if (learningLanguage == LearningLanguage.ENGLISH) {
+            return "EN".equals(language);
+        }
+
+        return language == null || "JA".equals(language);
+    }
 }
