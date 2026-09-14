@@ -40,6 +40,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +51,7 @@ public class VocabularyService {
 
     private static final Set<String> SUPPORTED_LEVELS = Set.of("N1", "N2", "N3", "N4", "N5");
     private static final Set<String> SUPPORTED_ENGLISH_LEVELS = Set.of("A1", "A2", "B1", "B2", "C1", "C2");
+    private static final ZoneId KST_ZONE = ZoneId.of("Asia/Seoul");
 
     private final UserRepository userRepository;
     private final UnitProgressRepository unitProgressRepository;
@@ -505,18 +509,33 @@ public class VocabularyService {
         return ChallengeWordCompleteResponseDto.of(requestDto.getWordIds().size(), newStudies.size());
     }
 
+    /**
+     * 학습 언어별 진행 중인 단어 챌린지 조회
+     *
+     * * 현재 학습 언어에 해당하는 ACTIVE 상태의 단어 챌린지를 조회한다.
+     * * KST 기준 오늘이 챌린지 기간에 포함되는 경우만 선택한다.
+     * * 생성 시간이 가장 최근인 항목을 선택하고, 같으면 ID가 큰 항목을 선택한다.
+     *
+     * @param user 조회할 사용자
+     * @return 현재 학습 언어의 진행 중인 단어 챌린지
+     * @throws BusinessException 조건에 해당하는 단어 챌린지가 없는 경우
+     */
     private Challenge findActiveWordChallenge(User user) {
-    return challengeRepository.findAllActiveByUserAndGoalTypeForLanguage(
-                    user,
-                    ChallengeGoalType.WORD_COUNT,
-                    ChallengeStatus.ACTIVE,
-                    resolveLearningLanguage(user),
-                    LearningLanguage.JAPANESE
-            )
-            .stream()
-            .findFirst()
-            .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
-}
+        LocalDate today = LocalDate.now(KST_ZONE);
+
+        return challengeRepository.findAllActiveByUserAndGoalTypeForLanguage(
+                        user,
+                        ChallengeGoalType.WORD_COUNT,
+                        ChallengeStatus.ACTIVE,
+                        resolveLearningLanguage(user),
+                        LearningLanguage.JAPANESE
+                )
+                .stream()
+                .filter(challenge -> challenge.isActiveOn(today))
+                .max(Comparator.comparing(Challenge::getCreatedAt)
+                        .thenComparing(Challenge::getChallengeId))
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHALLENGE_NOT_FOUND));
+    }
 
     /**
      * 북마크 단어 조회
