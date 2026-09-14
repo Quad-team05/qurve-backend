@@ -259,6 +259,7 @@ public class VocabularyService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         validateBookmarkWord(user, wordId);
+        LearningLanguage language = resolveLearningLanguage(user);
 
         if (bookmarkRepository.existsByUserAndWordId(user, wordId)) {
             throw new BusinessException(ErrorCode.DUPLICATE_BOOKMARK);

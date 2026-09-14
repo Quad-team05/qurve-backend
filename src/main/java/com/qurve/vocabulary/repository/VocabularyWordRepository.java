@@ -104,6 +104,24 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
 
     Optional<VocabularyWord> findBySourceAndSourceEntryId(String source, String sourceEntryId);
 
+    @Query("""
+        select w
+        from VocabularyWord w
+        where w.wordId in :wordIds
+          and (
+              w.learningLanguage = :language
+              or (
+                  :language = :legacyLanguage
+                  and w.learningLanguage is null
+              )
+          )
+        """)
+    List<VocabularyWord> findAllByWordIdsAndLanguage(
+            @Param("wordIds") List<Long> wordIds,
+            @Param("language") LearningLanguage language,
+            @Param("legacyLanguage") LearningLanguage legacyLanguage
+    );
+
     /**
      * 학습 언어별 북마크 단어 조회
      *
