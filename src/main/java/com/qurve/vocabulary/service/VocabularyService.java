@@ -268,7 +268,7 @@ public class VocabularyService {
         bookmarkRepository.save(Bookmark.builder()
                 .user(user)
                 .wordId(wordId)
-                .learningLanguage(language)
+                .learningLanguage(resolveLearningLanguage(user))
                 .createdAt(LocalDateTime.now())
                 .build());
 
