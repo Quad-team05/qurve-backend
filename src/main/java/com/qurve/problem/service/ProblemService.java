@@ -235,16 +235,51 @@ public class ProblemService {
     }
 
     /**
+     * 답안 제출 언어 검증
+     *
+     * * 문제의 언어가 사용자의 현재 학습 언어와 일치하는지 검증한다.
+     * * 학습 언어가 없는 기존 사용자는 일본어로 처리한다.
+     * * 언어가 null인 기존 JLPT 문제는 일본어로 처리한다.
+     *
+     * @param user 로그인 사용자
+     * @param problem 제출 대상 문제
+     * @return 검증된 학습 언어
+     * @throws BusinessException 문제가 현재 학습 언어에 해당하지 않는 경우
+     */
+    private LearningLanguage validateSubmissionLanguage(User user, Problem problem) {
+        LearningLanguage language = user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage();
+
+        String problemLanguage = problem.getLanguage();
+
+        if (problemLanguage == null && problem.getLevel() != null && List.of("N1", "N2", "N3", "N4", "N5").contains(problem.getLevel())) {
+            problemLanguage = "JA";
+        }
+
+        boolean matches = switch (language) {
+            case JAPANESE -> "JA".equals(problemLanguage);
+            case ENGLISH -> "EN".equals(problemLanguage);
+        };
+
+        if (!matches) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
+        return language;
+    }
+
+    /**
      * 문제 답안 제출
      *
-     * * 사용자가 선택한 선택지 번호를 정답 번호와 비교하고
-     * 정답 선택지와 해설을 함께 반환한다.
+     * * 사용자의 현재 학습 언어에 해당하는 문제의 답안을 채점한다.
+     * * 제출한 선택지 번호와 정답 번호를 비교하고 제출 이력을 저장한다.
+     * * 정답 여부, 정답 선택지, 해설과 한국어 번역을 반환한다.
+     * * 검증된 학습 언어의 퀴즈 챌린지에 진행도를 반영한다.
      *
      * @param loginId 로그인 ID
      * @param problemId 제출 대상 문제 ID
      * @param requestDto 제출한 선택지 번호
      * @return 채점 결과와 정답 정보
-     * @throws BusinessException 유저, 문제가 없거나 선택지 번호가 유효하지 않은 경우
+     * @throws BusinessException 사용자나 문제가 없거나 문제 언어 또는 선택지가 유효하지 않은 경우
      */
     @Transactional
     public ProblemSubmitResponseDto submit(String loginId, Long problemId, ProblemSubmitRequestDto requestDto) {
@@ -253,6 +288,8 @@ public class ProblemService {
 
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        LearningLanguage language = validateSubmissionLanguage(user, problem);
 
         List<ProblemChoice> problemChoices = problemChoiceRepository.findAllByProblemOrderByChoiceNumberAsc(problem);
 
@@ -284,12 +321,7 @@ public class ProblemService {
             wrongNoteService.saveWrongAnswer(user, problem);
         }
 
-        challengeProgressService.addProgress(
-                user,
-                "EN".equals(problem.getLanguage()) ? LearningLanguage.ENGLISH : LearningLanguage.JAPANESE,
-                ChallengeGoalType.QUIZ_COUNT,
-                1
-        );
+        challengeProgressService.addProgress(user, language, ChallengeGoalType.QUIZ_COUNT, 1);
         badgeService.evaluate(user);
 
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);
