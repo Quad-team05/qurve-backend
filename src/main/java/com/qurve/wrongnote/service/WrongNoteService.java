@@ -1,6 +1,8 @@
 package com.qurve.wrongnote.service;
 
+import com.qurve.attendance.service.AttendanceService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.global.util.CompletionKeyGenerator;
@@ -38,6 +40,7 @@ public class WrongNoteService {
     private final WrongNoteRepository wrongNoteRepository;
     private final WrongNoteReviewRepository wrongNoteReviewRepository;
     private final XpService xpService;
+    private final AttendanceService attendanceService;
 
     /**
      * 최초 오답 문제를 오답노트에 저장합니다.
@@ -89,6 +92,11 @@ public class WrongNoteService {
             throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
         }
 
+        LearningLanguage learningLanguage = resolveLearningLanguage(user);
+        if (problems.stream().anyMatch(problem -> !problem.belongsTo(learningLanguage))) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
         Map<Long, WrongNote> wrongNoteByProblemId = wrongNoteRepository.findAllByUserAndProblemIn(user, problems)
                 .stream()
                 .collect(Collectors.toMap(
@@ -116,7 +124,15 @@ public class WrongNoteService {
             xpService.grantXp(user, XpActionType.WRONG_NOTE_COMPLETE);
         }
 
+        attendanceService.save(loginId);
+
         return WrongNoteReviewCompleteResponseDto.from(review);
+    }
+
+    private LearningLanguage resolveLearningLanguage(User user) {
+        return user.getLearningLanguage() == null
+                ? LearningLanguage.JAPANESE
+                : user.getLearningLanguage();
     }
 
     private WrongNoteReview createReview(User user, String reviewKey, int problemCount) {

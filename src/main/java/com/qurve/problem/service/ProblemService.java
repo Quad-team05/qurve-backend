@@ -196,11 +196,15 @@ public class ProblemService {
 
     /** 듣기 문제의 음성 원문을 VoiceRSS로 변환해 MP3로 반환한다. */
     public byte[] findAudio(String loginId, Long problemId) {
-        userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        if (!problem.belongsTo(resolveLearningLanguage(user))) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
 
         if (!StringUtils.hasText(problem.getAudioScript())) {
             throw new BusinessException(ErrorCode.PROBLEM_AUDIO_NOT_AVAILABLE);
@@ -254,6 +258,10 @@ public class ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
 
+        if (!problem.belongsTo(resolveLearningLanguage(user))) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
         List<ProblemChoice> problemChoices = problemChoiceRepository.findAllByProblemOrderByChoiceNumberAsc(problem);
 
         boolean isValidSelectedChoice = problemChoices.stream()
@@ -293,6 +301,12 @@ public class ProblemService {
         badgeService.evaluate(user);
 
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);
+    }
+
+    private LearningLanguage resolveLearningLanguage(User user) {
+        return user.getLearningLanguage() == null
+                ? LearningLanguage.JAPANESE
+                : user.getLearningLanguage();
     }
 
     /**
