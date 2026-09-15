@@ -1,7 +1,9 @@
 package com.qurve.vocabulary.service;
 
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.exception.BusinessException;
+import com.qurve.user.domain.User;
 import com.qurve.vocabulary.domain.VocabularyWord;
 import com.qurve.vocabulary.repository.VocabularyWordRepository;
 import com.qurve.user.repository.UserRepository;
@@ -29,7 +31,8 @@ public class VocabularyAudioService {
     private final RestClient restClient;
     private final String baseUrl;
     private final String apiKey;
-    private final String language;
+    private final String japaneseLanguage;
+    private final String englishLanguage;
     private final String codec;
     private final String format;
     private final int connectTimeoutMillis;
@@ -40,7 +43,8 @@ public class VocabularyAudioService {
             VocabularyWordRepository vocabularyWordRepository,
             @Value("${tts.voicerss.base-url:https://api.voicerss.org}") String voiceRssBaseUrl,
             @Value("${tts.voicerss.api-key:}") String apiKey,
-            @Value("${tts.voicerss.language:ja-jp}") String language,
+            @Value("${tts.voicerss.language:ja-jp}") String japaneseLanguage,
+            @Value("${tts.voicerss.english-language:en-us}") String englishLanguage,
             @Value("${tts.voicerss.codec:MP3}") String codec,
             @Value("${tts.voicerss.format:44khz_16bit_stereo}") String format,
             @Value("${tts.voicerss.connect-timeout-millis:3000}") int connectTimeoutMillis,
@@ -56,7 +60,8 @@ public class VocabularyAudioService {
                 .requestFactory(createRequestFactory(connectTimeoutMillis, readTimeoutMillis))
                 .build();
         this.apiKey = apiKey;
-        this.language = language;
+        this.japaneseLanguage = japaneseLanguage;
+        this.englishLanguage = englishLanguage;
         this.codec = codec;
         this.format = format;
     }
@@ -64,10 +69,11 @@ public class VocabularyAudioService {
     @PostConstruct
     public void logConfiguration() {
         log.info(
-                "VoiceRSS config loaded. baseUrl={}, apiKeyPresent={}, language={}, codec={}, format={}, connectTimeoutMillis={}, readTimeoutMillis={}",
+                "VoiceRSS config loaded. baseUrl={}, apiKeyPresent={}, japaneseLanguage={}, englishLanguage={}, codec={}, format={}, connectTimeoutMillis={}, readTimeoutMillis={}",
                 baseUrl,
                 StringUtils.hasText(apiKey),
-                language,
+                japaneseLanguage,
+                englishLanguage,
                 codec,
                 format,
                 connectTimeoutMillis,
@@ -78,7 +84,7 @@ public class VocabularyAudioService {
     /**
      * 단어 음성 조회
      *
-     * * 단어 학습 화면에서 일본어 발음을 들을 수 있도록
+     * * 단어 학습 화면에서 현재 학습 언어에 맞는 발음을 들을 수 있도록
      * 외부 TTS API에서 생성한 음성 데이터를 반환한다.
      *
      * @param loginId 로그인 ID
@@ -87,7 +93,8 @@ public class VocabularyAudioService {
      * @throws BusinessException 유저, 단어, 외부 음성 API 정보가 유효하지 않은 경우
      */
     public byte[] findWordAudio(String loginId, Long wordId) {
-        validateUser(loginId);
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         if (!StringUtils.hasText(apiKey)) {
             log.warn("VoiceRSS API key is missing at runtime.");
@@ -97,7 +104,15 @@ public class VocabularyAudioService {
         VocabularyWord word = vocabularyWordRepository.findById(wordId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND));
 
-        byte[] audio = requestVoiceRssAudio(normalizeTextForSpeech(word.getExpression()));
+        LearningLanguage learningLanguage = resolveLearningLanguage(user);
+        if (resolveLearningLanguage(word) != learningLanguage) {
+            throw new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND);
+        }
+
+        byte[] audio = requestVoiceRssAudio(
+                normalizeTextForSpeech(word.getExpression()),
+                resolveVoiceRssLanguage(learningLanguage)
+        );
 
         if (audio.length == 0 || isVoiceRssError(audio)) {
             log.warn("VoiceRSS returned a non-audio response for wordId={}. body={}", wordId, toUtf8Text(audio));
@@ -107,13 +122,7 @@ public class VocabularyAudioService {
         return audio;
     }
 
-    private void validateUser(String loginId) {
-        if (!userRepository.existsByLoginId(loginId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-        }
-    }
-
-    private byte[] requestVoiceRssAudio(String text) {
+    private byte[] requestVoiceRssAudio(String text, String language) {
         try {
             ResponseEntity<byte[]> response = restClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -157,6 +166,24 @@ public class VocabularyAudioService {
 
     private String normalizeTextForSpeech(String expression) {
         return expression.split(";")[0].trim();
+    }
+
+    private LearningLanguage resolveLearningLanguage(User user) {
+        return user.getLearningLanguage() == null
+                ? LearningLanguage.JAPANESE
+                : user.getLearningLanguage();
+    }
+
+    private LearningLanguage resolveLearningLanguage(VocabularyWord word) {
+        return word.getLearningLanguage() == null
+                ? LearningLanguage.JAPANESE
+                : word.getLearningLanguage();
+    }
+
+    private String resolveVoiceRssLanguage(LearningLanguage learningLanguage) {
+        return learningLanguage == LearningLanguage.ENGLISH
+                ? englishLanguage
+                : japaneseLanguage;
     }
 
     private boolean isVoiceRssError(byte[] audio) {
