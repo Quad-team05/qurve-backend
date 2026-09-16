@@ -71,7 +71,7 @@ public class AttendanceService {
         }
 
         LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
-        boolean checkedToday = isCheckedToday(user, user.getLearningLanguage(), today);
+        boolean checkedToday = isCheckedToday(user, resolveLearningLanguage(user), today);
 
         return AttendanceResponseDto.from(
                 studyStatistics.getStreakDays(),
@@ -99,7 +99,7 @@ public class AttendanceService {
 
         LocalDate today = LocalDate.now(KST_ZONE);
         LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
-        LearningLanguage learningLanguage = user.getLearningLanguage();
+        LearningLanguage learningLanguage = resolveLearningLanguage(user);
 
         boolean alreadyCheckedLanguageToday = isCheckedToday(user, learningLanguage, today);
         boolean alreadyCheckedToday = isCheckedToday(lastAttendanceAt, today);
@@ -207,6 +207,12 @@ public class AttendanceService {
                 learningLanguage,
                 today
         );
+    }
+
+    private LearningLanguage resolveLearningLanguage(User user) {
+        return user.getLearningLanguage() == null
+                ? LearningLanguage.JAPANESE
+                : user.getLearningLanguage();
     }
 
     private boolean isCheckedToday(LocalDateTime attendanceAt, LocalDate today) {

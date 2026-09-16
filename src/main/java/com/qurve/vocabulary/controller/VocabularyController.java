@@ -8,10 +8,12 @@ import com.qurve.vocabulary.dto.response.ChallengeWordCompleteResponseDto;
 import com.qurve.vocabulary.dto.response.UnitProgressResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordStudyResponseDto;
+import com.qurve.vocabulary.service.VocabularyAudioService;
 import com.qurve.vocabulary.service.VocabularyService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -27,6 +29,7 @@ import java.util.List;
 public class VocabularyController {
 
     private final VocabularyService vocabularyService;
+    private final VocabularyAudioService vocabularyAudioService;
 
     @GetMapping("/units")
     @Operation(summary = "단어 유닛 목록 조회", description = "사용자의 현재 학습 언어에 따라 일본어 JLPT(N1~N5) 또는 영어 CEFR(A1~C2) 레벨별 단어 유닛과 학습 상태를 조회합니다.")
@@ -42,6 +45,14 @@ public class VocabularyController {
         UnitWordStudyResponseDto response = vocabularyService.getUnitWords(loginId, level, unitNumber);
 
         return ApiResponse.success(response);
+    }
+
+    @GetMapping(value = "/{wordId}/audio", produces = "audio/mpeg")
+    @Operation(summary = "단어 발음 듣기", description = "현재 학습 언어에 해당하는 단어의 발음을 VoiceRSS MP3 데이터로 반환합니다.")
+    public ResponseEntity<byte[]> getWordAudio(@PathVariable Long wordId, Authentication authentication) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.valueOf("audio/mpeg"))
+                .body(vocabularyAudioService.findWordAudio(authentication.getName(), wordId));
     }
 
     @PostMapping("/bookmarks/{wordId}")

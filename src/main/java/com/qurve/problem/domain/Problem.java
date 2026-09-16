@@ -1,6 +1,7 @@
 package com.qurve.problem.domain;
 
 import com.qurve.global.entity.BaseEntity;
+import com.qurve.global.enums.LearningLanguage;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -86,7 +87,7 @@ public class Problem extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-    /**
+        /**
      * 문제 학습 언어 조회
      *
      * * 저장된 문제 언어를 반환한다.
@@ -102,5 +103,25 @@ public class Problem extends BaseEntity {
         }
 
         return language;
+    }
+
+    /**
+     * 문제 학습 언어 일치 여부 확인
+     *
+     * * 공통 언어 해석 기준으로 지정한 학습 언어와 비교한다.
+     * * 학습 언어가 null이면 일본어로 처리한다.
+     *
+     * @param learningLanguage 비교할 학습 언어
+     * @return 문제 언어 일치 여부
+     */
+    public boolean belongsTo(LearningLanguage learningLanguage) {
+        LearningLanguage targetLanguage = learningLanguage == null
+                ? LearningLanguage.JAPANESE
+                : learningLanguage;
+
+        return switch (targetLanguage) {
+            case JAPANESE -> "JA".equals(resolveLanguage());
+            case ENGLISH -> "EN".equals(resolveLanguage());
+        };
     }
 }

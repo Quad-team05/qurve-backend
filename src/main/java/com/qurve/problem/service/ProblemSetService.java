@@ -2,6 +2,7 @@ package com.qurve.problem.service;
 
 import com.qurve.attendance.service.AttendanceService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.global.util.CompletionKeyGenerator;
@@ -59,18 +60,23 @@ public class ProblemSetService {
                 .distinct()
                 .sorted()
                 .toList();
-        String setKey = CompletionKeyGenerator.generate(problemIds);
 
+        List<Problem> problems = problemRepository.findAllById(problemIds);
+        if (problems.size() != problemIds.size()) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
+        LearningLanguage learningLanguage = resolveLearningLanguage(user);
+        if (problems.stream().anyMatch(problem -> !problem.belongsTo(learningLanguage))) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
+        String setKey = CompletionKeyGenerator.generate(problemIds);
         ProblemSetCompletion existingCompletion = problemSetCompletionRepository.findByUserAndSetKey(user, setKey)
                 .orElse(null);
         if (existingCompletion != null) {
             attendanceService.save(loginId);
             return ProblemSetCompleteResponseDto.from(existingCompletion);
-        }
-
-        List<Problem> problems = problemRepository.findAllById(problemIds);
-        if (problems.size() != problemIds.size()) {
-            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
         }
 
         Map<Long, Problem> problemById = problems.stream()
@@ -101,5 +107,11 @@ public class ProblemSetService {
         attendanceService.save(loginId);
 
         return ProblemSetCompleteResponseDto.from(completion);
+    }
+
+    private LearningLanguage resolveLearningLanguage(User user) {
+        return user.getLearningLanguage() == null
+                ? LearningLanguage.JAPANESE
+                : user.getLearningLanguage();
     }
 }
