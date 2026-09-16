@@ -87,14 +87,41 @@ public class Problem extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-    /**
-     * 기존에 언어 정보가 없는 문제는 일본어 문제로 처리한다.
+        /**
+     * 문제 학습 언어 조회
+     *
+     * * 저장된 문제 언어를 반환한다.
+     * * 언어가 null인 기존 JLPT 문제는 일본어로 처리한다.
+     *
+     * @return 문제 언어 코드 또는 언어를 판단할 수 없는 경우 null
      */
-    public boolean belongsTo(LearningLanguage learningLanguage) {
-        if (learningLanguage == LearningLanguage.ENGLISH) {
-            return "EN".equals(language);
+    public String resolveLanguage() {
+        if (language == null
+                && level != null
+                && java.util.Set.of("N1", "N2", "N3", "N4", "N5").contains(level)) {
+            return "JA";
         }
 
-        return language == null || "JA".equals(language);
+        return language;
+    }
+
+    /**
+     * 문제 학습 언어 일치 여부 확인
+     *
+     * * 공통 언어 해석 기준으로 지정한 학습 언어와 비교한다.
+     * * 학습 언어가 null이면 일본어로 처리한다.
+     *
+     * @param learningLanguage 비교할 학습 언어
+     * @return 문제 언어 일치 여부
+     */
+    public boolean belongsTo(LearningLanguage learningLanguage) {
+        LearningLanguage targetLanguage = learningLanguage == null
+                ? LearningLanguage.JAPANESE
+                : learningLanguage;
+
+        return switch (targetLanguage) {
+            case JAPANESE -> "JA".equals(resolveLanguage());
+            case ENGLISH -> "EN".equals(resolveLanguage());
+        };
     }
 }

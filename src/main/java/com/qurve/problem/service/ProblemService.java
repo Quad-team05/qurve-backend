@@ -239,16 +239,69 @@ public class ProblemService {
     }
 
     /**
+     * 사용자 학습 언어 조회
+     *
+     * * 학습 언어가 없는 기존 사용자는 일본어로 처리한다.
+     *
+     * @param user 로그인 사용자
+     * @return 현재 학습 언어
+     */
+    private LearningLanguage resolveLearningLanguage(User user) {
+        return user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage();
+    }
+
+    /**
+     * 문제 언어 일치 여부 확인
+     *
+     * * 문제의 공통 언어 해석 기준으로 지정한 학습 언어와 비교한다.
+     *
+     * @param problem 대상 문제
+     * @param language 비교할 학습 언어
+     * @return 문제 언어 일치 여부
+     */
+    private boolean matchesProblemLanguage(Problem problem, LearningLanguage language) {
+        String problemLanguage = problem.resolveLanguage();
+
+        return switch (language) {
+            case JAPANESE -> "JA".equals(problemLanguage);
+            case ENGLISH -> "EN".equals(problemLanguage);
+        };
+    }
+
+    /**
+     * 문제 접근 언어 검증
+     *
+     * * 문제의 언어가 사용자의 현재 학습 언어와 일치하는지 검증한다.
+     * * 답안 제출, 풀이 이력 조회 및 북마크 등록·삭제에 공통 적용한다.
+     *
+     * @param user 로그인 사용자
+     * @param problem 대상 문제
+     * @return 검증된 학습 언어
+     * @throws BusinessException 문제가 현재 학습 언어에 해당하지 않는 경우
+     */
+    private LearningLanguage validateProblemLanguage(User user, Problem problem) {
+        LearningLanguage language = resolveLearningLanguage(user);
+
+        if (!matchesProblemLanguage(problem, language)) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
+        return language;
+    }
+
+    /**
      * 문제 답안 제출
      *
-     * * 사용자가 선택한 선택지 번호를 정답 번호와 비교하고
-     * 정답 선택지와 해설을 함께 반환한다.
+     * * 사용자의 현재 학습 언어에 해당하는 문제의 답안을 채점한다.
+     * * 제출한 선택지 번호와 정답 번호를 비교하고 제출 이력을 저장한다.
+     * * 정답 여부, 정답 선택지, 해설과 한국어 번역을 반환한다.
+     * * 검증된 학습 언어의 퀴즈 챌린지에 진행도를 반영한다.
      *
      * @param loginId 로그인 ID
      * @param problemId 제출 대상 문제 ID
      * @param requestDto 제출한 선택지 번호
      * @return 채점 결과와 정답 정보
-     * @throws BusinessException 유저, 문제가 없거나 선택지 번호가 유효하지 않은 경우
+     * @throws BusinessException 사용자나 문제가 없거나 문제 언어 또는 선택지가 유효하지 않은 경우
      */
     @Transactional
     public ProblemSubmitResponseDto submit(String loginId, Long problemId, ProblemSubmitRequestDto requestDto) {
@@ -258,9 +311,7 @@ public class ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
 
-        if (!problem.belongsTo(resolveLearningLanguage(user))) {
-            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
-        }
+        LearningLanguage language = validateProblemLanguage(user, problem);
 
         List<ProblemChoice> problemChoices = problemChoiceRepository.findAllByProblemOrderByChoiceNumberAsc(problem);
 
@@ -292,12 +343,7 @@ public class ProblemService {
             wrongNoteService.saveWrongAnswer(user, problem);
         }
 
-        challengeProgressService.addProgress(
-                user,
-                "EN".equals(problem.getLanguage()) ? LearningLanguage.ENGLISH : LearningLanguage.JAPANESE,
-                ChallengeGoalType.QUIZ_COUNT,
-                1
-        );
+        challengeProgressService.addProgress(user, language, ChallengeGoalType.QUIZ_COUNT, 1);
         badgeService.evaluate(user);
 
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);
@@ -312,13 +358,13 @@ public class ProblemService {
     /**
      * 문제 정답 풀이 이력 조회
      *
-     * * 로그인한 사용자의 제출 이력을 최신순으로 조회하고
-     * 각 제출 이력별 정답과 해설을 반환한다.
+     * * 현재 학습 언어에 해당하는 문제의 사용자 제출 이력을 최신순으로 조회한다.
+     * * 각 제출 이력의 정답과 해설을 반환한다.
      *
      * @param loginId 로그인 ID
      * @param problemId 조회 대상 문제 ID
      * @return 제출 이력별 정답 풀이 목록
-     * @throws BusinessException 유저, 문제, 제출 이력이 없거나 정답 선택지가 유효하지 않은 경우
+     * @throws BusinessException 사용자나 문제가 없거나 문제 언어가 다르거나 제출 이력 또는 정답 선택지가 유효하지 않은 경우
      */
     public ProblemSolutionListResponseDto findSolution(String loginId, Long problemId) {
         User user = userRepository.findByLoginId(loginId)
@@ -326,6 +372,8 @@ public class ProblemService {
 
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        validateProblemLanguage(user, problem);
 
         List<ProblemSubmission> problemSubmissions = problemSubmissionRepository
                 .findAllByUserAndProblemOrderBySubmissionIdDesc(user, problem);
@@ -415,7 +463,7 @@ public class ProblemService {
     /**
      * 문제 북마크 추가
      *
-     * * 문제 풀이 중 북마크 버튼 클릭 시 해당 문제를 북마크에 추가한다.
+     * * 현재 학습 언어에 해당하는 문제를 북마크에 추가한다.
      * * 이미 북마크된 문제인 경우 예외를 발생시킨다.
      *
      * @param loginId 로그인 ID
@@ -430,6 +478,8 @@ public class ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
 
+        validateProblemLanguage(user, problem);
+
         if (problemBookmarkRepository.existsByUserAndProblem(user, problem)) {
             throw new BusinessException(ErrorCode.DUPLICATE_PROBLEM_BOOKMARK);
         }
@@ -443,7 +493,7 @@ public class ProblemService {
     /**
      * 문제 북마크 삭제
      *
-     * * 북마크된 문제를 북마크에서 제거한다.
+     * * 현재 학습 언어에 해당하는 본인의 문제 북마크를 삭제한다.
      *
      * @param loginId 로그인 ID
      * @param problemId 북마크 삭제할 문제 ID
@@ -457,6 +507,8 @@ public class ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
 
+        validateProblemLanguage(user, problem);
+
         ProblemBookmark problemBookmark = problemBookmarkRepository.findByUserAndProblem(user, problem)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_BOOKMARK_NOT_FOUND));
 
@@ -466,7 +518,7 @@ public class ProblemService {
     /**
      * 문제 북마크 목록 조회
      *
-     * * 로그인한 사용자가 북마크한 문제 목록을 최신순으로 조회한다.
+     * * 현재 학습 언어에 해당하는 본인의 북마크 문제 목록을 최신순으로 조회한다.
      * * 문제 풀이 화면과 동일하게 정답과 해설은 숨기고 문제 본문과 선택지만 반환한다.
      *
      * @param loginId 로그인 ID
@@ -477,9 +529,12 @@ public class ProblemService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        LearningLanguage language = resolveLearningLanguage(user);
+
         List<Problem> problems = problemBookmarkRepository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
                 .map(ProblemBookmark::getProblem)
+                .filter(problem -> matchesProblemLanguage(problem, language))
                 .toList();
 
         if (problems.isEmpty()) {

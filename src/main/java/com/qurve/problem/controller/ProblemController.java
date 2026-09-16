@@ -62,7 +62,12 @@ public class ProblemController {
     }
 
     @PostMapping("/{problemId}/submit")
-    @Operation(summary = "문제 답안 제출", description = "선택한 답안을 채점하고 정답, 해설, 결과를 반환합니다.")
+    @Operation(
+            summary = "문제 답안 제출",
+            description = "현재 학습 언어에 해당하는 문제의 답안을 채점하고 "
+                    + "정답 여부, 정답 선택지, 해설과 한국어 번역을 반환합니다. "
+                    + "선택지 번호는 문제 조회 응답의 choiceNumber를 그대로 전달합니다."
+    )
     public ResponseEntity<ApiResponse<ProblemSubmitResponseDto>> submit(
             @PathVariable Long problemId,
             @Valid @RequestBody ProblemSubmitRequestDto requestDto,
