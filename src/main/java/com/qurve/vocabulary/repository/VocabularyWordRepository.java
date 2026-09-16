@@ -152,33 +152,4 @@ public interface VocabularyWordRepository extends JpaRepository<VocabularyWord, 
             @Param("legacyLanguage") LearningLanguage legacyLanguage
     );
 
-    /**
-     * 단어 ID 및 학습 언어별 조회
-     *
-     * * 요청한 단어 ID 중 지정한 학습 언어에 해당하는 단어를 조회한다.
-     * * 일본어 조회 시 학습 언어가 null인 기존 단어도 포함한다.
-     *
-     * @param wordIds 조회할 단어 ID 목록
-     * @param language 조회할 학습 언어
-     * @param legacyLanguage 언어가 null인 기존 단어에 적용할 언어
-     * @return 요청한 ID와 학습 언어에 해당하는 단어 목록
-     */
-    @Query("""
-    select w
-    from VocabularyWord w
-    where w.wordId in :wordIds
-      and (
-          w.learningLanguage = :language
-          or (
-              :language = :legacyLanguage
-              and w.learningLanguage is null
-          )
-      )
-    order by w.wordId asc
-    """)
-    List<VocabularyWord> findAllByWordIdsAndLanguage(
-            @Param("wordIds") List<Long> wordIds,
-            @Param("language") LearningLanguage language,
-            @Param("legacyLanguage") LearningLanguage legacyLanguage
-    );
 }
