@@ -85,4 +85,22 @@ public class Problem extends BaseEntity {
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
+
+    /**
+     * 문제 학습 언어 조회
+     *
+     * * 저장된 문제 언어를 반환한다.
+     * * 언어가 null인 기존 JLPT 문제는 일본어로 처리한다.
+     *
+     * @return 문제 언어 코드 또는 언어를 판단할 수 없는 경우 null
+     */
+    public String resolveLanguage() {
+        if (language == null
+                && level != null
+                && java.util.Set.of("N1", "N2", "N3", "N4", "N5").contains(level)) {
+            return "JA";
+        }
+
+        return language;
+    }
 }

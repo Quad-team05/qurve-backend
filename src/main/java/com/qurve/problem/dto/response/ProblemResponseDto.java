@@ -32,7 +32,7 @@ public class ProblemResponseDto {
                 .problemId(problem.getProblemId())
                 .level(problem.getLevel())
                 .qurveLevel(problem.getLevel())
-                .language(problem.getLanguage())
+                .language(problem.resolveLanguage())
                 .cefrLevel(problem.getCefrLevel())
                 .usageType(problem.getUsageType())
                 .category(problem.getCategory())

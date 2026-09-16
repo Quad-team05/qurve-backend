@@ -31,7 +31,11 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
               and (
                     :language is null
                     or p.language = :language
-                    or (:language = 'JA' and p.language is null)
+                    or (
+                        :language = 'JA'
+                        and p.language is null
+                        and p.level in ('N1', 'N2', 'N3', 'N4', 'N5')
+                    )
               )
               and (:cefrLevel is null or p.cefrLevel = :cefrLevel)
               and (:level is null or p.level = :level)
@@ -57,7 +61,14 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
                    p.subType as subType,
                    count(p) as problemCount
             from Problem p
-            where (p.language = :language or (:language = 'JA' and p.language is null))
+            where (
+                   p.language = :language
+                   or (
+                       :language = 'JA'
+                       and p.language is null
+                       and p.level in ('N1', 'N2', 'N3', 'N4', 'N5')
+                   )
+               )
               and p.level = :level
               and p.isActive = true
             group by p.cefrLevel, p.category, p.subType
