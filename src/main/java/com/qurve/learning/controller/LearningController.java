@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.qurve.learning.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.learning.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.learning.dto.response.StudyTimeStatisticsResponseDto;
+import com.qurve.learning.dto.response.MonthlyStudyTimeStatisticsResponseDto;
 import com.qurve.learning.dto.response.LearningMainResponseDto;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
 import com.qurve.learning.service.LearningService;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 
 @RestController
 @RequestMapping("/api/learnings")
@@ -65,6 +67,21 @@ public class LearningController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         learningService.findStudyTimeStatistics(authentication.getName())
+                )
+        );
+    }
+
+    @GetMapping("/study-time/statistics/monthly")
+    @Operation(summary = "최근 3개월 학습 시간 통계 조회", description = "기준 월과 이전 두 달의 월별 누적 학습 시간을 조회합니다. yearMonth를 생략하면 KST 기준 이번 달을 기준으로 조회합니다.")
+    public ResponseEntity<ApiResponse<MonthlyStudyTimeStatisticsResponseDto>> findMonthlyStudyTimeStatistics(
+            @RequestParam(required = false)
+            @DateTimeFormat(pattern = "yyyy-MM")
+            YearMonth yearMonth,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        learningService.findMonthlyStudyTimeStatistics(authentication.getName(), yearMonth)
                 )
         );
     }

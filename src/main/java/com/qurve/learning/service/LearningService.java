@@ -16,6 +16,8 @@ import com.qurve.learning.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.learning.dto.response.DailyStudyTimeResponseDto;
 import com.qurve.learning.dto.response.CurrentVocabularyResponseDto;
 import com.qurve.learning.dto.response.LearningMainResponseDto;
+import com.qurve.learning.dto.response.MonthlyStudyTimeStatisticsResponseDto;
+import com.qurve.learning.dto.response.MonthlyStudyTimeResponseDto;
 import com.qurve.learning.dto.response.StudyTimeSaveResponseDto;
 import com.qurve.learning.dto.response.StudyTimeStatisticsResponseDto;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
@@ -34,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -229,6 +232,51 @@ public class LearningService {
                 todayStudyTimeMinutes,
                 weeklyStudyTimeMinutes,
                 dailyStudyTimes
+        );
+    }
+
+    /**
+     * 월간 학습 시간 통계 조회
+     *
+     * * 기준 월과 이전 두 달을 포함한 최근 3개월의 월별 누적 학습 시간을 분 단위로 반환한다.
+     * * 기준 월이 없으면 KST 기준 이번 달을 조회한다.
+     *
+     * @param loginId 로그인 ID
+     * @param yearMonth 조회할 연월
+     * @return 월간 학습 시간 통계 응답 정보
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public MonthlyStudyTimeStatisticsResponseDto findMonthlyStudyTimeStatistics(String loginId, YearMonth yearMonth) {
+        User user = findUserByLoginId(loginId);
+        YearMonth endYearMonth = yearMonth == null ? YearMonth.now(KST_ZONE) : yearMonth;
+        YearMonth startYearMonth = endYearMonth.minusMonths(2);
+        LocalDate startDate = startYearMonth.atDay(1);
+        LocalDate endDate = endYearMonth.atEndOfMonth();
+
+        Map<LocalDate, Integer> studyTimeByDate = studyTimeRecordRepository
+                .findAllByUserAndStudyDateBetween(user, startDate, endDate)
+                .stream()
+                .collect(Collectors.toMap(
+                        StudyTimeRecord::getStudyDate,
+                        StudyTimeRecord::getStudyTimeMinutes,
+                        Integer::sum
+                ));
+
+        List<MonthlyStudyTimeResponseDto> monthlyStudyTimes = IntStream.range(0, 3)
+                .mapToObj(startYearMonth::plusMonths)
+                .map(targetYearMonth -> MonthlyStudyTimeResponseDto.of(
+                        targetYearMonth,
+                        studyTimeByDate.entrySet().stream()
+                                .filter(entry -> YearMonth.from(entry.getKey()).equals(targetYearMonth))
+                                .mapToInt(Map.Entry::getValue)
+                                .sum()
+                ))
+                .toList();
+
+        return MonthlyStudyTimeStatisticsResponseDto.of(
+                startYearMonth,
+                endYearMonth,
+                monthlyStudyTimes
         );
     }
 
