@@ -349,12 +349,6 @@ public class ProblemService {
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);
     }
 
-    private LearningLanguage resolveLearningLanguage(User user) {
-        return user.getLearningLanguage() == null
-                ? LearningLanguage.JAPANESE
-                : user.getLearningLanguage();
-    }
-
     /**
      * 문제 정답 풀이 이력 조회
      *
