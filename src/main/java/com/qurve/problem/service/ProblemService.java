@@ -349,12 +349,6 @@ public class ProblemService {
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);
     }
 
-    private LearningLanguage resolveLearningLanguage(User user) {
-        return user.getLearningLanguage() == null
-                ? LearningLanguage.JAPANESE
-                : user.getLearningLanguage();
-    }
-
     /**
      * 문제 정답 풀이 이력 조회
      *
@@ -559,13 +553,10 @@ public class ProblemService {
     }
 
     /**
-     * 조회 키워드 정규화
+     * 요청으로 전달된 레벨 값을 정규화하고 일치 여부를 검증한다.
      *
-     * * 저장된 문제 데이터와 동일한 형식으로 비교하기 위해
-     * 공백을 제거하고 대문자로 변환한다.
-     *
-     * @param value 요청으로 전달된 조회 값
-     * @return 정규화된 조회 값
+     * @param requestDto 문제 조회 조건
+     * @return 정규화된 레벨
      */
     private String resolveLevel(ProblemListRequestDto requestDto) {
         String level = normalizeKeyword(requestDto.getLevel());
@@ -578,6 +569,15 @@ public class ProblemService {
         return qurveLevel == null ? level : qurveLevel;
     }
 
+    /**
+     * 조회 키워드 정규화
+     *
+     * 저장된 문제 데이터와 동일한 형식으로 비교하기 위해
+     * 공백을 제거하고 대문자로 변환한다.
+     *
+     * @param value 요청으로 전달된 조회 값
+     * @return 정규화된 조회 값
+     */
     private String normalizeKeyword(String value) {
         if (value == null || value.isBlank()) {
             return null;

@@ -478,7 +478,7 @@ public class VocabularyService {
 
         List<Long> wordIds = new java.util.ArrayList<>(new LinkedHashSet<>(requestDto.getWordIds()));
 
-        List<VocabularyWord> words = vocabularyWordRepository.findAllByWordIdsAndLanguage(wordIds, language, LearningLanguage.JAPANESE);
+        List<VocabularyWord> words = vocabularyWordRepository.findBookmarkedWordsByLanguage(wordIds, language, LearningLanguage.JAPANESE);
 
         if (words.size() != wordIds.size()) {
             throw new BusinessException(ErrorCode.VOCABULARY_WORD_NOT_FOUND);
