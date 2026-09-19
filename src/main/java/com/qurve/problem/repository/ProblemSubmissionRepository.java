@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public interface ProblemSubmissionRepository extends JpaRepository<ProblemSubmission, Long> {
     Optional<ProblemSubmission> findFirstByUserAndProblemOrderBySubmissionIdDesc(User user, Problem problem);
+    Optional<ProblemSubmission> findFirstByUserAndProblemAndCorrectFalseOrderBySubmissionIdDesc(User user, Problem problem);
     List<ProblemSubmission> findAllByUserAndProblemOrderBySubmissionIdDesc(User user, Problem problem);
     List<ProblemSubmission> findAllByUserAndCreatedAtBetween(User user, LocalDateTime startDateTime, LocalDateTime endDateTime);
     long countByUser(User user);

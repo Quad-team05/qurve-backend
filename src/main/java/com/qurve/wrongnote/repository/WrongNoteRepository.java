@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,21 @@ public interface WrongNoteRepository extends JpaRepository<WrongNote, Long> {
     Optional<WrongNote> findByUserAndProblem(User user, Problem problem);
 
     List<WrongNote> findAllByUserAndProblemIn(User user, Collection<Problem> problems);
+
+    @Query("""
+            select w
+            from WrongNote w
+            join fetch w.problem
+            where w.user = :user
+              and w.createdAt >= :startDateTime
+              and w.createdAt < :endDateTime
+            order by w.createdAt desc, w.wrongNoteId desc
+            """)
+    List<WrongNote> findAllByUserAndCreatedAtBetween(
+            @Param("user") User user,
+            @Param("startDateTime") LocalDateTime startDateTime,
+            @Param("endDateTime") LocalDateTime endDateTime
+    );
 
     long countByUser(User user);
 
