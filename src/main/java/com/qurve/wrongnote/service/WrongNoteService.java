@@ -8,6 +8,7 @@ import com.qurve.global.exception.BusinessException;
 import com.qurve.global.util.CompletionKeyGenerator;
 import com.qurve.problem.domain.Problem;
 import com.qurve.problem.domain.ProblemChoice;
+import com.qurve.problem.domain.ProblemSubmission;
 import com.qurve.problem.repository.ProblemRepository;
 import com.qurve.problem.repository.ProblemChoiceRepository;
 import com.qurve.problem.repository.ProblemSubmissionRepository;
@@ -32,6 +33,7 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -83,7 +85,7 @@ public class WrongNoteService {
      * 월별 오답노트 목록 조회
      *
      * * 현재 학습 언어에 해당하는 오답 문제만 조회한다.
-     * * 선택한 월에 저장된 오답 날짜와 문제별 카드 정보를 반환한다.
+     * * 선택한 월에 실제로 틀린 제출의 날짜와 문제별 카드 정보를 반환한다.
      *
      * @param loginId 로그인 ID
      * @param yearMonth 조회할 연월
@@ -97,22 +99,52 @@ public class WrongNoteService {
         LocalDateTime endDateTime = targetYearMonth.plusMonths(1).atDay(1).atStartOfDay();
         LearningLanguage learningLanguage = resolveLearningLanguage(user);
 
-        List<WrongNote> wrongNotes = wrongNoteRepository
-                .findAllByUserAndCreatedAtBetween(user, startDateTime, endDateTime)
+        List<ProblemSubmission> wrongSubmissions = problemSubmissionRepository
+                .findAllWrongByUserAndCreatedAtBetween(user, startDateTime, endDateTime)
                 .stream()
-                .filter(wrongNote -> wrongNote.getProblem().belongsTo(learningLanguage))
+                .filter(submission -> submission.getProblem().belongsTo(learningLanguage))
                 .toList();
 
-        List<LocalDate> wrongNoteDates = wrongNotes.stream()
-                .map(wrongNote -> wrongNote.getCreatedAt().toLocalDate())
+        if (wrongSubmissions.isEmpty()) {
+            return WrongNoteListResponseDto.of(targetYearMonth, List.of(), List.of());
+        }
+
+        Map<Long, ProblemSubmission> latestWrongSubmissionByProblemId = new LinkedHashMap<>();
+        wrongSubmissions.forEach(submission -> latestWrongSubmissionByProblemId.putIfAbsent(
+                submission.getProblem().getProblemId(),
+                submission
+        ));
+
+        Map<Long, WrongNote> wrongNoteByProblemId = wrongNoteRepository
+                .findAllByUserAndProblemIn(
+                        user,
+                        latestWrongSubmissionByProblemId.values().stream()
+                                .map(ProblemSubmission::getProblem)
+                                .toList()
+                )
+                .stream()
+                .collect(Collectors.toMap(
+                        wrongNote -> wrongNote.getProblem().getProblemId(),
+                        Function.identity()
+                ));
+
+        List<ProblemSubmission> wrongNoteSubmissions = wrongSubmissions.stream()
+                .filter(submission -> wrongNoteByProblemId.containsKey(submission.getProblem().getProblemId()))
+                .toList();
+
+        List<LocalDate> wrongNoteDates = wrongNoteSubmissions.stream()
+                .map(submission -> submission.getCreatedAt().toLocalDate())
                 .distinct()
                 .sorted()
                 .toList();
 
-        List<WrongNoteSummaryResponseDto> summaries = wrongNotes.stream()
-                .map(wrongNote -> WrongNoteSummaryResponseDto.from(
-                        wrongNote,
-                        createProblemTitle(wrongNote.getProblem())
+        List<WrongNoteSummaryResponseDto> summaries = latestWrongSubmissionByProblemId.values().stream()
+                .filter(submission -> wrongNoteByProblemId.containsKey(submission.getProblem().getProblemId()))
+                .map(submission -> WrongNoteSummaryResponseDto.from(
+                        wrongNoteByProblemId.get(submission.getProblem().getProblemId()),
+                        createProblemTitle(submission.getProblem()),
+                        submission.getCreatedAt().toLocalDate(),
+                        submission.getSubmissionId()
                 ))
                 .toList();
 
@@ -130,7 +162,7 @@ public class WrongNoteService {
      * @return 오답 문제 풀이 정보
      * @throws BusinessException 유저, 문제, 오답노트 또는 오답 제출 이력이 없는 경우
      */
-    public WrongNoteSolutionResponseDto findSolution(String loginId, Long problemId) {
+    public WrongNoteSolutionResponseDto findSolution(String loginId, Long problemId, Long wrongSubmissionId) {
         User user = findUserByLoginId(loginId);
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
@@ -141,9 +173,7 @@ public class WrongNoteService {
 
         WrongNote wrongNote = wrongNoteRepository.findByUserAndProblem(user, problem)
                 .orElseThrow(() -> new BusinessException(ErrorCode.WRONG_NOTE_NOT_FOUND));
-        var wrongSubmission = problemSubmissionRepository
-                .findFirstByUserAndProblemAndCorrectFalseOrderBySubmissionIdDesc(user, problem)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_SUBMISSION_NOT_FOUND));
+        ProblemSubmission wrongSubmission = findWrongSubmission(user, problem, wrongSubmissionId);
         List<ProblemChoice> choices = problemChoiceRepository.findAllByProblemOrderByChoiceNumberAsc(problem);
 
         return WrongNoteSolutionResponseDto.of(wrongNote, wrongSubmission, choices);
@@ -221,6 +251,25 @@ public class WrongNoteService {
     private User findUserByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private ProblemSubmission findWrongSubmission(User user, Problem problem, Long wrongSubmissionId) {
+        if (wrongSubmissionId == null) {
+            return problemSubmissionRepository
+                    .findFirstByUserAndProblemAndCorrectFalseOrderBySubmissionIdDesc(user, problem)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_SUBMISSION_NOT_FOUND));
+        }
+
+        ProblemSubmission wrongSubmission = problemSubmissionRepository.findById(wrongSubmissionId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_SUBMISSION_NOT_FOUND));
+
+        if (!wrongSubmission.getUser().getUserId().equals(user.getUserId())
+                || !wrongSubmission.getProblem().getProblemId().equals(problem.getProblemId())
+                || wrongSubmission.isCorrect()) {
+            throw new BusinessException(ErrorCode.PROBLEM_SUBMISSION_NOT_FOUND);
+        }
+
+        return wrongSubmission;
     }
 
     private String createProblemTitle(Problem problem) {

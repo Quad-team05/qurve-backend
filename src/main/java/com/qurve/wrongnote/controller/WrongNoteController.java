@@ -45,13 +45,14 @@ public class WrongNoteController {
     }
 
     @GetMapping("/{problemId}/solution")
-    @Operation(summary = "오답노트 문제 풀이 조회", description = "현재 학습 언어의 본인 오답 문제에 대해 마지막 오답 선택지, 정답, 해설과 전체 선택지를 조회합니다.")
+    @Operation(summary = "오답노트 문제 풀이 조회", description = "현재 학습 언어의 본인 오답 문제에 대해 선택한 오답 제출의 선택지, 정답, 해설과 전체 선택지를 조회합니다. wrongSubmissionId를 생략하면 가장 최근 오답 제출을 조회합니다.")
     public ResponseEntity<ApiResponse<WrongNoteSolutionResponseDto>> findSolution(
             @PathVariable Long problemId,
+            @RequestParam(required = false) Long wrongSubmissionId,
             Authentication authentication
     ) {
         return ResponseEntity.ok(ApiResponse.success(
-                wrongNoteService.findSolution(authentication.getName(), problemId)
+                wrongNoteService.findSolution(authentication.getName(), problemId, wrongSubmissionId)
         ));
     }
 

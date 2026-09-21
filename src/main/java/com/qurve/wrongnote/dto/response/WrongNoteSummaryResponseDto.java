@@ -15,6 +15,7 @@ public class WrongNoteSummaryResponseDto {
 
     private Long wrongNoteId;
     private Long problemId;
+    private Long wrongSubmissionId;
     private String title;
     private String level;
     private String category;
@@ -24,17 +25,23 @@ public class WrongNoteSummaryResponseDto {
     private boolean reviewed;
     private boolean retryCorrect;
 
-    public static WrongNoteSummaryResponseDto from(WrongNote wrongNote, String title) {
+    public static WrongNoteSummaryResponseDto from(
+            WrongNote wrongNote,
+            String title,
+            LocalDate wrongAnsweredDate,
+            Long wrongSubmissionId
+    ) {
         Problem problem = wrongNote.getProblem();
 
         return WrongNoteSummaryResponseDto.builder()
                 .wrongNoteId(wrongNote.getWrongNoteId())
                 .problemId(problem.getProblemId())
+                .wrongSubmissionId(wrongSubmissionId)
                 .title(title)
                 .level(problem.getLevel())
                 .category(problem.getCategory())
                 .subType(problem.getSubType())
-                .wrongAnsweredDate(wrongNote.getCreatedAt().toLocalDate())
+                .wrongAnsweredDate(wrongAnsweredDate)
                 .reviewedDate(wrongNote.getReviewedAt() == null ? null : wrongNote.getReviewedAt().toLocalDate())
                 .reviewed(wrongNote.isReviewed())
                 .retryCorrect(wrongNote.isRetryCorrect())

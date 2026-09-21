@@ -60,7 +60,7 @@ public class WrongNoteSolutionResponseDto {
                 .answerChoiceNumber(problem.getAnswerIndex())
                 .explanation(problem.getExplanation())
                 .koreanTranslation(problem.getKoreanTranslation())
-                .wrongAnsweredDate(wrongNote.getCreatedAt().toLocalDate())
+                .wrongAnsweredDate(wrongSubmission.getCreatedAt().toLocalDate())
                 .reviewedDate(wrongNote.getReviewedAt() == null ? null : wrongNote.getReviewedAt().toLocalDate())
                 .reviewed(wrongNote.isReviewed())
                 .retryCorrect(wrongNote.isRetryCorrect())
