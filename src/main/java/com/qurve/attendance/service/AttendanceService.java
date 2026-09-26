@@ -29,7 +29,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -50,8 +52,8 @@ public class AttendanceService {
     /**
      * 출석 카드 조회
      *
-     * * 연속 학습 일수(streak)와 마지막 출석일(lastAttendanceAt)을 기준으로
-     * 현재 주차(월~일) 출석 활성화 상태를 계산해 반환한다.
+     * * 연속 학습 일수(streak)는 통계 값으로 반환한다.
+     * * 현재 주차(월~일) 출석 활성화 상태는 실제 출석 기록을 기준으로 반환한다.
      *
      * @param loginId 로그인 ID
      * @return 출석 카드 응답 정보
@@ -60,6 +62,7 @@ public class AttendanceService {
     public AttendanceResponseDto findOne(String loginId) {
         User user = findUserByLoginId(loginId);
         LocalDate today = LocalDate.now(KST_ZONE);
+        LearningLanguage learningLanguage = resolveLearningLanguage(user);
 
         // 출석 조회는 신규 사용자의 통계 레코드를 생성하지 않는다.
         // 통계는 출석 체크 또는 학습 시간 저장 시점에 생성한다.
@@ -67,16 +70,19 @@ public class AttendanceService {
                 .orElse(null);
 
         if (studyStatistics == null) {
-            return AttendanceResponseDto.from(0, false, createAttendanceDays(0, null, today));
+            return AttendanceResponseDto.from(
+                    0,
+                    isCheckedToday(user, learningLanguage, today),
+                    createAttendanceDays(user, learningLanguage, today)
+            );
         }
 
-        LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
-        boolean checkedToday = isCheckedToday(user, resolveLearningLanguage(user), today);
+        boolean checkedToday = isCheckedToday(user, learningLanguage, today);
 
         return AttendanceResponseDto.from(
                 studyStatistics.getStreakDays(),
                 checkedToday,
-                createAttendanceDays(studyStatistics.getStreakDays(), lastAttendanceAt, today)
+                createAttendanceDays(user, learningLanguage, today)
         );
     }
 
@@ -105,7 +111,6 @@ public class AttendanceService {
         boolean alreadyCheckedToday = isCheckedToday(lastAttendanceAt, today);
 
         int updatedStreakDays = studyStatistics.getStreakDays();
-        LocalDateTime attendedAt = lastAttendanceAt;
 
         if (!alreadyCheckedToday) {
             updatedStreakDays = calculateUpdatedStreakDays(
@@ -113,8 +118,7 @@ public class AttendanceService {
                     lastAttendanceAt,
                     today
             );
-            attendedAt = LocalDateTime.now(KST_ZONE);
-            studyStatistics.updateAttendance(updatedStreakDays, attendedAt);
+            studyStatistics.updateAttendance(updatedStreakDays, LocalDateTime.now(KST_ZONE));
         }
 
         if (!alreadyCheckedLanguageToday) {
@@ -135,7 +139,7 @@ public class AttendanceService {
         return AttendanceResponseDto.from(
                 updatedStreakDays,
                 true,
-                createAttendanceDays(updatedStreakDays, attendedAt, today)
+                createAttendanceDays(user, learningLanguage, today)
         );
     }
 
@@ -237,29 +241,25 @@ public class AttendanceService {
         return 1;
     }
 
-    private List<AttendanceDayResponseDto> createAttendanceDays(
-            int streakDays,
-            LocalDateTime updatedAt,
-            LocalDate today
-    ) {
+    private List<AttendanceDayResponseDto> createAttendanceDays(User user, LearningLanguage learningLanguage, LocalDate today) {
         List<AttendanceDayResponseDto> days = new ArrayList<>();
 
         LocalDate weekStartDate = today.with(DayOfWeek.MONDAY);
         LocalDate weekEndDate = weekStartDate.plusDays(6);
-
-        LocalDate streakEndDate = updatedAt == null ? null : updatedAt.toLocalDate();
-        LocalDate streakStartDate =
-                streakEndDate == null ? null : streakEndDate.minusDays(Math.max(streakDays - 1L, 0L));
+        Set<LocalDate> attendanceDates = new HashSet<>(attendanceRecordRepository
+                .findAttendanceDatesByUserAndLearningLanguageAndAttendanceDateBetween(
+                        user,
+                        learningLanguage,
+                        weekStartDate,
+                        weekEndDate
+                ));
 
         for (int i = 0; i < 7; i++) {
             LocalDate targetDate = weekStartDate.plusDays(i);
-
-            boolean checked = streakStartDate != null
-                    && !targetDate.isBefore(streakStartDate)
-                    && !targetDate.isAfter(streakEndDate)
-                    && !targetDate.isAfter(weekEndDate);
-
-            days.add(AttendanceDayResponseDto.of(DAY_OF_WEEK_LABELS.get(i), checked));
+            days.add(AttendanceDayResponseDto.of(
+                    DAY_OF_WEEK_LABELS.get(i),
+                    attendanceDates.contains(targetDate)
+            ));
         }
 
         return days;
