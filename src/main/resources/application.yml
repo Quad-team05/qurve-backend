@@ -95,6 +95,7 @@ problem:
 tts:
   voicerss:
     base-url: https://api.voicerss.org
+    api-key: ${VOICERSS_API_KEY:}
     language: ja-jp
     english-language: en-us
     codec: MP3
