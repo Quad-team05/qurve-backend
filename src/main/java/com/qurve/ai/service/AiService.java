@@ -17,12 +17,14 @@ import com.qurve.global.exception.BusinessException;
 import com.qurve.xp.repository.XpHistoryRepository;
 import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,6 +34,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AiService {
 
     @Value("${gemini.api-key}")
@@ -39,6 +42,9 @@ public class AiService {
 
     @Value("${gemini.api-url}")
     private String apiUrl;
+
+    @Value("${gemini.model}")
+    private String geminiModel;
 
     private static final int GEMINI_CONNECT_TIMEOUT_MILLIS = 3_000;
     private static final int GEMINI_READ_TIMEOUT_MILLIS = 30_000;
@@ -169,6 +175,8 @@ public class AiService {
 
     private String callGemini(String userMessage, List<AiChatMessage> recentMessages, String personalizedInfo, LearningLanguage learningLanguage) {
 
+        validateGeminiConfiguration();
+
         List<Map<String, Object>> contents = new ArrayList<>();
 
         // 최근 메시지 문맥 추가 (오래된 순으로)
@@ -201,18 +209,78 @@ public class AiService {
                 "contents", contents
         );
 
+        log.debug(
+                "Gemini request prepared: model={}, contentCount={}, contextMessageCount={}, userMessageLength={}, "
+                        + "systemPromptLength={}, connectTimeoutMillis={}, readTimeoutMillis={}, apiKeyConfigured={}",
+                geminiModel,
+                contents.size(),
+                recentMessages.size(),
+                userMessage.length(),
+                systemPrompt.length(),
+                GEMINI_CONNECT_TIMEOUT_MILLIS,
+                GEMINI_READ_TIMEOUT_MILLIS,
+                !apiKey.isBlank()
+        );
+
         try {
             Map response = restClient.post()
-                    .uri(apiUrl + "?key=" + apiKey)
+                    .uri(apiUrl + "/models/{model}:generateContent?key={apiKey}", geminiModel, apiKey)
                     .header("Content-Type", "application/json")
                     .body(body)
                     .retrieve()
                     .body(Map.class);
 
             return extractAnswer(response);
+        } catch (RestClientResponseException e) {
+            log.error(
+                    "Gemini API response error: status={}, statusText={}, responseBody={}, model={}, "
+                            + "contentCount={}, connectTimeoutMillis={}, readTimeoutMillis={}",
+                    e.getStatusCode().value(),
+                    e.getStatusText(),
+                    abbreviate(e.getResponseBodyAsString()),
+                    geminiModel,
+                    contents.size(),
+                    GEMINI_CONNECT_TIMEOUT_MILLIS,
+                    GEMINI_READ_TIMEOUT_MILLIS,
+                    e
+            );
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
         } catch (RestClientException e) {
+            log.error(
+                    "Gemini API request failed: exceptionType={}, message={}, model={}, contentCount={}, "
+                            + "connectTimeoutMillis={}, readTimeoutMillis={}",
+                    e.getClass().getSimpleName(),
+                    e.getMessage(),
+                    geminiModel,
+                    contents.size(),
+                    GEMINI_CONNECT_TIMEOUT_MILLIS,
+                    GEMINI_READ_TIMEOUT_MILLIS,
+                    e
+            );
             throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
         }
+    }
+
+    private void validateGeminiConfiguration() {
+        if (apiKey == null || apiKey.isBlank()) {
+            log.error("Gemini API key is not configured.");
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
+
+        if (geminiModel == null || geminiModel.isBlank()) {
+            log.error("Gemini model is not configured.");
+            throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+        }
+    }
+
+    private String abbreviate(String responseBody) {
+        int maxLength = 2_000;
+
+        if (responseBody == null || responseBody.length() <= maxLength) {
+            return responseBody;
+        }
+
+        return responseBody.substring(0, maxLength) + "...";
     }
 
     /**
