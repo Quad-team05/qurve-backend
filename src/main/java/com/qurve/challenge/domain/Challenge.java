@@ -1,6 +1,7 @@
 package com.qurve.challenge.domain;
 
 import com.qurve.global.entity.BaseEntity;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,6 +24,10 @@ public class Challenge extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "learning_language", length = 20)
+    private LearningLanguage learningLanguage;
 
     @Column(name = "title", length = 50, nullable = false)
     private String title;

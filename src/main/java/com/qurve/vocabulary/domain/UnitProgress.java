@@ -1,5 +1,6 @@
 package com.qurve.vocabulary.domain;
 
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.user.domain.User;
 import com.qurve.vocabulary.enums.UnitStatus;
 import jakarta.persistence.*;
@@ -33,6 +34,10 @@ public class UnitProgress {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private UnitStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "learning_language", length = 20)
+    private LearningLanguage learningLanguage;
 
     @Column(name = "level", length = 10, nullable = false)
     private String level;

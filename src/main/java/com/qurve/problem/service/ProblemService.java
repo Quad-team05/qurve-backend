@@ -5,6 +5,7 @@ import com.qurve.challenge.domain.ChallengeGoalType;
 import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.enums.XpActionType;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.problem.domain.Problem;
 import com.qurve.problem.domain.ProblemBookmark;
@@ -29,9 +30,14 @@ import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import com.qurve.wrongnote.service.WrongNoteService;
 import com.qurve.xp.service.XpService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -42,9 +48,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.nio.charset.StandardCharsets;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProblemService {
 
@@ -60,11 +66,53 @@ public class ProblemService {
     private final XpService xpService;
     private final ChallengeProgressService challengeProgressService;
     private final WrongNoteService wrongNoteService;
+    private final RestClient voiceRssRestClient;
+    private final String voiceRssApiKey;
+    private final String voiceRssEnglishLanguage;
+    private final String voiceRssCodec;
+    private final String voiceRssFormat;
+
+    public ProblemService(
+            ProblemRepository problemRepository,
+            ProblemChoiceRepository problemChoiceRepository,
+            ProblemSubmissionRepository problemSubmissionRepository,
+            ProblemBookmarkRepository problemBookmarkRepository,
+            UserRepository userRepository,
+            BadgeService badgeService,
+            XpService xpService,
+            ChallengeProgressService challengeProgressService,
+            WrongNoteService wrongNoteService,
+            @Value("${tts.voicerss.base-url:https://api.voicerss.org}") String voiceRssBaseUrl,
+            @Value("${tts.voicerss.api-key:}") String voiceRssApiKey,
+            @Value("${tts.voicerss.english-language:en-us}") String voiceRssEnglishLanguage,
+            @Value("${tts.voicerss.codec:MP3}") String voiceRssCodec,
+            @Value("${tts.voicerss.format:44khz_16bit_stereo}") String voiceRssFormat,
+            @Value("${tts.voicerss.connect-timeout-millis:3000}") int connectTimeoutMillis,
+            @Value("${tts.voicerss.read-timeout-millis:5000}") int readTimeoutMillis
+    ) {
+        this.problemRepository = problemRepository;
+        this.problemChoiceRepository = problemChoiceRepository;
+        this.problemSubmissionRepository = problemSubmissionRepository;
+        this.problemBookmarkRepository = problemBookmarkRepository;
+        this.userRepository = userRepository;
+        this.badgeService = badgeService;
+        this.xpService = xpService;
+        this.challengeProgressService = challengeProgressService;
+        this.wrongNoteService = wrongNoteService;
+        this.voiceRssRestClient = RestClient.builder()
+                .baseUrl(voiceRssBaseUrl)
+                .requestFactory(createRequestFactory(connectTimeoutMillis, readTimeoutMillis))
+                .build();
+        this.voiceRssApiKey = voiceRssApiKey;
+        this.voiceRssEnglishLanguage = voiceRssEnglishLanguage;
+        this.voiceRssCodec = voiceRssCodec;
+        this.voiceRssFormat = voiceRssFormat;
+    }
 
     /**
      * 문제 목록 조회
      *
-     * * JLPT 레벨, 문제 유형, 세부 유형을 기준으로 문제와 선택지를 함께 조회한다.
+     * * 언어, 난이도, 문제 유형, 주제를 기준으로 문제와 선택지를 함께 조회한다.
      *
      * * 문제 풀이 화면에서는 정답과 해설을 숨기고 문제 본문과 선택지만 반환한다.
      *
@@ -73,14 +121,22 @@ public class ProblemService {
      * @throws BusinessException 조회 조건에 맞는 문제가 없는 경우
      */
     public ProblemListResponseDto findAll(ProblemListRequestDto requestDto) {
-        String normalizedLevel = normalizeKeyword(requestDto.getLevel());
+        String normalizedLanguage = normalizeKeyword(requestDto.getLanguage());
+        String normalizedCefrLevel = normalizeKeyword(requestDto.getCefrLevel());
+        String normalizedLevel = resolveLevel(requestDto);
+        String normalizedUsageType = normalizeKeyword(requestDto.getUsageType());
         String normalizedCategory = normalizeKeyword(requestDto.getCategory());
         String normalizedSubType = normalizeKeyword(requestDto.getSubType());
+        String normalizedTopic = normalizeKeyword(requestDto.getTopic());
 
-        List<Problem> allProblems = problemRepository.findAllByLevelAndCategoryAndSubTypeOrderByProblemIdAsc(
+        List<Problem> allProblems = problemRepository.findAllByConditionsOrderByProblemIdAsc(
+                normalizedLanguage,
+                normalizedCefrLevel,
                 normalizedLevel,
+                normalizedUsageType,
                 normalizedCategory,
-                normalizedSubType
+                normalizedSubType,
+                normalizedTopic
         );
 
         if (allProblems.isEmpty()) {
@@ -126,25 +182,126 @@ public class ProblemService {
 
         return ProblemListResponseDto.of(
                 normalizedLevel,
+                normalizedLanguage,
+                normalizedCefrLevel,
+                normalizedUsageType,
                 normalizedCategory,
                 normalizedSubType,
+                normalizedTopic,
                 totalProblemCount,
                 offset,
                 problemResponseDtos
         );
     }
 
+    /** 듣기 문제의 음성 원문을 VoiceRSS로 변환해 MP3로 반환한다. */
+    public byte[] findAudio(String loginId, Long problemId) {
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        if (!problem.belongsTo(resolveLearningLanguage(user))) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
+        if (!StringUtils.hasText(problem.getAudioScript())) {
+            throw new BusinessException(ErrorCode.PROBLEM_AUDIO_NOT_AVAILABLE);
+        }
+
+        if (!StringUtils.hasText(voiceRssApiKey)) {
+            throw new BusinessException(ErrorCode.PROBLEM_AUDIO_FAIL);
+        }
+
+        try {
+            ResponseEntity<byte[]> response = voiceRssRestClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/")
+                            .queryParam("key", voiceRssApiKey)
+                            .queryParam("hl", voiceRssEnglishLanguage)
+                            .queryParam("src", problem.getAudioScript())
+                            .queryParam("c", voiceRssCodec)
+                            .queryParam("f", voiceRssFormat)
+                            .build())
+                    .retrieve()
+                    .toEntity(byte[].class);
+
+            byte[] audio = response.getBody();
+            if (audio == null || audio.length == 0 || isVoiceRssError(audio)) {
+                throw new BusinessException(ErrorCode.PROBLEM_AUDIO_FAIL);
+            }
+
+            return audio;
+        } catch (RestClientException exception) {
+            throw new BusinessException(ErrorCode.PROBLEM_AUDIO_FAIL);
+        }
+    }
+
+    /**
+     * 사용자 학습 언어 조회
+     *
+     * * 학습 언어가 없는 기존 사용자는 일본어로 처리한다.
+     *
+     * @param user 로그인 사용자
+     * @return 현재 학습 언어
+     */
+    private LearningLanguage resolveLearningLanguage(User user) {
+        return user.getLearningLanguage() == null ? LearningLanguage.JAPANESE : user.getLearningLanguage();
+    }
+
+    /**
+     * 문제 언어 일치 여부 확인
+     *
+     * * 문제의 공통 언어 해석 기준으로 지정한 학습 언어와 비교한다.
+     *
+     * @param problem 대상 문제
+     * @param language 비교할 학습 언어
+     * @return 문제 언어 일치 여부
+     */
+    private boolean matchesProblemLanguage(Problem problem, LearningLanguage language) {
+        String problemLanguage = problem.resolveLanguage();
+
+        return switch (language) {
+            case JAPANESE -> "JA".equals(problemLanguage);
+            case ENGLISH -> "EN".equals(problemLanguage);
+        };
+    }
+
+    /**
+     * 문제 접근 언어 검증
+     *
+     * * 문제의 언어가 사용자의 현재 학습 언어와 일치하는지 검증한다.
+     * * 답안 제출, 풀이 이력 조회 및 북마크 등록·삭제에 공통 적용한다.
+     *
+     * @param user 로그인 사용자
+     * @param problem 대상 문제
+     * @return 검증된 학습 언어
+     * @throws BusinessException 문제가 현재 학습 언어에 해당하지 않는 경우
+     */
+    private LearningLanguage validateProblemLanguage(User user, Problem problem) {
+        LearningLanguage language = resolveLearningLanguage(user);
+
+        if (!matchesProblemLanguage(problem, language)) {
+            throw new BusinessException(ErrorCode.PROBLEM_NOT_FOUND);
+        }
+
+        return language;
+    }
+
     /**
      * 문제 답안 제출
      *
-     * * 사용자가 선택한 선택지 번호를 정답 번호와 비교하고
-     * 정답 선택지와 해설을 함께 반환한다.
+     * * 사용자의 현재 학습 언어에 해당하는 문제의 답안을 채점한다.
+     * * 제출한 선택지 번호와 정답 번호를 비교하고 제출 이력을 저장한다.
+     * * 정답 여부, 정답 선택지, 해설과 한국어 번역을 반환한다.
+     * * 검증된 학습 언어의 퀴즈 챌린지에 진행도를 반영한다.
      *
      * @param loginId 로그인 ID
      * @param problemId 제출 대상 문제 ID
      * @param requestDto 제출한 선택지 번호
      * @return 채점 결과와 정답 정보
-     * @throws BusinessException 유저, 문제가 없거나 선택지 번호가 유효하지 않은 경우
+     * @throws BusinessException 사용자나 문제가 없거나 문제 언어 또는 선택지가 유효하지 않은 경우
      */
     @Transactional
     public ProblemSubmitResponseDto submit(String loginId, Long problemId, ProblemSubmitRequestDto requestDto) {
@@ -153,6 +310,8 @@ public class ProblemService {
 
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        LearningLanguage language = validateProblemLanguage(user, problem);
 
         List<ProblemChoice> problemChoices = problemChoiceRepository.findAllByProblemOrderByChoiceNumberAsc(problem);
 
@@ -184,7 +343,7 @@ public class ProblemService {
             wrongNoteService.saveWrongAnswer(user, problem);
         }
 
-        challengeProgressService.addProgress(user, ChallengeGoalType.QUIZ_COUNT, 1);
+        challengeProgressService.addProgress(user, language, ChallengeGoalType.QUIZ_COUNT, 1);
         badgeService.evaluate(user);
 
         return ProblemSubmitResponseDto.of(problemSubmission, answerChoice);
@@ -193,13 +352,13 @@ public class ProblemService {
     /**
      * 문제 정답 풀이 이력 조회
      *
-     * * 로그인한 사용자의 제출 이력을 최신순으로 조회하고
-     * 각 제출 이력별 정답과 해설을 반환한다.
+     * * 현재 학습 언어에 해당하는 문제의 사용자 제출 이력을 최신순으로 조회한다.
+     * * 각 제출 이력의 정답과 해설을 반환한다.
      *
      * @param loginId 로그인 ID
      * @param problemId 조회 대상 문제 ID
      * @return 제출 이력별 정답 풀이 목록
-     * @throws BusinessException 유저, 문제, 제출 이력이 없거나 정답 선택지가 유효하지 않은 경우
+     * @throws BusinessException 사용자나 문제가 없거나 문제 언어가 다르거나 제출 이력 또는 정답 선택지가 유효하지 않은 경우
      */
     public ProblemSolutionListResponseDto findSolution(String loginId, Long problemId) {
         User user = userRepository.findByLoginId(loginId)
@@ -207,6 +366,8 @@ public class ProblemService {
 
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
+
+        validateProblemLanguage(user, problem);
 
         List<ProblemSubmission> problemSubmissions = problemSubmissionRepository
                 .findAllByUserAndProblemOrderBySubmissionIdDesc(user, problem);
@@ -296,7 +457,7 @@ public class ProblemService {
     /**
      * 문제 북마크 추가
      *
-     * * 문제 풀이 중 북마크 버튼 클릭 시 해당 문제를 북마크에 추가한다.
+     * * 현재 학습 언어에 해당하는 문제를 북마크에 추가한다.
      * * 이미 북마크된 문제인 경우 예외를 발생시킨다.
      *
      * @param loginId 로그인 ID
@@ -311,6 +472,8 @@ public class ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
 
+        validateProblemLanguage(user, problem);
+
         if (problemBookmarkRepository.existsByUserAndProblem(user, problem)) {
             throw new BusinessException(ErrorCode.DUPLICATE_PROBLEM_BOOKMARK);
         }
@@ -324,7 +487,7 @@ public class ProblemService {
     /**
      * 문제 북마크 삭제
      *
-     * * 북마크된 문제를 북마크에서 제거한다.
+     * * 현재 학습 언어에 해당하는 본인의 문제 북마크를 삭제한다.
      *
      * @param loginId 로그인 ID
      * @param problemId 북마크 삭제할 문제 ID
@@ -338,6 +501,8 @@ public class ProblemService {
         Problem problem = problemRepository.findById(problemId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_NOT_FOUND));
 
+        validateProblemLanguage(user, problem);
+
         ProblemBookmark problemBookmark = problemBookmarkRepository.findByUserAndProblem(user, problem)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROBLEM_BOOKMARK_NOT_FOUND));
 
@@ -347,7 +512,7 @@ public class ProblemService {
     /**
      * 문제 북마크 목록 조회
      *
-     * * 로그인한 사용자가 북마크한 문제 목록을 최신순으로 조회한다.
+     * * 현재 학습 언어에 해당하는 본인의 북마크 문제 목록을 최신순으로 조회한다.
      * * 문제 풀이 화면과 동일하게 정답과 해설은 숨기고 문제 본문과 선택지만 반환한다.
      *
      * @param loginId 로그인 ID
@@ -358,9 +523,12 @@ public class ProblemService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
+        LearningLanguage language = resolveLearningLanguage(user);
+
         List<Problem> problems = problemBookmarkRepository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
                 .map(ProblemBookmark::getProblem)
+                .filter(problem -> matchesProblemLanguage(problem, language))
                 .toList();
 
         if (problems.isEmpty()) {
@@ -385,15 +553,47 @@ public class ProblemService {
     }
 
     /**
+     * 요청으로 전달된 레벨 값을 정규화하고 일치 여부를 검증한다.
+     *
+     * @param requestDto 문제 조회 조건
+     * @return 정규화된 레벨
+     */
+    private String resolveLevel(ProblemListRequestDto requestDto) {
+        String level = normalizeKeyword(requestDto.getLevel());
+        String qurveLevel = normalizeKeyword(requestDto.getQurveLevel());
+
+        if (level != null && qurveLevel != null && !level.equals(qurveLevel)) {
+            throw new BusinessException(ErrorCode.INVALID_PROBLEM_QUERY);
+        }
+
+        return qurveLevel == null ? level : qurveLevel;
+    }
+
+    /**
      * 조회 키워드 정규화
      *
-     * * 저장된 문제 데이터와 동일한 형식으로 비교하기 위해
+     * 저장된 문제 데이터와 동일한 형식으로 비교하기 위해
      * 공백을 제거하고 대문자로 변환한다.
      *
      * @param value 요청으로 전달된 조회 값
      * @return 정규화된 조회 값
      */
     private String normalizeKeyword(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
         return value.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private SimpleClientHttpRequestFactory createRequestFactory(int connectTimeoutMillis, int readTimeoutMillis) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(connectTimeoutMillis);
+        requestFactory.setReadTimeout(readTimeoutMillis);
+        return requestFactory;
+    }
+
+    private boolean isVoiceRssError(byte[] audio) {
+        return new String(audio, StandardCharsets.UTF_8).startsWith("ERROR:");
     }
 }

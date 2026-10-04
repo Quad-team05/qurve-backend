@@ -35,8 +35,7 @@ import java.util.Objects;
  * * 서버 시작 시 resources/data/problems 아래의 CSV 파일을 읽어
  * 문제/선택지 테이블에 초기 데이터를 저장한다.
  *
- * * 같은 문제(level, category, subType, questionFormat, questionText)가 이미 존재하면
- * 중복 저장하지 않는다.
+ * * 문제 본문, 음성 스크립트, 선택지가 모두 같은 문제만 중복으로 판단한다.
  */
 @Slf4j
 @Component
@@ -46,6 +45,7 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
     private static final String DEFAULT_PATH_PATTERN = "classpath*:data/problems/*.csv";
     private static final String SOURCE_TYPE = "CSV";
     private static final String REVIEW_STATUS = "APPROVED";
+    private static final String JAPANESE_LANGUAGE = "JA";
     private static final int CHOICE_COUNT = 4;
 
     private final JdbcTemplate jdbcTemplate;
@@ -71,6 +71,8 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
             log.warn("Problem seed skipped because tb_problem or tb_problem_choice does not exist.");
             return;
         }
+
+        backfillLegacyProblemLanguage();
 
         Resource[] resources = new PathMatchingResourcePatternResolver()
                 .getResources(getPathPattern());
@@ -127,6 +129,19 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
         );
 
         return activeProblemCount == null ? 0 : activeProblemCount;
+    }
+
+    /** 기존 JLPT 문제는 언어 컬럼 도입 전 데이터이므로 일본어로 보정한다. */
+    private void backfillLegacyProblemLanguage() {
+        jdbcTemplate.update(
+                """
+                update tb_problem
+                set language = ?
+                where language is null
+                  and level like 'N%'
+                """,
+                JAPANESE_LANGUAGE
+        );
     }
 
     private ImportResult importResource(Resource resource) throws Exception {
@@ -197,19 +212,16 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
     }
 
     private void validateRequiredHeaders(Map<String, Integer> headerIndexMap, String fileName) {
-        List<String> requiredHeaders = List.of(
-                "level",
-                "category",
-                "subType",
-                "questionFormat",
-                "questionText",
-                "choice1",
-                "choice2",
-                "choice3",
-                "choice4",
-                "answerIndex",
-                "explanation"
-        );
+        List<String> requiredHeaders = headerIndexMap.containsKey("language")
+                ? List.of(
+                        "language", "cefrLevel", "qurveLevel", "usageType", "category", "subType",
+                        "questionFormat", "questionText", "option1", "option2", "option3", "option4",
+                        "correctAnswer", "explanation"
+                )
+                : List.of(
+                        "level", "category", "subType", "questionFormat", "questionText",
+                        "choice1", "choice2", "choice3", "choice4", "answerIndex", "explanation"
+                );
 
         for (String requiredHeader : requiredHeaders) {
             if (!headerIndexMap.containsKey(requiredHeader)) {
@@ -219,22 +231,43 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
     }
 
     private ProblemSeedRow toProblemSeedRow(Map<String, Integer> headerIndexMap, List<String> columns) {
+        boolean englishFormat = headerIndexMap.containsKey("language");
         List<String> choices = List.of(
-                getValue(columns, headerIndexMap, "choice1"),
-                getValue(columns, headerIndexMap, "choice2"),
-                getValue(columns, headerIndexMap, "choice3"),
-                getValue(columns, headerIndexMap, "choice4")
+                getValue(columns, headerIndexMap, englishFormat ? "option1" : "choice1"),
+                getValue(columns, headerIndexMap, englishFormat ? "option2" : "choice2"),
+                getValue(columns, headerIndexMap, englishFormat ? "option3" : "choice3"),
+                getValue(columns, headerIndexMap, englishFormat ? "option4" : "choice4")
         );
 
+        Integer answerIndex = parseInteger(getValue(
+                columns,
+                headerIndexMap,
+                englishFormat ? "correctAnswer" : "answerIndex"
+        ));
+
+        // 기존 문제 API의 선택지 번호는 0~3이므로 영어 CSV의 1~4 정답을 변환한다.
+        if (englishFormat && answerIndex != null) {
+            answerIndex--;
+        }
+
         return new ProblemSeedRow(
-                getValue(columns, headerIndexMap, "level"),
+                englishFormat ? getValue(columns, headerIndexMap, "language").toUpperCase(java.util.Locale.ROOT) : JAPANESE_LANGUAGE,
+                toNullable(getValue(columns, headerIndexMap, "cefrLevel")),
+                englishFormat ? getValue(columns, headerIndexMap, "qurveLevel") : getValue(columns, headerIndexMap, "level"),
+                toNullable(getValue(columns, headerIndexMap, "usageType")),
                 getValue(columns, headerIndexMap, "category"),
                 getValue(columns, headerIndexMap, "subType"),
                 getValue(columns, headerIndexMap, "questionFormat"),
+                toNullable(getValue(columns, headerIndexMap, "topic")),
                 getValue(columns, headerIndexMap, "questionText"),
-                toNullable(getValue(columns, headerIndexMap, "passageText")),
-                parseInteger(getValue(columns, headerIndexMap, "answerIndex")),
+                toNullable(getValue(columns, headerIndexMap, englishFormat ? "passage" : "passageText")),
+                toNullable(getValue(columns, headerIndexMap, "audioScript")),
+                answerIndex,
                 toNullable(getValue(columns, headerIndexMap, "explanation")),
+                toNullable(getValue(columns, headerIndexMap, "koreanTranslation")),
+                englishFormat ? getValue(columns, headerIndexMap, "sourceType") : SOURCE_TYPE,
+                toNullable(getValue(columns, headerIndexMap, "sourceReference")),
+                englishFormat ? getValue(columns, headerIndexMap, "reviewStatus") : REVIEW_STATUS,
                 choices
         );
     }
@@ -262,28 +295,46 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
                 """
                 select problem_id
                 from tb_problem
-                where level = ?
+                where language <=> ?
+                  and level = ?
                   and category = ?
                   and sub_type = ?
                   and question_format = ?
                   and question_text = ?
                   and passage_text <=> ?
+                  and audio_script <=> ?
                 order by problem_id asc
                 """,
                 (resultSet, rowNum) -> resultSet.getLong("problem_id"),
+                problemSeedRow.language(),
                 problemSeedRow.level(),
                 problemSeedRow.category(),
                 problemSeedRow.subType(),
                 problemSeedRow.questionFormat(),
                 problemSeedRow.questionText(),
-                problemSeedRow.passageText()
+                problemSeedRow.passageText(),
+                problemSeedRow.audioScript()
         );
 
-        if (problemIds.isEmpty()) {
-            return null;
-        }
+        return problemIds.stream()
+                .filter(problemId -> hasSameChoices(problemId, problemSeedRow.choices()))
+                .findFirst()
+                .orElse(null);
+    }
 
-        return problemIds.getFirst();
+    private boolean hasSameChoices(Long problemId, List<String> choices) {
+        List<String> existingChoices = jdbcTemplate.query(
+                """
+                select choice_text
+                from tb_problem_choice
+                where problem_id = ?
+                order by choice_number asc
+                """,
+                (resultSet, rowNum) -> resultSet.getString("choice_text"),
+                problemId
+        );
+
+        return existingChoices.equals(choices);
     }
 
     private Long insertProblem(ProblemSeedRow problemSeedRow) {
@@ -294,36 +345,50 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     """
                     insert into tb_problem (
+                        language,
+                        cefr_level,
                         level,
+                        usage_type,
                         category,
                         sub_type,
                         question_format,
+                        topic,
                         question_text,
                         passage_text,
+                        audio_script,
                         answer_index,
                         explanation,
+                        korean_translation,
                         source_type,
+                        source_reference,
                         review_status,
                         is_active,
                         created_at,
                         updated_at
-                    ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     Statement.RETURN_GENERATED_KEYS
             );
-            preparedStatement.setString(1, problemSeedRow.level());
-            preparedStatement.setString(2, problemSeedRow.category());
-            preparedStatement.setString(3, problemSeedRow.subType());
-            preparedStatement.setString(4, problemSeedRow.questionFormat());
-            preparedStatement.setString(5, problemSeedRow.questionText());
-            preparedStatement.setString(6, problemSeedRow.passageText());
-            preparedStatement.setInt(7, problemSeedRow.answerIndex());
-            preparedStatement.setString(8, problemSeedRow.explanation());
-            preparedStatement.setString(9, SOURCE_TYPE);
-            preparedStatement.setString(10, REVIEW_STATUS);
-            preparedStatement.setBoolean(11, true);
-            preparedStatement.setTimestamp(12, Timestamp.valueOf(now));
-            preparedStatement.setTimestamp(13, Timestamp.valueOf(now));
+            preparedStatement.setString(1, problemSeedRow.language());
+            preparedStatement.setString(2, problemSeedRow.cefrLevel());
+            preparedStatement.setString(3, problemSeedRow.level());
+            preparedStatement.setString(4, problemSeedRow.usageType());
+            preparedStatement.setString(5, problemSeedRow.category());
+            preparedStatement.setString(6, problemSeedRow.subType());
+            preparedStatement.setString(7, problemSeedRow.questionFormat());
+            preparedStatement.setString(8, problemSeedRow.topic());
+            preparedStatement.setString(9, problemSeedRow.questionText());
+            preparedStatement.setString(10, problemSeedRow.passageText());
+            preparedStatement.setString(11, problemSeedRow.audioScript());
+            preparedStatement.setInt(12, problemSeedRow.answerIndex());
+            preparedStatement.setString(13, problemSeedRow.explanation());
+            preparedStatement.setString(14, problemSeedRow.koreanTranslation());
+            preparedStatement.setString(15, problemSeedRow.sourceType());
+            preparedStatement.setString(16, problemSeedRow.sourceReference());
+            preparedStatement.setString(17, problemSeedRow.reviewStatus());
+            preparedStatement.setBoolean(18, true);
+            preparedStatement.setTimestamp(19, Timestamp.valueOf(now));
+            preparedStatement.setTimestamp(20, Timestamp.valueOf(now));
             return preparedStatement;
         }, keyHolder);
 
@@ -439,14 +504,23 @@ public class ProblemCsvDataInitializer implements ApplicationRunner {
     }
 
     private record ProblemSeedRow(
+            String language,
+            String cefrLevel,
             String level,
+            String usageType,
             String category,
             String subType,
             String questionFormat,
+            String topic,
             String questionText,
             String passageText,
+            String audioScript,
             Integer answerIndex,
             String explanation,
+            String koreanTranslation,
+            String sourceType,
+            String sourceReference,
+            String reviewStatus,
             List<String> choices
     ) {
         private boolean isValid() {

@@ -95,15 +95,24 @@ problem:
 tts:
   voicerss:
     base-url: https://api.voicerss.org
+    api-key: ${VOICERSS_API_KEY:}
     language: ja-jp
+    english-language: en-us
     codec: MP3
     format: 44khz_16bit_stereo
     connect-timeout-millis: 3000
     read-timeout-millis: 5000
 
+tatoeba:
+  api:
+    base-url: https://api.tatoeba.org
+    connect-timeout-millis: 3000
+    read-timeout-millis: 5000
+
 gemini:
   api-key: ${GEMINI_API_KEY}
-  api-url: https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent
+  api-url: https://generativelanguage.googleapis.com/v1beta
+  model: ${GEMINI_MODEL:gemini-3.5-flash}
 
 server:
   forward-headers-strategy: framework
@@ -111,6 +120,8 @@ server:
 app:
   swagger:
     server-url: ${SWAGGER_SERVER_URL:https://qurve.duckdns.org}
+  oauth2:
+    success-redirect-uri: ${OAUTH2_SUCCESS_REDIRECT_URI:qurvefrontend://auth/social-callback}
 
 springdoc:
   swagger-ui:
