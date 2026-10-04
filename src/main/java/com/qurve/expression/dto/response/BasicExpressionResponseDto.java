@@ -11,6 +11,7 @@ import lombok.Getter;
 public class BasicExpressionResponseDto {
 
     private Long expressionId;
+    private Integer orderNumber;
     private String category;
     private String kanji;
     private String hiragana;
@@ -20,6 +21,7 @@ public class BasicExpressionResponseDto {
     public static BasicExpressionResponseDto from(BasicExpression expression) {
         return BasicExpressionResponseDto.builder()
                 .expressionId(expression.getExpressionId())
+                .orderNumber(expression.getOrderNumber())
                 .category(expression.getCategory())
                 .kanji(expression.getKanji())
                 .hiragana(expression.getHiragana())

@@ -3,7 +3,9 @@ package com.qurve.expression.service;
 import com.qurve.expression.dto.response.BasicExpressionResponseDto;
 import com.qurve.expression.repository.BasicExpressionRepository;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.exception.BusinessException;
+import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,10 +26,10 @@ public class BasicExpressionService {
      *
      * @param loginId 로그인 ID
      * @return CSV 순서로 정렬된 초급 표현 목록
-     * @throws BusinessException 유저가 존재하지 않는 경우
+     * @throws BusinessException 유저가 없거나 일본어 학습 상태가 아닌 경우
      */
     public List<BasicExpressionResponseDto> findBasicExpressions(String loginId) {
-        validateUser(loginId);
+        validateJapaneseLearningUser(loginId);
 
         return basicExpressionRepository
                 .findAllByOrderByOrderNumberAsc()
@@ -36,9 +38,12 @@ public class BasicExpressionService {
                 .toList();
     }
 
-    private void validateUser(String loginId) {
-        if (!userRepository.existsByLoginId(loginId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+    private void validateJapaneseLearningUser(String loginId) {
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.getLearningLanguage() != LearningLanguage.JAPANESE) {
+            throw new BusinessException(ErrorCode.JAPANESE_LEARNING_REQUIRED);
         }
     }
 }

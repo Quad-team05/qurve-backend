@@ -13,7 +13,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -34,8 +36,8 @@ public class BasicExpressionDataInitializer implements ApplicationRunner {
     /**
      * 초급 표현 CSV 데이터 저장
      *
-     * * 서버 시작 시 CSV를 읽어 초급 표현 테이블에 저장한다.
-     * 이미 데이터가 있으면 중복 저장하지 않는다.
+     * * 서버 시작 시 CSV를 읽고,
+     * DB에 없는 orderNumber의 표현만 추가한다.
      *
      * @param args 애플리케이션 실행 인자
      * @throws Exception CSV 처리 또는 DB 저장에 실패한 경우
@@ -43,10 +45,6 @@ public class BasicExpressionDataInitializer implements ApplicationRunner {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void run(ApplicationArguments args) throws Exception {
-        if (basicExpressionRepository.count() > 0) {
-            return;
-        }
-
         ClassPathResource resource = new ClassPathResource(SEED_FILE_PATH);
 
         if (!resource.exists()) {
@@ -55,14 +53,15 @@ public class BasicExpressionDataInitializer implements ApplicationRunner {
 
         List<BasicExpression> expressions = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)
+        )) {
             String header = reader.readLine();
 
             if (header == null) {
                 throw new IllegalStateException("초급 표현 CSV 파일이 비어 있습니다.");
             }
 
-            // 첨부 CSV의 UTF-8 BOM을 제거한 뒤 헤더를 확인한다.
             List<String> headerColumns = parseCsvLine(header.replace("\uFEFF", ""))
                     .stream()
                     .map(String::trim)
@@ -91,6 +90,7 @@ public class BasicExpressionDataInitializer implements ApplicationRunner {
                     throw new IllegalStateException("초급 표현 CSV 데이터가 올바르지 않습니다. 행: " + lineNumber);
                 }
 
+                // CSV 전체를 읽으며 순번을 부여한 뒤 누락 여부를 확인한다.
                 expressions.add(BasicExpression.builder()
                         .orderNumber(expressions.size() + 1)
                         .category(columns.get(0))
@@ -106,7 +106,15 @@ public class BasicExpressionDataInitializer implements ApplicationRunner {
             throw new IllegalStateException("초급 표현 CSV에 저장할 표현이 없습니다.");
         }
 
-        basicExpressionRepository.saveAll(expressions);
+        Set<Integer> existingOrderNumbers = new HashSet<>(basicExpressionRepository.findAllOrderNumbers());
+
+        List<BasicExpression> missingExpressions = expressions.stream()
+                .filter(expression -> !existingOrderNumbers.contains(expression.getOrderNumber()))
+                .toList();
+
+        if (!missingExpressions.isEmpty()) {
+            basicExpressionRepository.saveAll(missingExpressions);
+        }
     }
 
     /**
