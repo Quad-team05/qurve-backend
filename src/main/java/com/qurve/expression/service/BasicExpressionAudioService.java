@@ -79,7 +79,7 @@ public class BasicExpressionAudioService {
         byte[] audio = requestVoiceRssAudio(expression.getKanji().trim());
 
         if (audio.length == 0 || isVoiceRssError(audio)) {
-            log.warn("VoiceRSS returned an empty or error response for expressionId={}.", expressionId);
+            log.warn("VoiceRSS returned an empty or error response for expressionId={}. body={}", expressionId, toUtf8Text(audio));
             throw new BusinessException(ErrorCode.BASIC_EXPRESSION_AUDIO_FAIL);
         }
 
@@ -122,7 +122,11 @@ public class BasicExpressionAudioService {
 
             return audio;
         } catch (RestClientResponseException e) {
-            log.warn("VoiceRSS HTTP error. status={}", e.getStatusCode().value());
+            log.warn(
+                    "VoiceRSS HTTP error. status={}, body={}",
+                    e.getStatusCode().value(),
+                    e.getResponseBodyAsString()
+            );
             throw new BusinessException(ErrorCode.BASIC_EXPRESSION_AUDIO_FAIL);
         } catch (RestClientException e) {
             log.warn("VoiceRSS request failed. exceptionType={}", e.getClass().getSimpleName());
@@ -131,9 +135,11 @@ public class BasicExpressionAudioService {
     }
 
     private boolean isVoiceRssError(byte[] audio) {
-        String responseText = new String(audio, StandardCharsets.UTF_8);
+        return toUtf8Text(audio).stripLeading().startsWith("ERROR:");
+    }
 
-        return responseText.stripLeading().startsWith("ERROR:");
+    private String toUtf8Text(byte[] audio) {
+        return new String(audio, StandardCharsets.UTF_8);
     }
 
     private SimpleClientHttpRequestFactory createRequestFactory(int connectTimeoutMillis, int readTimeoutMillis) {
