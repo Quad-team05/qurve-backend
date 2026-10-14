@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,4 +17,5 @@ public class LevelTestResultResponseDto {
     private int correctCount;
     private int wrongCount;
     private int level;
+    private List<LevelTestQuestionResultResponseDto> questionResults;
 }

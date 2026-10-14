@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -752,10 +753,12 @@ public class LevelService {
         int score = 0;
         int correctCount = 0;
         int wrongCount = 0;
+        List<LevelTestQuestionResultResponseDto> questionResults = new ArrayList<>();
 
         for (int i = 0; i < questions.size(); i++) {
             LevelTestQuestionDto question = questions.get(i);
             int userAnswer = dto.getAnswers().get(i);
+            questionResults.add(LevelTestQuestionResultResponseDto.from(question, userAnswer));
 
             if (userAnswer == question.getCorrectAnswer()) {
                 correctCount++;
@@ -777,7 +780,7 @@ public class LevelService {
         // 레벨 산정
         int level = calculateLevel(caseNumber, score);
 
-        return new LevelTestResultResponseDto(language, caseNumber, score, correctCount, wrongCount, level);
+        return new LevelTestResultResponseDto(language, caseNumber, score, correctCount, wrongCount, level, questionResults);
     }
 
     /**
