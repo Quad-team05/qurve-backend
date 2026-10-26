@@ -16,4 +16,6 @@ public interface XpHistoryRepository extends JpaRepository<XpHistory, Long> {
     WHERE x.user = :user
     """)
     Long sumXpAmountByUser(@Param("user") User user);
+
+    List<XpHistory> findByUserAndEarnedAtBetweenOrderByEarnedAtDesc(User user, LocalDateTime start, LocalDateTime end);
 }
