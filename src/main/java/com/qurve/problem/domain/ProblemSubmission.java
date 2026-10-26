@@ -16,7 +16,8 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "tb_problem_submission",
         indexes = {
-                @Index(name = "idx_problem_submission_user_problem", columnList = "user_id, problem_id")
+                @Index(name = "idx_problem_submission_user_problem", columnList = "user_id, problem_id"),
+                @Index(name = "idx_problem_submission_user_created_at", columnList = "user_id, created_at")
         }
 )
 public class ProblemSubmission extends BaseEntity {

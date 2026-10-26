@@ -1,0 +1,109 @@
+﻿level,category,subType,questionFormat,questionText,choice1,choice2,choice3,choice4,answerIndex,explanation,targetWord,targetMeaning
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,朝、時間がなかったので、朝ご飯を（　　　）学校へ行きました。,食べないで,洗わないで,開けないで,消さないで,0,시간이 없어서 아침을 먹지 않고 학교에 갔다는 문맥이므로 食べないで가 가장 자연스럽다.,食べないで,먹지 않고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,雨が降りそうなので、（　　　）を持って出かけましょう。,帽子,傘,財布,手袋,1,비가 올 것 같으므로 우산을 가지고 나가는 것이 자연스럽다.,傘,우산
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この薬は食事のあとで（　　　）ください。,使って,座って,飲んで,歩いて,2,식사 후에 약을 먹으라는 문맥이므로 飲んで가 적절하다.,飲んで,먹고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,電車に間に合うように、駅まで（　　　）行きました。,笑って,休んで,泳いで,急いで,3,전철 시간에 맞추기 위해 역까지 서둘러 갔다는 의미가 자연스럽다.,急いで,서둘러
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この店は毎週月曜日が（　　　）です。,休み,始まり,出口,用事,0,가게가 매주 월요일에 쉰다는 문맥이므로 休み가 적절하다.,休み,휴무
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,部屋が暗いので、電気を（　　　）ください。,閉めて,つけて,止めて,捨てて,1,방이 어두우므로 불을 켜 달라는 의미가 자연스럽다.,つけて,켜고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,旅行の前にホテルを（　　　）しました。,案内,運転,予約,連絡,2,여행 전에 호텔을 예약했다는 문맥이므로 予約가 적절하다.,予約,예약
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,今日は寒いので、暖かいコートを（　　　）。,聞きます,押します,直します,着ます,3,날씨가 추우므로 따뜻한 코트를 입는다는 의미가 자연스럽다.,着ます,입습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,道が分からなかったので、近くの人に（　　　）。,聞きました,送りました,洗いました,並べました,0,길을 몰라서 근처 사람에게 물었다는 문맥이므로 聞きました가 적절하다.,聞きました,물었습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この荷物は重いので、二人で（　　　）ましょう。,止め,運び,遊び,習い,1,무거운 짐을 둘이서 나르자는 문맥이므로 運び가 자연스럽다.,運び,나르고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,来週の会議の時間をみんなに（　　　）ください。,発音して,出発して,連絡して,運動して,2,회의 시간을 모두에게 알려 달라는 뜻이므로 連絡して가 적절하다.,連絡して,연락하고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この漢字の意味を辞書で（　　　）。,変えました,比べました,集めました,調べました,3,한자의 뜻을 사전에서 찾아보았다는 문맥이므로 調べました가 적절하다.,調べました,찾아보았습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,風邪をひいたので、今日は会社を（　　　）。,休みます,始めます,急ぎます,決めます,0,감기에 걸려 회사를 쉰다는 문맥이므로 休みます가 적절하다.,休みます,쉽니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,駅の前で友達を一時間も（　　　）。,招待しました,待ちました,拾いました,借りました,1,역 앞에서 친구를 한 시간 기다렸다는 의미가 자연스럽다.,待ちました,기다렸습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この料理は少し味が（　　　）ですね。塩を入れましょう。,広い,短い,薄い,低い,2,소금을 더 넣자는 말로 보아 맛이 싱겁다는 뜻의 薄い가 적절하다.,薄い,싱겁다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,忘れないように、予定をノートに（　　　）。,乗りました,消しました,返しました,書きました,3,잊지 않도록 일정을 노트에 적었다는 문맥이므로 書きました가 적절하다.,書きました,썼습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,毎朝、犬と公園を（　　　）します。,散歩,掃除,練習,料理,0,매일 아침 개와 공원을 산책한다는 문맥이므로 散歩가 적절하다.,散歩,산책
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,このシャツは私には少し（　　　）です。もっと大きいのはありますか。,重い,小さい,細い,弱い,1,더 큰 셔츠를 찾고 있으므로 현재 셔츠가 작다는 뜻의 小さい가 적절하다.,小さい,작다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,授業に遅れないように、毎朝七時に家を（　　　）。,戻ります,着きます,出ます,入ります,2,수업에 늦지 않으려고 아침 일찍 집을 나선다는 문맥이므로 出ます가 적절하다.,出ます,나갑니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この箱の中には大切な物が入っているので、（　　　）扱ってください。,早く,長く,強く,丁寧に,3,중요한 물건이 들어 있으므로 조심스럽고 정중하게 다뤄야 하므로 丁寧に가 적절하다.,丁寧に,조심스럽게
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,昨日、図書館で本を三冊（　　　）。,借りました,貸しました,返しました,売りました,0,도서관에서 책을 빌렸다는 문맥이므로 借りました가 적절하다.,借りました,빌렸습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,熱があるので、病院で医者に（　　　）もらいました。,使って,診て,閉めて,呼んで,1,열이 있어 의사에게 진찰받았다는 의미이므로 診て가 적절하다.,診て,진찰해
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,電車の中では携帯電話の電源を（　　　）ください。,上げて,入れて,切って,洗って,2,전철 안에서 휴대전화 전원을 끄라는 안내이므로 切って가 적절하다.,切って,끄고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,試験が終わったら、みんなで食事に（　　　）ませんか。,帰り,渡り,上がり,行き,3,시험 후 함께 식사하러 가자는 제안이므로 行き가 적절하다.,行き,가
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この問題は難しくて、私には（　　　）。,分かりません,足りません,間に合いません,似合いません,0,문제가 어려워 이해할 수 없다는 뜻이므로 分かりません이 적절하다.,分かりません,모르겠습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,来月、日本へ旅行する（　　　）です。,用事,予定,気分,習慣,1,다음 달 일본 여행 계획을 말하므로 予定가 적절하다.,予定,예정
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,電車が事故で（　　　）ため、会社に遅れました。,降りた,決めた,遅れた,足りた,2,전철이 사고로 지연되어 회사에 늦었다는 문맥이므로 遅れた가 적절하다.,遅れた,늦어진
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,母の誕生日に花を（　　　）つもりです。,受ける,習う,借りる,贈る,3,어머니 생일에 꽃을 선물할 계획이므로 贈る가 적절하다.,贈る,선물하다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この道をまっすぐ行くと、右側に銀行が（　　　）。,あります,います,できます,なります,0,은행과 같은 무생물의 존재를 나타내므로 あります가 적절하다.,あります,있습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,分からない言葉があったら、先生に（　　　）ください。,伝えて,質問して,約束して,紹介して,1,모르는 말이 있으면 선생님께 질문하라는 문맥이므로 質問して가 적절하다.,質問して,질문하고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,今日は忙しいので、買い物は明日に（　　　）しましょう。,普通,自由,延期,必要,2,오늘 바쁘므로 쇼핑을 내일로 미룬다는 뜻의 延期가 적절하다.,延期,연기
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,料理をする前に、手をよく（　　　）。,借ります,止めます,売ります,洗います,3,요리 전에 손을 씻는 것이 자연스러우므로 洗います가 적절하다.,洗います,씻습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,窓を開けたら、涼しい風が（　　　）きました。,入って,出して,止まって,閉めて,0,창문을 열자 시원한 바람이 들어왔다는 문맥이므로 入って가 적절하다.,入って,들어와
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,このバスは市役所の前を（　　　）か。,渡ります,通ります,乗ります,集まります,1,버스가 시청 앞을 지나가는지 묻는 문맥이므로 通ります가 적절하다.,通ります,지나갑니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,パーティーに何人来るか、まだ（　　　）いません。,作って,始めて,決まって,置いて,2,참석 인원이 아직 정해지지 않았다는 의미이므로 決まって가 적절하다.,決まって,정해져
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,家を出る前に、ドアの鍵を（　　　）ください。,運んで,折って,拾って,かけて,3,집을 나서기 전에 문을 잠그라는 뜻이므로 かけて가 적절하다.,かけて,잠그고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この写真を見ると、子どものころを（　　　）。,思い出します,取り替えます,申し込みます,片づけます,0,사진을 보고 어린 시절을 떠올린다는 문맥이므로 思い出します가 적절하다.,思い出します,떠올립니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,分からないところは、もう一度（　　　）してください。,予約,説明,運転,心配,1,모르는 부분을 다시 설명해 달라는 뜻이므로 説明가 적절하다.,説明,설명
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この店のケーキは甘すぎなくて、とても（　　　）です。,便利,丈夫,おいしい,静か,2,케이크의 맛을 평가하는 문맥이므로 おいしい가 적절하다.,おいしい,맛있다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,雨がやむまで、ここで少し（　　　）ましょう。,始め,答え,運び,待ち,3,비가 그칠 때까지 여기에서 기다리자는 의미이므로 待ち가 적절하다.,待ち,기다리
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,財布を家に忘れたので、友達にお金を（　　　）。,借りました,貸しました,返しました,集めました,0,지갑을 잊어 친구에게 돈을 빌렸다는 문맥이므로 借りました가 적절하다.,借りました,빌렸습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,新しい仕事にまだ（　　　）いません。,集まって,慣れて,決めて,続けて,1,새로운 일에 아직 익숙해지지 않았다는 의미이므로 慣れて가 적절하다.,慣れて,익숙해져
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この荷物は明日の午前中に（　　　）予定です。,拾う,習う,届く,止まる,2,짐이 내일 오전 중 도착할 예정이라는 문맥이므로 届く가 적절하다.,届く,도착하다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,電車を降りるとき、傘を（　　　）しまいました。,比べて,決めて,届けて,忘れて,3,전철에서 내릴 때 우산을 두고 왔다는 문맥이므로 忘れて가 적절하다.,忘れて,잊어버려
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この道は車が多いので、（　　　）してください。,注意,約束,準備,案内,0,차가 많은 길이므로 주의하라는 뜻의 注意가 적절하다.,注意,주의
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,週末に部屋をきれいに（　　　）つもりです。,説明する,掃除する,出発する,練習する,1,주말에 방을 깨끗이 청소할 계획이므로 掃除する가 적절하다.,掃除する,청소하다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,来週の旅行について、家族とよく（　　　）。,間に合いました,役に立ちました,相談しました,思い出しました,2,여행에 관해 가족과 상의했다는 문맥이므로 相談しました가 적절하다.,相談しました,상의했습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この服は大きすぎるので、別のサイズに（　　　）ください。,迎えて,続けて,助けて,取り替えて,3,옷이 너무 커서 다른 사이즈로 교환해 달라는 뜻이므로 取り替えて가 적절하다.,取り替えて,바꾸어
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,風が強いので、窓を（　　　）おきましょう。,閉めて,開けて,洗って,並べて,0,바람이 강하므로 창문을 닫아 두자는 문맥이므로 閉めて가 적절하다.,閉めて,닫아
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,駅に着いたら、電話で（　　　）ください。,準備して,知らせて,出発して,案内して,1,역에 도착하면 전화로 알려 달라는 뜻이므로 知らせて가 적절하다.,知らせて,알리고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,部屋が散らかっているので、今から（　　　）ます。,比べ,届け,片づけ,間に合い,2,방이 어질러져 있어 정리한다는 문맥이므로 片づけ가 적절하다.,片づけ,정리하
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この機械は古いですが、まだ（　　　）使えます。,急に,別に,自由に,十分,3,낡았지만 아직 충분히 사용할 수 있다는 의미이므로 十分이 적절하다.,十分,충분히
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,試験の前は、毎日二時間日本語を（　　　）しました。,勉強,運転,洗濯,予約,0,시험 전 매일 일본어를 공부했다는 문맥이므로 勉強가 적절하다.,勉強,공부
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この料理の作り方を母に（　　　）ました。,伝え,教えてもらい,借り,集め,1,어머니에게 요리법을 배웠다는 문맥이므로 教えてもらい가 적절하다.,教えてもらい,가르침을 받아
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,来月から家賃が少し（　　　）そうです。,深くなる,弱くなる,高くなる,細くなる,2,집세가 오를 것 같다는 의미이므로 高くなる가 적절하다.,高くなる,비싸지다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,旅行中は毎日、家族にメールを（　　　）。,受けました,着きました,見せました,送りました,3,여행 중 매일 가족에게 메일을 보냈다는 문맥이므로 送りました가 적절하다.,送りました,보냈습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,今日は天気がいいので、洗濯物がよく（　　　）でしょう。,乾く,壊れる,冷える,汚れる,0,날씨가 좋아 빨래가 잘 마를 것이라는 문맥이므로 乾く가 적절하다.,乾く,마르다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,店員に商品の場所を（　　　）もらいました。,借りて,教えて,決めて,運んで,1,점원에게 상품 위치를 알려 달라고 했다는 문맥이므로 教えて가 적절하다.,教えて,가르쳐
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,このかばんは軽くて、旅行にとても（　　　）です。,眠い,辛い,便利,残念,2,가방이 가벼워 여행에 편리하다는 의미이므로 便利가 적절하다.,便利,편리하다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,明日は朝早いので、今夜は早く（　　　）つもりです。,起きる,出る,働く,寝る,3,내일 아침이 이르므로 오늘 밤 일찍 잘 계획이라는 문맥이므로 寝る가 적절하다.,寝る,자다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,道に迷って、約束の時間に（　　　）ませんでした。,間に合い,集まり,始まり,終わり,0,길을 잃어 약속 시간에 맞추지 못했다는 의미이므로 間に合い가 적절하다.,間に合い,시간에 맞추
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この本は人気があるので、図書館ではいつも（　　　）います。,閉まって,借りられて,壊れて,捨てられて,1,인기 있는 책이라 늘 대출 중이라는 문맥이므로 借りられて가 적절하다.,借りられて,빌려져
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,料理に使う野菜を小さく（　　　）ください。,折って,割って,切って,消して,2,요리에 사용할 채소를 작게 썰라는 문맥이므로 切って가 적절하다.,切って,썰고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,今日は仕事が多くて、とても（　　　）一日でした。,寂しい,珍しい,眠い,忙しい,3,일이 많아 매우 바쁜 하루였다는 의미이므로 忙しい가 적절하다.,忙しい,바쁘다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この書類に名前と住所を（　　　）ください。,書いて,消して,渡って,拾って,0,서류에 이름과 주소를 적으라는 문맥이므로 書いて가 적절하다.,書いて,쓰고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,電車ではお年寄りに席を（　　　）ました。,借り,譲り,拾い,習い,1,전철에서 노인에게 자리를 양보했다는 문맥이므로 譲り가 적절하다.,譲り,양보하
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,先週買った時計がもう（　　　）しまいました。,止めて,直して,壊れて,開いて,2,산 지 얼마 안 된 시계가 고장 났다는 문맥이므로 壊れて가 적절하다.,壊れて,고장 나
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,忘れ物をしないように、出かける前にもう一度（　　　）します。,発音,紹介,運転,確認,3,외출 전에 소지품을 다시 확인한다는 문맥이므로 確認이 적절하다.,確認,확인
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この町は静かで、生活しやすい（　　　）です。,場所,理由,意見,方法,0,조용하고 살기 좋은 곳이라는 문맥이므로 場所가 적절하다.,場所,장소
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,妹は音楽を聞きながら宿題をする（　　　）があります。,予定,習慣,場合,都合,1,늘 음악을 들으며 숙제하는 습관을 나타내므로 習慣가 적절하다.,習慣,습관
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,駅までの道を地図で（　　　）から出かけました。,止めて,集めて,確かめて,直して,2,출발 전에 지도에서 길을 확인했다는 뜻이므로 確かめて가 적절하다.,確かめて,확인하고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,今日は客が多いので、店の中がとても（　　　）います。,空いて,止まって,閉まって,込んで,3,손님이 많아 가게가 붐빈다는 의미이므로 込んで가 적절하다.,込んで,붐비고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この箱は必要ないので、（　　　）もいいですか。,捨てて,拾って,借りて,包んで,0,필요 없는 상자를 버려도 되는지 묻는 문맥이므로 捨てて가 적절하다.,捨てて,버려도
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,先生は難しい文法を分かりやすく（　　　）くれました。,相談して,説明して,運転して,出発して,1,선생님이 어려운 문법을 쉽게 설명해 주었다는 문맥이므로 説明して가 적절하다.,説明して,설명해
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,来年、日本語の試験を（　　　）つもりです。,案内する,心配する,受ける,間に合う,2,내년에 일본어 시험을 치를 계획이라는 문맥이므로 受ける가 적절하다.,受ける,응시하다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,電話が鳴っています。だれか（　　　）ください。,止まって,返して,見せて,出て,3,전화가 울리므로 누군가 받아 달라는 뜻의 出て가 적절하다.,出て,받고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この机は重いので、動かすのを（　　　）ください。,手伝って,心配して,紹介して,予約して,0,무거운 책상을 옮기는 것을 도와 달라는 문맥이므로 手伝って가 적절하다.,手伝って,도와
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,試験の日を間違えないように、カレンダーに（　　　）をつけました。,用事,印,味,音,1,시험 날짜를 표시하기 위해 달력에 표식을 했다는 문맥이므로 印가 적절하다.,印,표시
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この橋を（　　　）と、左に公園があります。,曲がる,下がる,渡る,集まる,2,다리를 건너면 왼쪽에 공원이 있다는 길 안내이므로 渡る가 적절하다.,渡る,건너다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,疲れたので、駅のベンチで少し（　　　）。,続けました,知らせました,運びました,休みました,3,피곤해서 벤치에서 잠시 쉬었다는 문맥이므로 休みました가 적절하다.,休みました,쉬었습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,毎月少しずつお金を（　　　）、旅行に行きたいです。,貯めて,落として,払って,返して,0,여행을 위해 매달 돈을 모은다는 문맥이므로 貯めて가 적절하다.,貯めて,모아서
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この仕事は一人では無理なので、友達に（　　　）を頼みました。,運転,手伝い,故障,発音,1,혼자 하기 어려운 일을 친구에게 도와달라고 부탁했다는 문맥이므로 手伝い가 적절하다.,手伝い,도움
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,雨で道が（　　　）いるので、気をつけて歩いてください。,乾いて,空いて,滑って,晴れて,2,비 때문에 길이 미끄럽다는 문맥이므로 滑って가 적절하다.,滑って,미끄러워져
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,会議が長くなって、昼ご飯を食べる時間が（　　　）。,続きました,戻りました,決まりました,なくなりました,3,회의가 길어져 점심 먹을 시간이 없어졌다는 문맥이므로 なくなりました가 적절하다.,なくなりました,없어졌습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,分からない単語に線を（　　　）おきました。,引いて,開けて,曲がって,乗って,0,모르는 단어에 밑줄을 그어 두었다는 문맥이므로 引いて가 적절하다.,引いて,그어
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この店ではカードで（　　　）ことができます。,予約する,払う,拾う,届く,1,가게에서 카드로 결제할 수 있다는 문맥이므로 払う가 적절하다.,払う,지불하다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,大学を卒業したら、外国で（　　　）たいです。,洗い,捨て,働き,閉め,2,졸업 후 외국에서 일하고 싶다는 문맥이므로 働き가 적절하다.,働き,일하
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,荷物が多かったので、タクシーを（　　　）。,決めました,慣れました,足りました,呼びました,3,짐이 많아 택시를 불렀다는 문맥이므로 呼びました가 적절하다.,呼びました,불렀습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この靴は歩きやすくて、足が（　　　）ません。,疲れ,困り,遅れ,壊れ,0,걷기 편한 신발이라 발이 피곤하지 않다는 문맥이므로 疲れ가 적절하다.,疲れ,피곤해지
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,試験の結果が悪くて、少し（　　　）しました。,安心,がっかり,成功,出席,1,시험 결과가 나빠 실망했다는 문맥이므로 がっかり가 적절하다.,がっかり,실망
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この写真は暗いので、顔がよく（　　　）ません。,聞こえ,決まら,見え,足り,2,사진이 어두워 얼굴이 잘 보이지 않는다는 문맥이므로 見え가 적절하다.,見え,보이
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,今日は料理をする時間がないので、弁当を（　　　）ことにしました。,洗う,直す,返す,買う,3,요리할 시간이 없어 도시락을 사기로 했다는 문맥이므로 買う가 적절하다.,買う,사다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,友達が駅まで車で（　　　）くれました。,送って,借りて,拾って,習って,0,친구가 차로 역까지 데려다주었다는 문맥이므로 送って가 적절하다.,送って,데려다주고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この店は駅から近くて、とても（　　　）です。,残念,便利,特別,心配,1,역에서 가까워 이용하기 편리하다는 문맥이므로 便利가 적절하다.,便利,편리하다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,家を出たあとで、財布を忘れたことに（　　　）。,間に合いました,続きました,気がつきました,役に立ちました,2,집을 나선 뒤 지갑을 잊었다는 사실을 깨달았다는 문맥이므로 気がつきました가 적절하다.,気がつきました,깨달았습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この道は夜になると暗いので、一人で歩くのは（　　　）です。,自由,丈夫,親切,危険,3,밤에는 어두워 혼자 걷기 위험하다는 문맥이므로 危険가 적절하다.,危険,위험
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,料理ができたので、テーブルにお皿を（　　　）ください。,並べて,直して,集めて,包んで,0,요리가 완성되어 식탁에 접시를 놓으라는 문맥이므로 並べて가 적절하다.,並べて,늘어놓고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,旅行の日程は家族の都合に（　　　）決めます。,比べて,合わせて,届けて,集めて,1,가족 사정에 맞춰 일정을 정한다는 문맥이므로 合わせて가 적절하다.,合わせて,맞추어
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この薬を飲んだら、頭の痛みが（　　　）なりました。,細く,深く,軽く,低く,2,약을 먹고 두통이 가벼워졌다는 의미이므로 軽く가 적절하다.,軽く,가벼워
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,明日の朝は早いので、目覚まし時計を六時に（　　　）。,折りました,通りました,集めました,セットしました,3,아침 일찍 일어나기 위해 알람을 6시에 맞췄다는 문맥이므로 セットしました가 적절하다.,セットしました,맞췄습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この映画はとても（　　　）ので、もう一度見たいです。,面白かった,狭かった,重かった,遅かった,0,다시 보고 싶을 만큼 영화가 재미있었다는 문맥이므로 面白かった가 적절하다.,面白かった,재미있었다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,会議に必要な資料を人数分（　　　）ください。,送って,コピーして,洗って,運転して,1,회의 자료를 인원수만큼 복사하라는 문맥이므로 コピーして가 적절하다.,コピーして,복사하고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,この辺は夜になると店が全部（　　　）しまいます。,始まって,集まって,閉まって,決まって,2,밤이 되면 가게들이 모두 문을 닫는다는 문맥이므로 閉まって가 적절하다.,閉まって,닫혀
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,暑かったので、窓を開けて風を（　　　）。,決めました,止めました,返しました,入れました,3,더워서 창문을 열어 바람이 들어오게 했다는 문맥이므로 入れました가 적절하다.,入れました,들였습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,先生の説明を聞いて、やっと意味が（　　　）。,分かりました,届きました,集まりました,壊れました,0,설명을 듣고 마침내 의미를 이해했다는 문맥이므로 分かりました가 적절하다.,分かりました,알았습니다
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,引っ越しの日は友達が荷物を運ぶのを（　　　）くれました。,予約して,手伝って,説明して,心配して,1,이사 날 친구가 짐 나르는 것을 도와주었다는 문맥이므로 手伝って가 적절하다.,手伝って,도와
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,このスープは熱いので、少し（　　　）から飲みましょう。,乾いて,強くなって,冷めて,込んで,2,뜨거운 수프가 조금 식은 뒤 마시자는 문맥이므로 冷めて가 적절하다.,冷めて,식고
+N4,LANGUAGE_KNOWLEDGE,CONTEXT_VOCABULARY,MULTIPLE_CHOICE,旅行に行く前に、必要な物を全部（　　　）。,返しました,慣れました,比べました,準備しました,3,여행 전에 필요한 것을 모두 준비했다는 문맥이므로 準備しました가 적절하다.,準備しました,준비했습니다

@@ -1,9 +1,13 @@
 package com.qurve.user.controller;
 
 import com.qurve.global.common.ApiResponse;
+import com.qurve.user.dto.request.LearningLanguageRequestDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.qurve.user.dto.request.LearningProfileRequestDto;
 import com.qurve.user.dto.request.UserPasswordChangeRequestDto;
 import com.qurve.user.dto.request.UserProfileUpdateRequestDto;
+import com.qurve.user.dto.response.LearningLanguageResponseDto;
 import com.qurve.user.dto.response.LearningProfileResponseDto;
 import com.qurve.user.dto.response.UserProfileResponseDto;
 import com.qurve.user.service.UserService;
@@ -11,21 +15,25 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "사용자", description = "마이페이지 사용자 정보 및 학습 프로필 관리 API")
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping("/profile")
+    @Operation(summary = "회원 정보 조회", description = "로그인한 사용자의 프로필 정보를 조회합니다.")
     public ResponseEntity<ApiResponse<UserProfileResponseDto>> findOne(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(userService.findOne(authentication.getName())));
     }
 
     @PatchMapping("/profile")
+    @Operation(summary = "회원 정보 수정", description = "로그인한 사용자의 프로필 정보를 수정합니다.")
     public ResponseEntity<ApiResponse<UserProfileResponseDto>> update(
             @Valid @RequestBody UserProfileUpdateRequestDto requestDto,
             Authentication authentication
@@ -34,23 +42,26 @@ public class UserController {
     }
 
     @PatchMapping("/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(
-            @Valid @RequestBody UserPasswordChangeRequestDto requestDto,
-            Authentication authentication
-    ) {
+    @Operation(summary = "비밀번호 변경", description = "현재 비밀번호를 확인한 뒤 새 비밀번호로 변경합니다.")
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody UserPasswordChangeRequestDto requestDto, Authentication authentication) {
         userService.changePassword(requestDto, authentication.getName());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @PatchMapping("/learning-profile")
-    public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(
-            @Valid @RequestBody LearningProfileRequestDto requestDto,
+    @Operation(summary = "학습 목적·단계 설정", description = "현재 학습 언어에 맞는 학습 목적과 단계를 설정합니다.")
+    public ResponseEntity<ApiResponse<LearningProfileResponseDto>> updateLearningProfile(@Valid @RequestBody LearningProfileRequestDto requestDto, Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(userService.updateLearningProfile(requestDto, authentication.getName())));
+    }
+
+    @PatchMapping("/language")
+    @Operation(summary = "학습 언어 변경", description = "사용자가 학습할 언어를 JAPANESE 또는 ENGLISH로 변경합니다.")
+    public ResponseEntity<ApiResponse<LearningLanguageResponseDto>> updateLearningLanguage(
+            @Valid @RequestBody LearningLanguageRequestDto requestDto,
             Authentication authentication
     ) {
         return ResponseEntity.ok(
-                ApiResponse.success(
-                        userService.updateLearningProfile(requestDto, authentication.getName())
-                )
+                ApiResponse.success(userService.updateLearningLanguage(requestDto, authentication.getName()))
         );
     }
 }

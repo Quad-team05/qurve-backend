@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ public class XpService {
     private final XpHistoryRepository xpHistoryRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
     private final UserRepository userRepository;
+    private static final ZoneId KST_ZONE = ZoneId.of("Asia/Seoul");
 
     /**
      * XP 부여
@@ -48,7 +51,36 @@ public class XpService {
                 .user(user)
                 .actionType(actionType)
                 .xpAmount(xpAmount)
-                .earnedAt(LocalDateTime.now())
+                .earnedAt(LocalDateTime.now(KST_ZONE))
+                .build());
+    }
+
+    /**
+     * XP 최초 1회 부여
+     *
+     * * 특정 액션과 대상에 대해 XP를 최초 1회만 부여하고 기록한다.
+     * * 동일한 사용자가 같은 대상에 대해 이미 XP를 획득한 경우 추가로 부여하지 않는다.
+     *
+     * @param user 대상 유저
+     * @param actionType XP 획득 액션 타입
+     * @param referenceId XP 지급 대상 식별자
+     */
+    @Transactional
+    public void grantXpOnce(User user, XpActionType actionType, Long referenceId) {
+
+        boolean alreadyGranted = xpHistoryRepository.existsByUserAndActionTypeAndReferenceId(user, actionType, referenceId);
+
+        if (alreadyGranted)
+            return;
+
+        int xpAmount = getXpAmount(actionType);
+
+        xpHistoryRepository.save(XpHistory.builder()
+                .user(user)
+                .actionType(actionType)
+                .referenceId(referenceId)
+                .xpAmount(xpAmount)
+                .earnedAt(LocalDateTime.now(KST_ZONE))
                 .build());
     }
 
@@ -113,8 +145,9 @@ public class XpService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        LocalDateTime start = LocalDate.now().minusDays(6).atStartOfDay();
-        LocalDateTime end = LocalDate.now().atTime(23, 59, 59);
+        LocalDate today = LocalDate.now(KST_ZONE);
+        LocalDateTime start = today.minusDays(6).atStartOfDay();
+        LocalDateTime end = today.atTime(LocalTime.MAX);
 
         List<XpHistory> histories = xpHistoryRepository.findByUserAndEarnedAtBetweenOrderByEarnedAtDesc(user, start, end);
 
@@ -127,7 +160,7 @@ public class XpService {
 
         // 7일치 날짜 목록 생성
         return IntStream.range(0,7)
-                .mapToObj(i -> LocalDate.now().minusDays(6 - i))
+                .mapToObj(i -> today.minusDays(6 - i))
                 .map(date -> XpDailyResponseDto.of(date, xpByDate.getOrDefault(date, 0)))
                 .toList();
     }
@@ -146,8 +179,9 @@ public class XpService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = LocalDate.now().atTime(23, 59, 59);
+        LocalDate today = LocalDate.now(KST_ZONE);
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.atTime(LocalTime.MAX);
 
         List<XpHistory> histories = xpHistoryRepository.findByUserAndEarnedAtBetweenOrderByEarnedAtDesc(user, start, end);
 

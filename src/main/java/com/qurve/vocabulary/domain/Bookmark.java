@@ -1,5 +1,6 @@
 package com.qurve.vocabulary.domain;
 
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -28,6 +29,10 @@ public class Bookmark {
 
     @Column(name = "word_id", nullable = false)
     private Long wordId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "learning_language", length = 20)
+    private LearningLanguage learningLanguage;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

@@ -1,0 +1,75 @@
+name: Deploy Qurve Backend
+
+on:
+  push:
+    branches: [ develop ]   # develop에 push될 때 자동 실행 (팀 컨벤션에 맞게 브랜치명 확인 필요)
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 소스코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: JDK 21 설정
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Gradle 빌드 검증
+        run: ./gradlew clean build -x test --no-daemon
+
+  build-and-deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 소스코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Docker Buildx 세팅
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker Hub 로그인
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 이미지 빌드 및 push (amd64)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/qurve-backend:latest
+
+      - name: EC2 SSH 접속해서 배포
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/qurve-backend
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/qurve-backend:latest
+            docker stop qurve-app || true
+            docker rm qurve-app || true
+            docker run -d --name qurve-app --network qurve-network -p 8080:8080 --env-file .env -e PROBLEM_SEED_ENABLED=true ${{ secrets.DOCKERHUB_USERNAME }}/qurve-backend:latest
+
+            for attempt in $(seq 1 30); do
+              if docker logs qurve-app 2>&1 | grep -q "Problem seed completed"; then
+                break
+              fi
+              sleep 2
+            done
+
+            if ! docker logs qurve-app 2>&1 | grep -q "Problem seed completed"; then
+              docker logs qurve-app
+              exit 1
+            fi
+
+            docker logs qurve-app 2>&1 | grep "Problem seed completed"

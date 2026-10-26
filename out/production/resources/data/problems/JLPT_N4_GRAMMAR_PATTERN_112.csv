@@ -1,0 +1,113 @@
+﻿level,category,subType,questionFormat,questionText,choice1,choice2,choice3,choice4,answerIndex,explanation,targetGrammar,grammarMeaning
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,雨が降っているので、今日は学校へ（　　　）。,行きません,行きます,行くです,行ったです,0,비가 오고 있으므로 학교에 가지 않는 흐름이 자연스럽다.,行きません,가지 않습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,毎朝七時に家を（　　　）。,出します,出ます,出ています,出ましたか,1,매일 아침의 습관이므로 비과거형 出ます가 자연스럽다.,出ます,나갑니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,昨日、友達と映画を（　　　）。,見ます,見て,見ました,見るです,2,昨日이 있으므로 과거형 見ました가 맞다.,見ました,보았습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この漢字は難しくて、よく（　　　）。,分かります,分かりました,分かるです,分かりません,3,어려워서 잘 모르겠다는 부정 표현이 자연스럽다.,分かりません,모르겠습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,机の上（　　　）本があります。,に,で,を,へ,0,존재 장소에는 조사 に를 쓴다.,に,~에
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,図書館（　　　）本を読みます。,に,で,を,へ,1,행동이 이루어지는 장소에는 で를 쓴다.,で,~에서
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,私は毎日電車（　　　）会社へ行きます。,に,を,で,から,2,교통수단에는 조사 で를 쓴다.,で,~으로
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日曜日（　　　）友達に会いました。,で,を,へ,に,3,특정한 날을 나타낼 때 に를 쓴다.,に,~에
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本語（　　　）手紙を書きました。,で,に,を,と,0,사용한 언어·수단에는 で를 쓴다.,で,~로
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,弟（　　　）一緒に買い物へ行きました。,に,と,で,を,1,함께한 상대에는 조사 と를 쓴다.,と,~와 함께
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,私はりんご（　　　）みかんを買いました。,や,も,と,が,2,두 대상을 모두 열거할 때 と가 적절하다.,と,~와
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,机の上に本（　　　）ノートなどがあります。,と,も,を,や,3,일부 예시를 열거하고 など가 이어지므로 や가 맞다.,や,~나
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この店は安いです。（　　　）、駅から遠いです。,しかし,だから,それで,そして,0,앞뒤 내용이 대조되므로 역접의 しかし가 맞다.,しかし,그러나
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,雨が降りました。（　　　）、試合は中止になりました。,しかし,それで,それから,でも,1,비가 온 결과 경기가 취소되었으므로 결과를 잇는 それで가 맞다.,それで,그래서
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,朝ご飯を食べました。（　　　）、学校へ行きました。,しかし,それで,それから,だから,2,시간 순서상 다음 행동을 잇는 それから가 맞다.,それから,그리고 나서
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この部屋は広いです。（　　　）、とても明るいです。,しかし,それで,だから,そして,3,같은 방향의 정보를 덧붙이므로 そして가 맞다.,そして,그리고
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,明日は試験です。（　　　）、今日は早く寝ます。,だから,しかし,それから,でも,0,시험이 있다는 이유로 일찍 자므로 だから가 맞다.,だから,그러므로
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,時間がありません。（　　　）、急いでください。,しかし,ですから,それから,そして,1,앞문장이 이유이고 뒤가 요청이므로 ですから가 자연스럽다.,ですから,그러므로
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,お金があったら、新しいパソコンを（　　　）。,買ってください,買いました,買いたいです,買うでした,2,조건이 충족되면 사고 싶다는 희망이므로 買いたいです가 맞다.,買いたいです,사고 싶습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,私は日本へ（　　　）です。,行きますたい,行ってたい,行くたい,行きたい,3,동사의 ます형 어간에 たい를 붙여 희망을 나타낸다.,行きたい,가고 싶다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,今日は疲れたので、何も（　　　）。,したくないです,しますたい,したいです,しませんたい,0,피곤해서 아무것도 하고 싶지 않다는 부정 희망형이 맞다.,したくないです,하고 싶지 않습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,週末は家でゆっくり（　　　）。,休んでたいです,休みたいです,休むたいです,休みますたい,1,休む의 ます형 어간 休み에 たいです를 붙인다.,休みたいです,쉬고 싶습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,窓を（　　　）ください。,開ける,開けた,開けて,開け,2,요청 표현 ください 앞에는 동사 て형이 온다.,開けて,열어
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,ここに名前を（　　　）ください。,書く,書いた,書き,書いて,3,ください 앞에는 書く의 て형 書いて가 맞다.,書いて,써
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,少し（　　　）ください。,待って,待つ,待ち,待った,0,정중한 요청에는 て형 待って를 쓴다.,待って,기다려
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,もう一度（　　　）ください。,説明する,説明して,説明した,説明し,1,ください 앞에는 する의 て형 して가 온다.,説明して,설명해
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,ここで写真を（　　　）もいいですか。,撮る,撮った,撮って,撮り,2,허가를 구하는 ～てもいいですか 앞에는 て형이 온다.,撮って,찍어도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,このいすに（　　　）もいいです。,座る,座った,座り,座って,3,허가 표현 ～てもいい 앞에는 동사 て형이 온다.,座って,앉아도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この本を（　　　）もいいですか。,借りて,借りる,借りた,借り,0,～てもいいですか와 결합하려면 て형 借りて가 맞다.,借りて,빌려도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,今日は早く（　　　）もいいですよ。,帰る,帰って,帰った,帰り,1,허가를 나타내는 ～てもいい 앞에는 帰って가 맞다.,帰って,돌아가도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,ここでたばこを（　　　）はいけません。,吸う,吸った,吸って,吸い,2,금지 표현 ～てはいけません 앞에는 て형이 온다.,吸って,피워서는
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この部屋に（　　　）はいけません。,入る,入った,入り,入って,3,금지 문형 ～てはいけません에 入って가 연결된다.,入って,들어가서는
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,図書館で大きな声で（　　　）はいけません。,話して,話す,話した,話し,0,금지를 나타내므로 て형 話して가 맞다.,話して,말해서는
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この薬を一度に二つ（　　　）はいけません。,飲む,飲んで,飲んだ,飲み,1,～てはいけません 앞에는 飲む의 て형 飲んで가 온다.,飲んで,먹어서는
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,明日までに宿題を（　　　）なければなりません。,出して,出す,出さ,出した,2,～なければなりません은 동사 ない형의 ない를 뺀 형태에 붙는다.,出さ,내야
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,毎日、薬を（　　　）なければなりません。,飲んで,飲み,飲む,飲ま,3,飲む의 ない형 飲まない에서 ない를 빼고 なければなりません을 붙인다.,飲ま,먹어야
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,七時までに会社へ（　　　）なければなりません。,行か,行って,行き,行く,0,行く의 ない형 行かない에서 行か가 연결된다.,行か,가야
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この申込書に名前を（　　　）なければなりません。,書いて,書か,書き,書く,1,書く의 ない형 書かない를 바탕으로 書かなければなりません이 된다.,書か,써야
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,明日は休みなので、早く（　　　）なくてもいいです。,起きる,起きて,起き,起きた,2,一段동사 起きる는 ない형 起きない가 되므로 起きなくてもいい가 맞다.,起き,일어나지 않아도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この漢字は（　　　）なくてもいいです。,覚える,覚えて,覚えた,覚え,3,覚える의 ない형 覚えない에서 覚えなくてもいい가 된다.,覚え,외우지 않아도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,今日は制服を（　　　）なくてもいいです。,着,着る,着て,着た,0,着る의 ない형 着ない에 ～なくてもいい를 붙인다.,着,입지 않아도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,全部（　　　）なくてもいいです。,食べる,食べ,食べて,食べた,1,食べる의 ない형 食べない에서 食べなくてもいい가 된다.,食べ,먹지 않아도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,私は京都へ行ったことが（　　　）。,います,します,あります,なります,2,경험을 나타내는 ～たことがあります 문형이므로 あります가 맞다.,あります,있습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,富士山に登ったことが（　　　）。,いません,しません,なりません,ありません,3,경험이 없음을 나타내는 ～たことがありません이 맞다.,ありません,없습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本料理を作ったことが（　　　）か。,あります,います,できます,します,0,경험 여부를 묻는 ～たことがありますか가 자연스럽다.,あります,있습니까
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,一人で海外へ行ったことは（　　　）。,いません,ありません,できません,しません,1,경험 부정에는 ことはありません을 쓴다.,ありません,없습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,私は漢字を読むことが（　　　）。,あります,います,できます,します,2,능력을 나타내는 ～ことができます가 맞다.,できます,할 수 있습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この店ではカードで払うことが（　　　）。,なります,あります,います,できます,3,가능 여부를 나타내는 ～ことができます가 적절하다.,できます,할 수 있습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,弟はまだ自転車に乗ることが（　　　）。,できません,ありません,いません,しません,0,능력의 부정에는 ～ことができません을 쓴다.,できません,할 수 없습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,ここから海を見ることが（　　　）。,あります,できます,なります,います,1,장소에서 가능한 일을 나타내므로 ～ことができます가 맞다.,できます,할 수 있습니다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,来年、日本へ留学する（　　　）です。,予定する,思う,つもり,ため,2,개인의 의지를 나타내는 ～つもりです가 맞다.,つもり,~할 생각
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,週末は部屋を掃除する（　　　）です。,こと,よう,ほう,つもり,3,앞으로 할 의도를 말하므로 ～つもりです가 맞다.,つもり,~할 생각
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,私はもうその店へ行かない（　　　）です。,つもり,予定,ため,こと,0,하지 않을 의도를 나타내는 ～ないつもりです가 적절하다.,つもり,~하지 않을 생각
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,大学を卒業したら、国へ帰る（　　　）です。,そう,つもり,よう,こと,1,졸업 후 귀국할 의사를 나타내므로 ～つもりです가 맞다.,つもり,~할 생각
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,会議は三時に始まる（　　　）です。,つもり,こと,予定,ため,2,정해진 일정에는 ～予定です를 쓴다.,予定,~할 예정
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,来月、新しい店が開く（　　　）です。,つもり,そう,よう,予定,3,객관적으로 정해진 계획이므로 ～予定です가 맞다.,予定,~할 예정
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,飛行機は午後五時に着く（　　　）です。,予定,つもり,ため,こと,0,운항 일정처럼 정해진 계획에는 予定를 쓴다.,予定,~할 예정
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,明日の授業は十時から始まる（　　　）です。,つもり,予定,よう,そう,1,수업 시작 시간이 예정되어 있으므로 ～予定です가 맞다.,予定,~할 예정
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,雨が降り（　　　）です。,よう,つもり,そう,ため,2,겉으로 보아 곧 비가 올 것 같은 상태에는 ～そうです를 쓴다.,そう,~할 것 같다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,このケーキはおいし（　　　）です。,よう,らしい,ため,そう,3,형용사 어간에 そう를 붙여 겉보기 판단을 나타낸다.,そう,~해 보인다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,田中さんは元気（　　　）です。,そう,なそう,そうな,そうに,0,な형용사 元気에 そうです를 바로 붙인다.,そう,~해 보인다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,このかばんは重（　　　）です。,いそう,そう,そうな,くそう,1,い형용사 重い에서 い를 빼고 そうです를 붙인다.,そう,~해 보인다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,天気予報によると、明日は雪が降る（　　　）です。,よう,つもり,そう,ため,2,전해 들은 정보를 나타내는 보통형＋そうです가 맞다.,そう,~라고 한다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,母の話では、弟は元気だ（　　　）です。,よう,ため,つもり,そう,3,전언의 そうです 앞에는 な형용사·명사의 だ가 유지된다.,そう,~라고 한다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,ニュースでは、電車が止まった（　　　）です。,そう,よう,ため,つもり,0,뉴스에서 들은 사실을 전달하므로 보통형＋そうです가 맞다.,そう,~라고 한다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,先生によると、試験は難しい（　　　）です。,よう,そう,らしいに,ため,1,전언 표현이므로 難しいそうです가 자연스럽다.,そう,~라고 한다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,毎日練習して、泳げる（　　　）なりました。,ために,そうに,ように,つもりに,2,능력의 변화를 나타내는 ～ようになりました가 맞다.,ように,~하게
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,最近、早く起きる（　　　）なりました。,ために,そうに,ほどに,ように,3,습관의 변화를 나타내는 ～ようになりました가 맞다.,ように,~하게
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本語の新聞が読める（　　　）なりました。,ように,ために,つもりに,そうに,0,가능해진 변화를 나타내므로 가능형＋ようになりました가 적절하다.,ように,~하게
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,野菜も食べる（　　　）なりました。,ために,ように,そうに,ほどに,1,새로운 습관이 생겼음을 나타내므로 ～ようになりました가 맞다.,ように,~하게
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,忘れない（　　　）メモしてください。,ために,そうに,ように,つもりに,2,어떤 상태가 되지 않도록 하는 목적에는 ～ように를 쓴다.,ように,~하도록
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,子どもでも分かる（　　　）説明してください。,ために,そうに,ほどに,ように,3,이해할 수 있도록이라는 결과 목적에는 ～ように가 적절하다.,ように,~하도록
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,遅れない（　　　）早く家を出ました。,ように,ために,そうに,つもりに,0,늦지 않도록이라는 부정 목적에는 ～ないように를 쓴다.,ように,~하도록
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,よく聞こえる（　　　）大きな声で話してください。,ために,ように,そうに,ほどに,1,잘 들리도록이라는 목표 상태를 나타내므로 ～ように가 맞다.,ように,~하도록
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,健康の（　　　）、毎日歩いています。,ように,そうに,ために,つもりに,2,명사＋のために로 목적을 나타낸다.,ために,~을 위해
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本で働く（　　　）、日本語を勉強しています。,ように,そうに,ほどに,ために,3,의지동사의 구체적인 목적에는 ～ために를 쓴다.,ために,~하기 위해
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,旅行に行く（　　　）、お金をためています。,ために,ように,そうに,つもりに,0,여행을 가기 위한 목적을 나타내므로 ～ために가 맞다.,ために,~하기 위해
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,試験に合格する（　　　）、毎日勉強しています。,ように,ために,そうに,ほどに,1,합격이라는 의도적 목적에는 ～ために가 자연스럽다.,ために,~하기 위해
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,音楽を聞き（　　　）勉強します。,ので,のに,ながら,たり,2,두 행동을 동시에 할 때 ます형 어간＋ながら를 쓴다.,ながら,~하면서
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,テレビを見（　　　）ご飯を食べました。,ので,のに,そう,ながら,3,동시에 이루어진 두 행동이므로 見ながら가 맞다.,ながら,~하면서
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,歩き（　　　）電話をしないでください。,ながら,ので,のに,たり,0,걷는 동시에 전화한다는 의미이므로 歩きながら가 맞다.,ながら,~하면서
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,コーヒーを飲み（　　　）話しましょう。,ので,ながら,ために,そう,1,커피를 마시면서 이야기한다는 동시 동작에 ながら를 쓴다.,ながら,~하면서
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日曜日は本を読ん（　　　）、散歩し（　　　）します。,で／て,だら／たら,だり／たり,でも／ても,2,여러 행동을 예로 들 때 과거형 어간＋たり～たりする를 쓴다.,だり／たり,~하기도 하고
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,休みの日は掃除をし（　　　）、料理を作っ（　　　）します。,て／て,たら／たら,ながら／ながら,たり／たり,3,대표적인 여러 행동을 나열하므로 ～たり～たりします가 맞다.,たり／たり,~하기도 하고
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,旅行では写真を撮っ（　　　）、買い物をし（　　　）しました。,たり／たり,て／て,たら／たら,ながら／ながら,0,여행 중 한 여러 활동을 예시하므로 ～たり～たりしました가 맞다.,たり／たり,~하기도 하고
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,週末は友達に会っ（　　　）、映画を見（　　　）します。,て／て,たり／たり,ながら／ながら,たら／たら,1,복수의 행동을 열거하는 문형이므로 ～たり～たりします가 적절하다.,たり／たり,~하기도 하고
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,このペンは書き（　　　）です。,にくい,すぎる,やすい,たい,2,쓰기 쉽다는 성질에는 ます형 어간＋やすい를 쓴다.,やすい,~하기 쉽다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この説明は分かり（　　　）です。,にくい,すぎる,たい,やすい,3,이해하기 쉽다는 의미이므로 分かりやすい가 맞다.,やすい,~하기 쉽다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この靴は歩き（　　　）です。,やすい,にくい,たい,そう,0,걷기 편하고 쉽다는 성질에는 歩きやすい를 쓴다.,やすい,~하기 쉽다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この辞書は使い（　　　）です。,にくい,やすい,すぎる,ながら,1,사용하기 쉽다는 뜻이므로 使いやすい가 맞다.,やすい,~하기 쉽다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この漢字は覚え（　　　）です。,やすい,たい,にくい,そう,2,외우기 어렵다는 뜻에는 ます형 어간＋にくい를 쓴다.,にくい,~하기 어렵다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この字は小さくて、読み（　　　）です。,やすい,たい,ながら,にくい,3,글자가 작아 읽기 어렵다는 문맥이므로 読みにくい가 맞다.,にくい,~하기 어렵다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,このドアは重くて、開け（　　　）です。,にくい,やすい,そう,すぎる,0,무거워서 열기 어렵다는 성질을 나타내므로 開けにくい가 맞다.,にくい,~하기 어렵다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この道は暗くて歩き（　　　）です。,やすい,にくい,たい,ながら,1,어두워 걷기 어렵다는 뜻이므로 歩きにくい가 맞다.,にくい,~하기 어렵다
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,昨日はご飯を食べ（　　　）ました。,やすく,にくく,すぎ,たく,2,너무 많이 먹었다는 뜻에는 ます형 어간＋すぎました를 쓴다.,すぎ,너무 ~함
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,このかばんは重（　　　）ます。,くなり,そうになり,いになり,すぎ,3,い형용사 重い에서 い를 빼고 すぎます를 붙인다.,すぎ,너무 ~함
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,今日は暑（　　　）ます。,すぎ,いすぎ,くすぎ,そうすぎ,0,い형용사 暑い는 暑すぎます가 된다.,すぎ,너무 ~함
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この問題は難し（　　　）ます。,いすぎ,すぎ,くすぎ,そうすぎ,1,難しい에서 い를 빼고 すぎます를 붙인다.,すぎ,너무 ~함
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,駅に着い（　　　）、電話してください。,ても,ので,たら,のに,2,역에 도착한 후라는 조건·시간을 나타내므로 ～たら가 맞다.,たら,"~하면, ~했을 때"
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,時間があっ（　　　）、一緒に行きませんか。,ても,ので,のに,たら,3,시간이 있다면이라는 가정 조건에는 ～たら를 쓴다.,たら,~하면
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,雨が降っ（　　　）、出かけません。,たら,ても,ので,のに,0,비가 오면 외출하지 않는다는 조건이므로 ～たら가 맞다.,たら,~하면
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,安かっ（　　　）、この服を買います。,ても,たら,ので,のに,1,가격이 싸다면 산다는 조건이므로 安かったら가 맞다.,たら,~하면
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,雨が降っ（　　　）、試合をします。,たら,ので,ても,のに,2,비가 와도 경기를 한다는 양보 조건이므로 ～ても가 맞다.,ても,~해도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,高く（　　　）、このかばんが欲しいです。,たら,ので,のに,ても,3,비싸더라도 원한다는 양보이므로 高くても가 맞다.,ても,~해도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,忙しく（　　　）、毎日日本語を勉強します。,ても,たら,ので,のに,0,바빠도 공부한다는 양보 조건이므로 ～ても가 적절하다.,ても,~해도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,難しく（　　　）、最後までやります。,たら,ても,ので,のに,1,어려워도 끝까지 한다는 문맥이므로 ～ても가 맞다.,ても,~해도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,今日は用事がある（　　　）、先に帰ります。,のに,ても,ので,ながら,2,앞내용이 뒤 행동의 이유이므로 ～ので가 맞다.,ので,~이므로
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,電車が遅れた（　　　）、会社に遅刻しました。,のに,ても,ながら,ので,3,전철 지연이 지각의 원인이므로 ～ので가 자연스럽다.,ので,~이므로
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,寒い（　　　）、窓を閉めてください。,ので,のに,ても,ながら,0,추운 것이 창문을 닫아 달라는 이유이므로 ～ので가 맞다.,ので,~이므로
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,明日は試験な（　　　）、今日は早く寝ます。,のに,ので,ても,ながら,1,명사·な형용사 뒤에서는 な＋ので 형태를 쓴다.,ので,~이므로
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,薬を飲んだ（　　　）、まだ熱があります。,ので,ても,のに,ながら,2,약을 먹었지만 열이 있다는 역접이므로 ～のに가 맞다.,のに,~인데도
+N4,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,たくさん勉強した（　　　）、試験に落ちました。,ので,ても,ために,のに,3,열심히 공부했음에도 떨어졌다는 예상 밖 결과이므로 ～のに가 맞다.,のに,~인데도

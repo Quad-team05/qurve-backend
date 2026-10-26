@@ -1,0 +1,51 @@
+﻿level,category,subType,questionFormat,questionText,choice1,choice2,choice3,choice4,answerIndex,explanation,targetKanji,targetMeaning
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「学校」의 읽기로 가장 알맞은 것은?,がっこう,がくこう,がこう,がっこ,0,「学校」의 읽기는 がっこう이고 뜻은 학교이다.,学校,학교
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「先生」의 읽기로 가장 알맞은 것은?,せんせ,せんせい,せいせん,せんしょう,1,「先生」의 읽기는 せんせい이고 뜻은 선생님이다.,先生,선생님
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「学生」의 읽기로 가장 알맞은 것은?,がっせい,がくせ,がくせい,がくしょう,2,「学生」의 읽기는 がくせい이고 뜻은 학생이다.,学生,학생
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「大学」의 읽기로 가장 알맞은 것은?,たいがく,だいかく,だいがっく,だいがく,3,「大学」의 읽기는 だいがく이고 뜻은 대학교이다.,大学,대학교
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「高校」의 읽기로 가장 알맞은 것은?,こうこう,ここう,こうごう,こうこ,0,「高校」의 읽기는 こうこう이고 뜻은 고등학교이다.,高校,고등학교
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「日本」의 읽기로 가장 알맞은 것은?,にっぽん,にほん,にほ,にぽん,1,「日本」의 읽기는 にほん이고 뜻은 일본이다.,日本,일본
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「今日」의 읽기로 가장 알맞은 것은?,きょお,こんにち,きょう,きゅう,2,「今日」의 읽기는 きょう이고 뜻은 오늘이다.,今日,오늘
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「明日」의 읽기로 가장 알맞은 것은?,あさた,あしたあ,あすた,あした,3,「明日」의 읽기는 あした이고 뜻은 내일이다.,明日,내일
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「昨日」의 읽기로 가장 알맞은 것은?,きのう,きのお,きょう,さくにち,0,「昨日」의 읽기는 きのう이고 뜻은 어제이다.,昨日,어제
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「時間」의 읽기로 가장 알맞은 것은?,しかん,じかん,じげん,しげん,1,「時間」의 읽기는 じかん이고 뜻은 시간이다.,時間,시간
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「時計」의 읽기로 가장 알맞은 것은?,どけい,とけ,とけい,とうけい,2,「時計」의 읽기는 とけい이고 뜻은 시계이다.,時計,시계
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「電車」의 읽기로 가장 알맞은 것은?,てんしゃ,でんちゃ,てんちゃ,でんしゃ,3,「電車」의 읽기는 でんしゃ이고 뜻은 전철이다.,電車,전철
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「電気」의 읽기로 가장 알맞은 것은?,でんき,てんき,でんぎ,てんぎ,0,「電気」의 읽기는 でんき이고 뜻은 전기이다.,電気,전기
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「電話」의 읽기로 가장 알맞은 것은?,てんわ,でんわ,でんば,でわ,1,「電話」의 읽기는 でんわ이고 뜻은 전화이다.,電話,전화
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「会社」의 읽기로 가장 알맞은 것은?,がいしゃ,かいじゃ,かいしゃ,かしゃ,2,「会社」의 읽기는 かいしゃ이고 뜻은 회사이다.,会社,회사
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「会社員」의 읽기로 가장 알맞은 것은?,がいしゃいん,かいしゃにん,かいしゃえん,かいしゃいん,3,「会社員」의 읽기는 かいしゃいん이고 뜻은 회사원이다.,会社員,회사원
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「病院」의 읽기로 가장 알맞은 것은?,びょういん,びょいん,ひょういん,びょうえん,0,「病院」의 읽기는 びょういん이고 뜻은 병원이다.,病院,병원
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「医者」의 읽기로 가장 알맞은 것은?,いじゃ,いしゃ,いさ,いしょう,1,「医者」의 읽기는 いしゃ이고 뜻은 의사이다.,医者,의사
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「駅」의 읽기로 가장 알맞은 것은?,えぎ,えっき,えき,えけ,2,「駅」의 읽기는 えき이고 뜻은 역이다.,駅,역
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「銀行」의 읽기로 가장 알맞은 것은?,きんこう,ぎんごう,ぎんこ,ぎんこう,3,「銀行」의 읽기는 ぎんこう이고 뜻은 은행이다.,銀行,은행
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「郵便局」의 읽기로 가장 알맞은 것은?,ゆうびんきょく,ゆびんきょく,ゆうびんぎょく,ゆうびきょく,0,「郵便局」의 읽기는 ゆうびんきょく이고 뜻은 우체국이다.,郵便局,우체국
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「図書館」의 읽기로 가장 알맞은 것은?,としょうかん,としょかん,ずしょかん,としょがん,1,「図書館」의 읽기는 としょかん이고 뜻은 도서관이다.,図書館,도서관
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「食堂」의 읽기로 가장 알맞은 것은?,しょくとう,そくどう,しょくどう,しょどう,2,「食堂」의 읽기는 しょくどう이고 뜻은 식당이다.,食堂,식당
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「食べ物」의 읽기로 가장 알맞은 것은?,しょくべもの,たべも,たべものう,たべもの,3,「食べ物」의 읽기는 たべもの이고 뜻은 음식이다.,食べ物,음식
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「飲み物」의 읽기로 가장 알맞은 것은?,のみもの,いんみもの,のみも,のももの,0,「飲み物」의 읽기는 のみもの이고 뜻은 음료이다.,飲み物,음료
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「水」의 읽기로 가장 알맞은 것은?,みづ,みず,みす,すい,1,「水」의 읽기는 みず이고 뜻은 물이다.,水,물
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「火」의 읽기로 가장 알맞은 것은?,び,ほ,ひ,ふ,2,「火」의 읽기는 ひ이고 뜻은 불이다.,火,불
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「木」의 읽기로 가장 알맞은 것은?,ぎ,こ,け,き,3,「木」의 읽기는 き이고 뜻은 나무이다.,木,나무
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「金」의 읽기로 가장 알맞은 것은?,かね,かな,がね,きね,0,「金」의 읽기는 かね이고 뜻은 돈이다.,金,돈
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「土」의 읽기로 가장 알맞은 것은?,つじ,つち,づち,とち,1,「土」의 읽기는 つち이고 뜻은 흙이다.,土,흙
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「山」의 읽기로 가장 알맞은 것은?,やまあ,やも,やま,さん,2,「山」의 읽기는 やま이고 뜻은 산이다.,山,산
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「川」의 읽기로 가장 알맞은 것은?,がわ,かは,かわあ,かわ,3,「川」의 읽기는 かわ이고 뜻은 강이다.,川,강
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「海」의 읽기로 가장 알맞은 것은?,うみ,うめ,うび,かい,0,「海」의 읽기는 うみ이고 뜻은 바다이다.,海,바다
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「空」의 읽기로 가장 알맞은 것은?,そり,そら,ぞら,から,1,「空」의 읽기는 そら이고 뜻은 하늘이다.,空,하늘
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「雨」의 읽기로 가장 알맞은 것은?,あま,うめ,あめ,あみ,2,「雨」의 읽기는 あめ이고 뜻은 비이다.,雨,비
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「天気」의 읽기로 가장 알맞은 것은?,でんき,てんぎ,ていき,てんき,3,「天気」의 읽기는 てんき이고 뜻은 날씨이다.,天気,날씨
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「友達」의 읽기로 가장 알맞은 것은?,ともだち,ともたち,ゆうだち,ともだじ,0,「友達」의 읽기는 ともだち이고 뜻은 친구이다.,友達,친구
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「家族」의 읽기로 가장 알맞은 것은?,かそく,かぞく,がぞく,かぞっく,1,「家族」의 읽기는 かぞく이고 뜻은 가족이다.,家族,가족
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「父」의 읽기로 가장 알맞은 것은?,しし,ちじ,ちち,ちぢ,2,「父」의 읽기는 ちち이고 뜻은 아버지이다.,父,아버지
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「母」의 읽기로 가장 알맞은 것은?,はわ,ばば,はば,はは,3,「母」의 읽기는 はは이고 뜻은 어머니이다.,母,어머니
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「兄」의 읽기로 가장 알맞은 것은?,あに,あね,あん,あの,0,「兄」의 읽기는 あに이고 뜻은 형·오빠이다.,兄,형·오빠
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「姉」의 읽기로 가장 알맞은 것은?,あに,あね,あめ,あぬ,1,「姉」의 읽기는 あね이고 뜻은 누나·언니이다.,姉,누나·언니
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「弟」의 읽기로 가장 알맞은 것은?,おとと,おとうど,おとうと,おとう,2,「弟」의 읽기는 おとうと이고 뜻은 남동생이다.,弟,남동생
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「妹」의 읽기로 가장 알맞은 것은?,いもと,いもうど,いもう,いもうと,3,「妹」의 읽기는 いもうと이고 뜻은 여동생이다.,妹,여동생
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「百円」의 읽기로 가장 알맞은 것은?,ひゃくえん,びゃくえん,ひゃっくえん,ひゃくねん,0,「百円」의 읽기는 ひゃくえん이고 뜻은 100엔이다.,百円,100엔
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「千円」의 읽기로 가장 알맞은 것은?,ぜんえん,せんえん,せいえん,せんねん,1,「千円」의 읽기는 せんえん이고 뜻은 1000엔이다.,千円,1000엔
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「一人」의 읽기로 가장 알맞은 것은?,いちり,ひどり,ひとり,ひとに,2,「一人」의 읽기는 ひとり이고 뜻은 한 사람이다.,一人,한 사람
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「二人」의 읽기로 가장 알맞은 것은?,にたり,ふだり,ふとり,ふたり,3,「二人」의 읽기는 ふたり이고 뜻은 두 사람이다.,二人,두 사람
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「来週」의 읽기로 가장 알맞은 것은?,らいしゅう,らいしゅ,きしゅう,らいじゅう,0,「来週」의 읽기는 らいしゅう이고 뜻은 다음 주이다.,来週,다음 주
+N5,LANGUAGE_KNOWLEDGE,KANJI_READING,MULTIPLE_CHOICE,「毎日」의 읽기로 가장 알맞은 것은?,まにち,まいにち,まいにつ,まいじち,1,「毎日」의 읽기는 まいにち이고 뜻은 매일이다.,毎日,매일

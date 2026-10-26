@@ -1,14 +1,25 @@
 package com.qurve.attendance.service;
 
+import com.qurve.attendance.domain.DailyStudyLog;
+import com.qurve.attendance.domain.AttendanceRecord;
 import com.qurve.attendance.domain.StudyStatistics;
+import com.qurve.attendance.dto.request.StudyTimeSaveRequestDto;
 import com.qurve.attendance.dto.response.AttendanceDayResponseDto;
 import com.qurve.attendance.dto.response.AttendanceResponseDto;
+import com.qurve.attendance.dto.response.StudyTimeSaveResponseDto;
+import com.qurve.attendance.repository.DailyStudyLogRepository;
+import com.qurve.attendance.repository.AttendanceRecordRepository;
 import com.qurve.attendance.repository.StudyStatisticsRepository;
 import com.qurve.badge.service.BadgeService;
+import com.qurve.challenge.domain.ChallengeGoalType;
+import com.qurve.challenge.service.ChallengeProgressService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningLanguage;
+import com.qurve.global.enums.XpActionType;
 import com.qurve.global.exception.BusinessException;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.xp.service.XpService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +29,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -29,14 +42,18 @@ public class AttendanceService {
     private static final List<String> DAY_OF_WEEK_LABELS = List.of("월", "화", "수", "목", "금", "토", "일");
 
     private final UserRepository userRepository;
+    private final DailyStudyLogRepository dailyStudyLogRepository;
+    private final AttendanceRecordRepository attendanceRecordRepository;
     private final StudyStatisticsRepository studyStatisticsRepository;
     private final BadgeService badgeService;
+    private final XpService xpService;
+    private final ChallengeProgressService challengeProgressService;
 
     /**
      * 출석 카드 조회
      *
-     * * 연속 학습 일수(streak)와 마지막 갱신일(updated_at)을 기준으로
-     * 현재 주차(월~일) 출석 활성화 상태를 계산해 반환한다.
+     * * 연속 학습 일수(streak)는 통계 값으로 반환한다.
+     * * 현재 주차(월~일) 출석 활성화 상태는 실제 출석 기록을 기준으로 반환한다.
      *
      * @param loginId 로그인 ID
      * @return 출석 카드 응답 정보
@@ -44,15 +61,28 @@ public class AttendanceService {
      */
     public AttendanceResponseDto findOne(String loginId) {
         User user = findUserByLoginId(loginId);
-        StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
-
         LocalDate today = LocalDate.now(KST_ZONE);
-        boolean checkedToday = isCheckedToday(studyStatistics.getUpdatedAt(), today);
+        LearningLanguage learningLanguage = resolveLearningLanguage(user);
+
+        // 출석 조회는 신규 사용자의 통계 레코드를 생성하지 않는다.
+        // 통계는 출석 체크 또는 학습 시간 저장 시점에 생성한다.
+        StudyStatistics studyStatistics = studyStatisticsRepository.findByUser_UserId(user.getUserId())
+                .orElse(null);
+
+        if (studyStatistics == null) {
+            return AttendanceResponseDto.from(
+                    0,
+                    isCheckedToday(user, learningLanguage, today),
+                    createAttendanceDays(user, learningLanguage, today)
+            );
+        }
+
+        boolean checkedToday = isCheckedToday(user, learningLanguage, today);
 
         return AttendanceResponseDto.from(
                 studyStatistics.getStreakDays(),
                 checkedToday,
-                createAttendanceDays(studyStatistics.getStreakDays(), studyStatistics.getUpdatedAt(), today)
+                createAttendanceDays(user, learningLanguage, today)
         );
     }
 
@@ -70,27 +100,80 @@ public class AttendanceService {
     @Transactional
     public AttendanceResponseDto save(String loginId) {
         User user = findUserByLoginId(loginId);
+
         StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
 
         LocalDate today = LocalDate.now(KST_ZONE);
-        int updatedStreakDays = calculateUpdatedStreakDays(
-                studyStatistics.getStreakDays(),
-                studyStatistics.getUpdatedAt(),
-                today
-        );
+        LocalDateTime lastAttendanceAt = resolveLastAttendanceAt(studyStatistics);
+        LearningLanguage learningLanguage = resolveLearningLanguage(user);
 
-        studyStatistics.updateStreakDays(updatedStreakDays);
+        boolean alreadyCheckedLanguageToday = isCheckedToday(user, learningLanguage, today);
+        boolean alreadyCheckedToday = isCheckedToday(lastAttendanceAt, today);
+
+        int updatedStreakDays = studyStatistics.getStreakDays();
+
+        if (!alreadyCheckedToday) {
+            updatedStreakDays = calculateUpdatedStreakDays(
+                    studyStatistics.getStreakDays(),
+                    lastAttendanceAt,
+                    today
+            );
+            studyStatistics.updateAttendance(updatedStreakDays, LocalDateTime.now(KST_ZONE));
+        }
+
+        if (!alreadyCheckedLanguageToday) {
+            attendanceRecordRepository.save(AttendanceRecord.create(user, learningLanguage, today));
+            xpService.grantXp(user, XpActionType.DAILY_ATTENDANCE);
+            challengeProgressService.addProgress(user, learningLanguage, ChallengeGoalType.ATTENDANCE, 1);
+
+            if (!alreadyCheckedToday && updatedStreakDays == 3) {
+                xpService.grantXp(user, XpActionType.STREAK_3_DAYS);
+            }
+            if (!alreadyCheckedToday && updatedStreakDays == 7) {
+                xpService.grantXp(user, XpActionType.STREAK_7_DAYS);
+            }
+        }
+
         badgeService.evaluate(user);
 
         return AttendanceResponseDto.from(
                 updatedStreakDays,
                 true,
-                createAttendanceDays(updatedStreakDays, LocalDateTime.now(KST_ZONE), today)
+                createAttendanceDays(user, learningLanguage, today)
         );
     }
 
+    /**
+     * 학습 시간 저장
+     *
+     * * 클라이언트에서 측정한 학습 시간을 분 단위로 전달받아
+     * 사용자의 날짜별 학습 로그를 생성하거나 누적하고,
+     * 전체 누적 학습 시간(totalStudyTime)에도 함께 더한다.
+     *
+     * @param loginId 로그인 ID
+     * @param requestDto 추가할 학습 시간
+     * @return 추가된 학습 시간과 누적 학습 시간
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    @Transactional
+    public StudyTimeSaveResponseDto saveStudyTime(String loginId, StudyTimeSaveRequestDto requestDto) {
+        User user = findUserByLoginId(loginId);
+        StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
+        LocalDate today = LocalDate.now(KST_ZONE);
+        DailyStudyLog dailyStudyLog = findOrCreateDailyStudyLog(user, today);
+
+        int studyTimeMinutes = requestDto.getStudyTimeMinutes();
+        initializeLastAttendanceAtIfNeeded(studyStatistics);
+        dailyStudyLog.addStudyTime(studyTimeMinutes);
+        studyStatistics.addStudyTime(studyTimeMinutes);
+        challengeProgressService.addProgress(user, ChallengeGoalType.STUDY_TIME, studyTimeMinutes);
+        badgeService.evaluate(user);
+
+        return StudyTimeSaveResponseDto.of(studyTimeMinutes, studyStatistics);
+    }
+
     private User findUserByLoginId(String loginId) {
-        return userRepository.findByLoginId(loginId)
+        return userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
@@ -99,12 +182,45 @@ public class AttendanceService {
                 .orElseGet(() -> studyStatisticsRepository.save(StudyStatistics.create(user)));
     }
 
-    private boolean isCheckedToday(LocalDateTime updatedAt, LocalDate today) {
-        if (updatedAt == null) {
-            return false;
+    private DailyStudyLog findOrCreateDailyStudyLog(User user, LocalDate studyDate) {
+        return dailyStudyLogRepository.findByUserAndStudyDate(user, studyDate)
+                .orElseGet(() -> dailyStudyLogRepository.save(DailyStudyLog.create(user, studyDate)));
+    }
+
+    private LocalDateTime resolveLastAttendanceAt(StudyStatistics studyStatistics) {
+        if (studyStatistics.getLastAttendanceAt() != null) {
+            return studyStatistics.getLastAttendanceAt();
         }
 
-        return updatedAt.toLocalDate().isEqual(today);
+        if (studyStatistics.getStreakDays() <= 0) {
+            return null;
+        }
+
+        return studyStatistics.getUpdatedAt();
+    }
+
+    private void initializeLastAttendanceAtIfNeeded(StudyStatistics studyStatistics) {
+        if (studyStatistics.getStreakDays() > 0 && studyStatistics.getUpdatedAt() != null) {
+            studyStatistics.initializeLastAttendanceAt(studyStatistics.getUpdatedAt());
+        }
+    }
+
+    private boolean isCheckedToday(User user, LearningLanguage learningLanguage, LocalDate today) {
+        return attendanceRecordRepository.existsByUserAndLearningLanguageAndAttendanceDate(
+                user,
+                learningLanguage,
+                today
+        );
+    }
+
+    private LearningLanguage resolveLearningLanguage(User user) {
+        return user.getLearningLanguage() == null
+                ? LearningLanguage.JAPANESE
+                : user.getLearningLanguage();
+    }
+
+    private boolean isCheckedToday(LocalDateTime attendanceAt, LocalDate today) {
+        return attendanceAt != null && attendanceAt.toLocalDate().isEqual(today);
     }
 
     private int calculateUpdatedStreakDays(int streakDays, LocalDateTime updatedAt, LocalDate today) {
@@ -125,29 +241,25 @@ public class AttendanceService {
         return 1;
     }
 
-    private List<AttendanceDayResponseDto> createAttendanceDays(
-            int streakDays,
-            LocalDateTime updatedAt,
-            LocalDate today
-    ) {
+    private List<AttendanceDayResponseDto> createAttendanceDays(User user, LearningLanguage learningLanguage, LocalDate today) {
         List<AttendanceDayResponseDto> days = new ArrayList<>();
 
         LocalDate weekStartDate = today.with(DayOfWeek.MONDAY);
         LocalDate weekEndDate = weekStartDate.plusDays(6);
-
-        LocalDate streakEndDate = updatedAt == null ? null : updatedAt.toLocalDate();
-        LocalDate streakStartDate =
-                streakEndDate == null ? null : streakEndDate.minusDays(Math.max(streakDays - 1L, 0L));
+        Set<LocalDate> attendanceDates = new HashSet<>(attendanceRecordRepository
+                .findAttendanceDatesByUserAndLearningLanguageAndAttendanceDateBetween(
+                        user,
+                        learningLanguage,
+                        weekStartDate,
+                        weekEndDate
+                ));
 
         for (int i = 0; i < 7; i++) {
             LocalDate targetDate = weekStartDate.plusDays(i);
-
-            boolean checked = streakStartDate != null
-                    && !targetDate.isBefore(streakStartDate)
-                    && !targetDate.isAfter(streakEndDate)
-                    && !targetDate.isAfter(weekEndDate);
-
-            days.add(AttendanceDayResponseDto.of(DAY_OF_WEEK_LABELS.get(i), checked));
+            days.add(AttendanceDayResponseDto.of(
+                    DAY_OF_WEEK_LABELS.get(i),
+                    attendanceDates.contains(targetDate)
+            ));
         }
 
         return days;

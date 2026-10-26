@@ -5,6 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
+import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -44,7 +51,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/oauth2/**",
-                                "/login/oauth2/**"
+                                "/login/oauth2/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 "/api/auth/login",
@@ -60,12 +72,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/auth/check-id",
                                 "/api/auth/check-email",
-                                "/api/challenges/goal-types",
-                                "/api/problems"
+                                "/api/challenges/goal-types"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
+                        .tokenEndpoint(token -> token.accessTokenResponseClient(oauth2TokenResponseClient()))
                         .successHandler(oAuth2SuccessHandler)
                 )
                 .exceptionHandling(ex -> ex
@@ -78,6 +90,21 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    @SuppressWarnings("removal")
+    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> oauth2TokenResponseClient() {
+        var defaultClient = new DefaultAuthorizationCodeTokenResponseClient();
+        var naverClient = new DefaultAuthorizationCodeTokenResponseClient();
+        var converter = new OAuth2AccessTokenResponseHttpMessageConverter();
+        converter.setAccessTokenResponseConverter(new NaverTokenResponseConverter());
+        var restTemplate = new RestTemplate(List.of(new FormHttpMessageConverter(), converter));
+        restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
+        naverClient.setRestOperations(restTemplate);
+
+        return request -> "naver".equals(request.getClientRegistration().getRegistrationId())
+                ? naverClient.getTokenResponse(request) : defaultClient.getTokenResponse(request);
     }
 
     @Bean

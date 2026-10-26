@@ -1,0 +1,41 @@
+﻿level,category,subType,questionFormat,questionText,choice1,choice2,choice3,choice4,answerIndex,explanation,targetExpression,targetMeaning
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「懸念」の読み方はどれですか。,けねん,けんねん,かねん,けんれん,0,懸念은 걱정이나 우려를 뜻하며 けねん이라고 읽는다.,懸念,우려; 염려
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「遂行」の読み方はどれですか。,ついこう,すいこう,すいぎょう,ずいこう,1,遂行은 임무 등을 완수한다는 뜻이며 すいこう라고 읽는다.,遂行,수행
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「顕著」の読み方はどれですか。,けんしょ,げんちょ,けんちょ,けんちゃく,2,顕著는 두드러짐을 뜻하며 けんちょ라고 읽는다.,顕著,현저함
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「脅かす」の読み方はどれですか。,おどろかす,おびかす,きょうかす,おびやかす,3,脅かす는 안전이나 존재를 위협한다는 뜻이며 おびやかす라고 읽는다.,脅かす,위협하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「覆す」の読み方はどれですか。,くつがえす,おおす,くつかえす,ふくす,0,覆す는 기존 결정이나 견해를 뒤집는다는 뜻이며 くつがえす라고 읽는다.,覆す,뒤집다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「滞る」の読み方はどれですか。,とどまる,とどこおる,たいおる,とどこうる,1,滞る는 일이 원활히 진행되지 않고 밀린다는 뜻이며 とどこおる라고 읽는다.,滞る,정체되다; 밀리다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「免除」の読み方はどれですか。,めんしょう,めんぞ,めんじょ,まんじょ,2,免除는 의무 등을 면제함을 뜻하며 めんじょ라고 읽는다.,免除,면제
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「施す」の読み方はどれですか。,せす,ほどす,しこす,ほどこす,3,施す는 조치나 처리를 시행한다는 뜻이며 ほどこす라고 읽는다.,施す,베풀다; 시행하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「阻む」の読み方はどれですか。,はばむ,こばむ,そむ,はさむ,0,阻む는 진행을 가로막는다는 뜻이며 はばむ라고 읽는다.,阻む,가로막다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「著す」の読み方はどれですか。,しるす,あらわす,ちょす,あらす,1,著す는 책 등을 저술한다는 뜻이며 あらわす라고 읽는다.,著す,저술하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「しさ」を漢字にするとどれですか。,指差,示査,示唆,思査,2,しさ는 示唆이며 직접 말하지 않고 암시함을 뜻한다.,示唆,시사; 암시
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「けねん」を漢字にするとどれですか。,県念,懸年,嫌念,懸念,3,けねん은 懸念으로 쓰며 우려라는 뜻이다.,懸念,우려
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「はあく」を漢字にするとどれですか。,把握,破握,把確,波握,0,はあく는 把握이며 상황을 정확히 이해한다는 뜻이다.,把握,파악
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「そち」を漢字にするとどれですか。,処置,措置,措地,阻置,1,そち는 措置이며 필요한 조치를 취한다는 뜻이다.,措置,조치
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「しょうれい」を『장려』의 의미로 한자로 쓰면 무엇입니까。,賞励,奨例,奨励,将励,2,장려라는 뜻의 しょうれい는 奨励로 쓴다.,奨励,장려
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「ちくせき」を漢字にするとどれですか。,築積,蓄績,逐積,蓄積,3,ちくせき는 蓄積이며 쌓아 모은다는 뜻이다.,蓄積,축적
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「もっぱら」の意味に最も近いものはどれですか。,오로지; 주로,우연히,드물게,갑자기,0,"もっぱら는 다른 것보다 한 가지에 집중하는 '오로지, 주로'의 뜻이다.",もっぱら,오로지; 주로
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「ひいては」の意味に最も近いものはどれですか。,반대로,나아가서는,즉시,일시적으로,1,ひいては는 앞의 일이 더 큰 범위의 결과로 이어짐을 나타낸다.,ひいては,나아가서는
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「ことごとく」の意味に最も近いものはどれですか。,대략 절반,가끔,모조리; 전부,우연히,2,ことごとく는 예외 없이 모두라는 뜻이다.,ことごとく,모조리
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「かろうじて」の意味に最も近いものはどれですか。,여유롭게,일부러,즉시,겨우; 간신히,3,かろうじて는 매우 아슬아슬하게 어떤 결과를 이룸을 뜻한다.,かろうじて,겨우; 간신히
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「あながち」の意味に最も近いものはどれですか。,반드시 ~라고만은 할 수 없는,확실히,완전히,의도적으로,0,あながち는 주로 부정과 함께 '반드시 그렇다고만은 할 수 없다'는 뜻이다.,あながち,반드시 ~인 것만은
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「おのずと」の意味に最も近いものはどれですか。,억지로,저절로; 자연히,갑자기,몰래,1,おのずと는 인위적으로 하지 않아도 자연히 그렇게 됨을 뜻한다.,おのずと,저절로
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「もはや」の意味に最も近いものはどれですか。,곧 처음으로,아직 충분히,이미; 이제는 더 이상,가끔,2,もはや는 상황이 이미 특정 단계에 이르렀음을 나타낸다.,もはや,이미; 이제는
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「強いて」の意味に最も近いものはどれですか。,자연스럽게,우연히,대체로,굳이; 억지로,3,強いて는 무리해서라도 굳이 한다는 의미다.,強いて,굳이; 억지로
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「一概に」の意味に最も近いものはどれですか。,일률적으로; 단정하여,부분적으로만,시간 순서대로,갑작스럽게,0,一概に는 모든 경우를 동일하게 보아 단정한다는 뜻이다.,一概に,일률적으로
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「見据える」の意味に最も近いものはどれですか。,과거를 잊다,앞날을 내다보다; 주시하다,즉시 포기하다,대충 처리하다,1,見据える는 미래나 본질을 똑바로 바라보고 고려한다는 뜻이다.,見据える,내다보다; 주시하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「踏襲する」の意味に最も近いものはどれですか。,완전히 폐기하다,임시로 중단하다,기존 방식을 그대로 따르다,반대로 바꾸다,2,踏襲する는 이전의 방식이나 제도를 그대로 이어받아 따르는 뜻이다.,踏襲する,답습하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「打開する」の意味に最も近いものはどれですか。,상황을 악화시키다,문제를 숨기다,책임을 피하다,곤란한 상황을 타개하다,3,打開する는 막힌 상황을 해결하여 새로운 길을 연다는 뜻이다.,打開する,타개하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「損ねる」の意味に最も近いものはどれですか。,해치다; 놓치다,회복시키다,확대하다,승인하다,0,損ねる는 상태를 해치거나 기회를 놓치는 의미로 쓰인다.,損ねる,해치다; 놓치다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「促進する」の意味に最も近いものはどれですか。,진행을 방해하다,진행이나 발전을 촉진하다,완전히 중단하다,결과를 숨기다,1,促進する는 일이 더 잘 진행되도록 촉진한다는 뜻이다.,促進する,촉진하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「見落とす」の意味に最も近いものはどれですか。,자세히 기록하다,다시 검토하다,간과하다; 못 보고 지나치다,일부러 강조하다,2,見落とす는 중요한 점을 알아차리지 못하고 지나치는 뜻이다.,見落とす,간과하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「取り巻く」の意味に最も近いものはどれですか。,분리하다,파괴하다,앞서가다,둘러싸다; 주변을 에워싸다,3,取り巻く는 사람이나 상황의 주위를 둘러싼다는 뜻이다.,取り巻く,둘러싸다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「見合わせる」の意味に最も近いものはどれですか。,당분간 보류하다,즉시 실행하다,강제로 확대하다,반드시 승인하다,0,見合わせる는 사정을 고려해 실행을 잠시 보류하는 뜻이다.,見合わせる,보류하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「携わる」の意味に最も近いものはどれですか。,일을 방해하다,어떤 일에 종사하다,업무를 포기하다,결과를 삭제하다,1,携わる는 특정 업무나 분야에 관계하여 종사한다는 뜻이다.,携わる,종사하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「覆す」の意味に最も近いものはどれですか。,판단을 유지하다,결정을 미루다,기존 판단을 뒤집다,근거를 보충하다,2,覆す는 기존의 결정·상식·예상을 뒤집는다는 뜻이다.,覆す,뒤집다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「滞る」の意味に最も近いものはどれですか。,매우 빨라지다,완전히 끝나다,자연히 해결되다,진행이 막히거나 밀리다,3,滞る는 처리나 흐름이 원활하지 않고 지연되는 뜻이다.,滞る,정체되다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「余儀なくされる」の意味に最も近いものはどれですか。,어쩔 수 없이 하게 되다,자발적으로 선택하다,쉽게 포기하다,우연히 발견하다,0,余儀なくされる는 외부 사정 때문에 다른 선택 없이 행동하게 됨을 뜻한다.,余儀なくされる,부득이하게 ~하게 되다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「見極める」の意味に最も近いものはどれですか。,대충 추측하다,본질이나 상황을 끝까지 판단하다,즉시 무시하다,무조건 받아들이다,1,見極める는 충분히 살펴 정확하게 판단한다는 뜻이다.,見極める,끝까지 확인하여 판단하다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「差し支える」の意味に最も近いものはどれですか。,도움이 되다,기회가 늘다,지장이 생기다,완전히 일치하다,2,差し支える는 어떤 일에 방해나 지장이 생긴다는 뜻이다.,差し支える,지장이 있다
+N1,LANGUAGE_KNOWLEDGE,VOCABULARY_KANJI,MULTIPLE_CHOICE,「顧みる」の意味に最も近いものはどれですか。,앞만 보고 달리다,무시하고 버리다,강제로 바꾸다,돌이켜보다; 고려하다,3,顧みる는 지나온 일을 돌아보거나 사정을 고려한다는 뜻이다.,顧みる,돌이켜보다; 고려하다

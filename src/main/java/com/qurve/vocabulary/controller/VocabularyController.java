@@ -1,12 +1,19 @@
 package com.qurve.vocabulary.controller;
 
 import com.qurve.global.common.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import com.qurve.vocabulary.dto.request.ChallengeWordCompleteRequestDto;
+import com.qurve.vocabulary.dto.response.ChallengeWordCompleteResponseDto;
 import com.qurve.vocabulary.dto.response.UnitProgressResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordResponseDto;
 import com.qurve.vocabulary.dto.response.UnitWordStudyResponseDto;
+import com.qurve.vocabulary.service.VocabularyAudioService;
 import com.qurve.vocabulary.service.VocabularyService;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -18,16 +25,20 @@ import java.util.List;
 @Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/vocabularies")
+@Tag(name = "단어", description = "단어 유닛 학습, 북마크, 챌린지 단어 학습 API")
 public class VocabularyController {
 
     private final VocabularyService vocabularyService;
+    private final VocabularyAudioService vocabularyAudioService;
 
     @GetMapping("/units")
+    @Operation(summary = "단어 유닛 목록 조회", description = "사용자의 현재 학습 언어에 따라 일본어 JLPT(N1~N5) 또는 영어 CEFR(A1~C2) 레벨별 단어 유닛과 학습 상태를 조회합니다.")
     public ResponseEntity<ApiResponse<List<UnitProgressResponseDto>>> getUnitList(@NotBlank @RequestParam("level") String level, Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(vocabularyService.getUnitList(authentication.getName(), level)));
     }
 
     @GetMapping("/units/{unitNumber}/words")
+    @Operation(summary = "유닛 단어 조회", description = "선택한 레벨과 유닛의 학습 단어 목록을 조회합니다.")
     public ApiResponse<UnitWordStudyResponseDto> getUnitWords(@PathVariable Integer unitNumber, @RequestParam String level, Authentication authentication) {
         String loginId = authentication.getName();
 
@@ -36,36 +47,72 @@ public class VocabularyController {
         return ApiResponse.success(response);
     }
 
+    @GetMapping(value = "/{wordId}/audio", produces = "audio/mpeg")
+    @Operation(summary = "단어 발음 듣기", description = "현재 학습 언어에 해당하는 단어의 발음을 VoiceRSS MP3 데이터로 반환합니다.")
+    public ResponseEntity<byte[]> getWordAudio(@PathVariable Long wordId, Authentication authentication) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.valueOf("audio/mpeg"))
+                .body(vocabularyAudioService.findWordAudio(authentication.getName(), wordId));
+    }
+
     @PostMapping("/bookmarks/{wordId}")
+    @Operation(summary = "단어 북마크 추가", description = "현재 학습 언어에 해당하는 단어를 사용자 북마크 목록에 추가합니다.")
     public ResponseEntity<ApiResponse<Void>> addBookmark(@PathVariable Long wordId, Authentication authentication) {
         vocabularyService.addBookmark(authentication.getName(), wordId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @DeleteMapping("/bookmarks/{wordId}")
+    @Operation(summary = "단어 북마크 삭제", description = "현재 학습 언어에 해당하는 단어를 사용자 북마크 목록에서 삭제합니다.")
     public ResponseEntity<ApiResponse<Void>> deleteBookmark(@PathVariable Long wordId, Authentication authentication) {
         vocabularyService.removeBookmark(authentication.getName(), wordId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @PatchMapping("/units/{unitNumber}/start")
+    @Operation(summary = "유닛 학습 시작", description = "단어 유닛 상태를 학습 중으로 변경합니다.")
     public ResponseEntity<ApiResponse<Void>> startUnit(@PathVariable Integer unitNumber, @RequestParam String level, Authentication authentication) {
         vocabularyService.startUnit(authentication.getName(), level, unitNumber);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @PatchMapping("/units/{unitNumber}/complete")
+    @Operation(summary = "유닛 학습 완료", description = "단어 유닛을 완료 처리하고 새 학습 단어·XP·챌린지 진행도를 반영합니다.")
     public ResponseEntity<ApiResponse<Void>> completeUnit(@PathVariable Integer unitNumber, @RequestParam String level, Authentication authentication) {
         vocabularyService.completeUnit(authentication.getName(), level, unitNumber);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @GetMapping("/challenge-words")
+    @Operation(
+            summary = "챌린지 단어 조회",
+            description = "현재 학습 언어에 해당하며 KST 기준 오늘 진행 중인 단어 챌린지 중 "
+                    + "가장 최근 생성된 챌린지를 기준으로 같은 언어의 단어를 목표 개수까지 무작위로 조회합니다."
+    )
     public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getChallengeWords(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(vocabularyService.getChallengeWords(authentication.getName())));
     }
 
+    @PostMapping("/challenge-words/complete")
+    @Operation(
+            summary = "챌린지 단어 완료",
+            description = "현재 학습 언어의 진행 중인 WORD_COUNT 챌린지가 있는지 확인하고, "
+                    + "요청한 단어가 모두 현재 학습 언어에 속하는지 검증합니다. "
+                    + "존재하지 않거나 다른 언어의 단어가 포함되면 요청 전체를 거절합니다. "
+                    + "새로 학습한 단어를 저장하고, 현재 학습 언어의 활성 단어 챌린지 중 "
+                    + "오늘이 챌린지 기간에 포함되는 챌린지에 진행도를 반영합니다."
+    )
+    public ResponseEntity<ApiResponse<ChallengeWordCompleteResponseDto>> completeChallengeWords(
+            @Valid @RequestBody ChallengeWordCompleteRequestDto requestDto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(vocabularyService.completeChallengeWords(authentication.getName(), requestDto))
+        );
+    }
+
     @GetMapping("/bookmarks")
+    @Operation(summary = "단어 북마크 목록 조회", description = "로그인한 사용자의 현재 학습 언어에 해당하는 북마크 단어 목록을 단어 ID 오름차순으로 조회합니다.")
     public ResponseEntity<ApiResponse<List<UnitWordResponseDto>>> getBookmarks(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(vocabularyService.getBookmarks(authentication.getName())));
     }

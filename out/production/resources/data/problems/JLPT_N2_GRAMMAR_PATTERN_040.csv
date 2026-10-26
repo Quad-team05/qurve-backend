@@ -1,0 +1,41 @@
+﻿level,category,subType,questionFormat,questionText,choice1,choice2,choice3,choice4,answerIndex,explanation,targetGrammar,grammarMeaning
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この薬は、食事の後に飲む（　　　）。,ことになっている,ことにしている,ものになっている,ところになっている,0,규칙이나 정해진 절차를 나타내므로 ～ことになっている가 맞다.,ことになっている,~하도록 정해져 있다
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,私は健康のため、毎朝歩く（　　　）。,ことになっている,ことにしている,ものとしている,ところにしている,1,개인이 정해 지속하는 습관에는 ～ことにしている를 쓴다.,ことにしている,~하기로 하고 있다
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この機械は専門家でない（　　　）操作できない。,うちに,ばかりに,限り,ところで,2,특정 조건 범위 안에서는 불가능하다는 의미에 ～ない限り를 쓴다.,ない限り,~하지 않는 한
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,実際に使ってみない（　　　）、商品の良さは分からない。,ものには,ところには,わけには,ことには,3,어떤 조건이 충족되지 않으면 뒤의 판단이 성립하지 않는 ～ないことには가 맞다.,ないことには,~하지 않고서는
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,忙しい（　　　）、食事をしないわけにはいかない。,からといって,に伴って,に応じて,に限って,0,앞의 이유만으로 뒤 행동이 정당화되지 않음을 나타내는 ～からといって가 맞다.,からといって,~라고 해서
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,一度引き受けた仕事だから、途中でやめる（　　　）。,に違いない,わけにはいかない,にすぎない,ことはない,1,사회적·도덕적 이유로 할 수 없다는 의미에 ～わけにはいかない를 쓴다.,わけにはいかない,~할 수는 없다
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,彼がそんな簡単なミスをする（　　　）。,にすぎない,ことになる,はずがない,ものがある,2,강한 부정 추측에는 ～はずがない가 적절하다.,はずがない,~할 리가 없다
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この結果から考えると、計画を変更する必要がある（　　　）。,にすぎない,にかかわらない,にほかならない,に違いない,3,근거에 따른 강한 확신을 나타내므로 ～に違いない가 맞다.,に違いない,~임에 틀림없다
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,これは私個人の意見（　　　）。,にすぎません,に違いません,に限りません,に伴いません,0,단지 그 정도일 뿐임을 나타내는 ～にすぎない가 맞다.,にすぎない,~에 지나지 않다
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,成功したのは、皆さんの協力の結果（　　　）。,にすぎません,にほかなりません,に限りません,に応じません,1,원인이나 본질을 강하게 특정하는 ～にほかならない가 맞다.,にほかならない,다름 아닌 ~이다
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,年齢（　　　）、誰でも参加できます。,に応じて,に伴って,にかかわらず,に限って,2,연령과 관계없이 참여 가능하므로 ～にかかわらず를 쓴다.,にかかわらず,~에 관계없이
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,経験の有無（　　　）、応募できます。,に従って,に対して,に比べて,にかかわらず,3,경험 유무와 관계없다는 뜻에 ～にかかわらず가 적절하다.,にかかわらず,~에 관계없이
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,能力（　　　）、仕事の内容を決めます。,に応じて,に伴って,に反して,に限って,0,능력에 맞추어 내용이 달라지므로 ～に応じて를 쓴다.,に応じて,~에 따라; ~에 맞추어
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,人口の増加（　　　）、住宅も増えている。,に応じて,に伴って,に反して,に限って,1,한 변화에 수반해 다른 변화가 생기는 ～に伴って가 맞다.,に伴って,~에 따라; ~와 함께
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,時代の変化（　　　）、働き方も変わってきた。,に限り,に反し,に伴い,に対し,2,시대 변화와 함께 근무 방식도 변한다는 의미다.,に伴う,~에 따라; ~와 함께
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,予想（　　　）、売上は大きく伸びた。,に応じて,に伴って,に限って,に反して,3,예상과 반대되는 결과에는 ～に反して를 쓴다.,に反して,~와 반대로
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,兄は活発なの（　　　）、弟は静かな性格だ。,に対して,に伴って,に応じて,に限って,0,두 대상을 대조할 때 ～に対して를 쓴다.,に対して,~에 비해; ~에 대하여
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この製品は以前のもの（　　　）、かなり軽い。,に伴って,に比べて,に応じて,に限って,1,두 대상을 비교하는 문맥이므로 ～に比べて가 맞다.,に比べて,~에 비해
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,説明を聞けば聞く（　　　）、分からなくなった。,だけ,まで,ほど,しか,2,～ば～ほど는 정도가 증가함에 따라 결과도 변함을 나타낸다.,ば～ほど,~하면 할수록
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,練習すればする（　　　）、上手になります。,だけ,しか,まで,ほど,3,연습 정도가 늘수록 실력이 향상된다는 비례 관계다.,ば～ほど,~하면 할수록
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,彼は忙しい（　　　）、私たちを手伝ってくれた。,にもかかわらず,に応じて,に伴って,に限って,0,예상되는 결과와 반대되는 상황에는 ～にもかかわらず를 쓴다.,にもかかわらず,~임에도 불구하고
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,雨（　　　）、多くの人がイベントに参加した。,に伴って,にもかかわらず,に応じて,に比べて,1,비가 왔음에도 많은 사람이 참가했다는 역접 관계다.,にもかかわらず,~임에도 불구하고
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この仕事は経験が必要な（　　　）、責任も重い。,うちに,ばかりに,上に,ところで,2,한 특성에 더하여 다른 특성을 덧붙일 때 ～上に를 쓴다.,上に,~인 데다가
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この店は安い（　　　）、サービスもいい。,うちに,ところで,ばかりに,上に,3,저렴하다는 장점에 서비스도 좋다는 점을 추가한다.,上に,~인 데다가
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,日本にいる（　　　）、できるだけ多く旅行したい。,うちに,上に,ばかりに,ところで,0,어떤 상태가 지속되는 동안 기회를 활용한다는 의미에 ～うちに를 쓴다.,うちに,~하는 동안에
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,忘れない（　　　）、メモしておきましょう。,上に,うちに,ばかりに,ところで,1,기억하고 있는 상태가 바뀌기 전에 한다는 의미다.,うちに,~하는 동안; ~하기 전에
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,一言余計なことを言った（　　　）、彼を怒らせてしまった。,上に,うちに,ばかりに,ところで,2,작은 원인이 좋지 않은 결과를 낳았음을 후회하는 ～ばかりに가 맞다.,ばかりに,~한 탓에
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,道を間違えた（　　　）、約束に遅れてしまった。,うちに,上に,に応じて,ばかりに,3,그 일 하나 때문에 부정적 결과가 생겼다는 의미다.,ばかりに,~한 탓에
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,今さら謝った（　　　）、彼の気持ちは変わらないだろう。,ところで,ばかりに,うちに,上に,0,어떤 행동을 해도 기대한 결과가 나오지 않는다는 ～たところで가 맞다.,たところで,~해 봤자
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,急いだ（　　　）、もう最終電車には間に合わない。,うちに,ところで,上に,ばかりに,1,서둘러도 결과가 바뀌지 않는다는 의미다.,たところで,~해 봤자
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この問題は専門家（　　　）解決できないほど難しい。,に限り,に応じて,でさえ,に伴って,2,극단적인 예로 전문가조차 어렵다는 의미에 ～でさえ를 쓴다.,でさえ,~조차
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,忙しくて、昼食を取る時間（　　　）なかった。,ほど,だけ,こそ,さえ,3,최소한의 것조차 없었다는 강조에는 ～さえ를 쓴다.,さえ,~조차
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この地域では冬（　　　）、道路が閉鎖されることがある。,に限って,に応じて,に伴って,に反して,0,특정 시기나 경우에 유독 그런 일이 생긴다는 의미에 ～に限って를 쓴다.,に限って,~에 한해서; 하필 ~때
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,大事な日に（　　　）、電車が遅れる。,応じて,限って,伴って,反して,1,하필 중요한 날에 문제가 생긴다는 불만의 뉘앙스다.,に限って,하필 ~때
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,申込書は今週金曜日（　　　）提出してください。,まで,うちに,までに,ほどに,2,행동 완료의 기한에는 ～までに를 쓴다.,までに,~까지
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,会議が終わる（　　　）、ここで待っています。,までに,うちに,ほど,まで,3,어떤 상태가 계속되는 종점에는 ～まで를 쓴다.,まで,~까지
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,この制度については、まだ改善の余地がある（　　　）。,ものと思われる,ことにしている,ところにすぎる,ばかりになっている,0,객관적이고 완곡한 판단을 나타내는 ～ものと思われる가 자연스럽다.,ものと思われる,~라고 생각된다
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,事故の原因は、設備の老朽化にある（　　　）。,ことに限られる,ものと考えられる,ところに応じる,ばかりに伴う,1,분석 결과를 객관적으로 제시하는 표현으로 ～ものと考えられる가 적절하다.,ものと考えられる,~라고 여겨진다
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,結果が出（　　　）、判断するのはまだ早い。,ない限りで,ないところで,ないことには,ないばかりに,2,결과가 나오지 않고서는 판단할 수 없다는 조건이다.,ないことには,~하지 않고서는
+N2,GRAMMAR,GRAMMAR_PATTERN,MULTIPLE_CHOICE,本人に確認し（　　　）、事実かどうか分からない。,ないばかりに,ない上に,ないほど,ないことには,3,본인에게 확인하지 않고서는 사실 여부를 알 수 없다는 뜻이다.,ないことには,~하지 않고서는

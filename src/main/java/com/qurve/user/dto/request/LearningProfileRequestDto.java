@@ -1,19 +1,15 @@
 package com.qurve.user.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import com.qurve.global.enums.LearningGoal;
+import com.qurve.global.enums.LearningStage;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
 public class LearningProfileRequestDto {
 
-    @NotBlank
-    @Size(max = 255)
-    private String learningGoal;
+    @NotNull(message = "학습 목적은 필수입니다.")
+    private LearningGoal learningGoal;
 
-    @NotNull
-    @Positive
-    private Integer currentLevel;
+    private LearningStage learningStage;
 }

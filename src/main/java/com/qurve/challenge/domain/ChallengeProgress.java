@@ -27,4 +27,11 @@ public class ChallengeProgress {
     @Column(name = "completed_days", nullable = false)
     private Integer completedDays = 0;
 
+    /**
+     * 화면에 표시할 현재 달성값을 갱신합니다.
+     */
+    public void updateCompletedDays(int completedDays) {
+        this.completedDays = completedDays;
+    }
+
 }

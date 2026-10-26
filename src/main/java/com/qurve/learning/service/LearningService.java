@@ -1,50 +1,557 @@
 package com.qurve.learning.service;
 
+import com.qurve.attendance.domain.StudyStatistics;
+import com.qurve.attendance.repository.StudyStatisticsRepository;
+import com.qurve.badge.service.BadgeService;
+import com.qurve.challenge.dto.response.ChallengeMainResponseDto;
+import com.qurve.challenge.service.ChallengeProgressService;
+import com.qurve.challenge.service.ChallengeService;
 import com.qurve.global.enums.ErrorCode;
+import com.qurve.global.enums.LearningGoal;
+import com.qurve.global.enums.LearningLanguage;
+import com.qurve.global.enums.LearningStage;
 import com.qurve.global.exception.BusinessException;
+import com.qurve.learning.domain.StudyTimeRecord;
+import com.qurve.learning.dto.request.StudyTimeSaveRequestDto;
+import com.qurve.learning.dto.response.DailyStudyTimeResponseDto;
+import com.qurve.learning.dto.response.CurrentVocabularyResponseDto;
+import com.qurve.learning.dto.response.LearningMainResponseDto;
+import com.qurve.learning.dto.response.MonthlyStudyTimeStatisticsResponseDto;
+import com.qurve.learning.dto.response.MonthlyStudyTimeResponseDto;
+import com.qurve.learning.dto.response.StudyTimeSaveResponseDto;
+import com.qurve.learning.dto.response.StudyTimeStatisticsResponseDto;
 import com.qurve.learning.dto.response.TodayLearningResponseDto;
+import com.qurve.learning.repository.StudyTimeRecordRepository;
+import com.qurve.problem.repository.ProblemRepository;
+import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.vocabulary.enums.UnitStatus;
+import com.qurve.vocabulary.repository.BookmarkRepository;
+import com.qurve.vocabulary.repository.UnitProgressRepository;
+import com.qurve.wrongnote.repository.WrongNoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Locale;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class LearningService {
 
-    private static final String TODAY_LEARNING_CATEGORY = "문자/어휘";
-    private static final String TODAY_LEARNING_TITLE = "문맥규정";
-    private static final int TODAY_LEARNING_TOTAL_QUESTION_COUNT = 20;
-    private static final int TODAY_LEARNING_ESTIMATED_MINUTES = 10;
+    private static final ZoneId KST_ZONE = ZoneId.of("Asia/Seoul");
+    private static final List<String> DAY_OF_WEEK_LABELS = List.of("월", "화", "수", "목", "금", "토", "일");
+    private static final List<String> JLPT_LEVELS = List.of("N1", "N2", "N3", "N4", "N5");
+    private static final String JAPANESE_PROBLEM_LANGUAGE = "JA";
+    private static final String ENGLISH_PROBLEM_LANGUAGE = "EN";
+    private static final int DEFAULT_TODAY_LEARNING_SET_SIZE = 20;
 
     private final UserRepository userRepository;
+    private final StudyTimeRecordRepository studyTimeRecordRepository;
+    private final StudyStatisticsRepository studyStatisticsRepository;
+    private final ProblemRepository problemRepository;
+    private final BadgeService badgeService;
+    private final ChallengeService challengeService;
+    private final ChallengeProgressService challengeProgressService;
+    private final WrongNoteRepository wrongNoteRepository;
+    private final UnitProgressRepository unitProgressRepository;
+    private final BookmarkRepository bookmarkRepository;
+
+    /**
+     * 학습 메인 화면에 필요한 사용자 학습 정보를 한 번에 조회합니다.
+     *
+     * @param loginId 로그인 ID
+     * @return 학습 목적, 단계, 사용자 레벨 및 학습 현황 정보
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public LearningMainResponseDto findMain(String loginId) {
+        User user = findUserByLoginId(loginId);
+        TodayLearningResponseDto todayLearning = findTodayLearningOrNull(loginId);
+        List<ChallengeMainResponseDto> challenges = challengeService.findAllForMain(loginId);
+        CurrentVocabularyResponseDto currentVocabulary = CurrentVocabularyResponseDto.from(
+                unitProgressRepository.findAllByUserAndStatusAndLearningLanguageOrderByUpdatedAtDesc(
+                                user,
+                                UnitStatus.IN_PROGRESS,
+                                user.getLearningLanguage(),
+                                LearningLanguage.JAPANESE
+                        )
+                        .stream()
+                        .findFirst()
+                        .orElse(null)
+        );
+
+        return LearningMainResponseDto.of(
+                user,
+                resolveLearningStageLabel(user),
+                challenges,
+                todayLearning,
+                wrongNoteRepository.countByUserAndProblemLanguage(
+                        user,
+                        toProblemLanguage(user.getLearningLanguage()),
+                        JAPANESE_PROBLEM_LANGUAGE
+                ),
+                currentVocabulary,
+                bookmarkRepository.countByUserAndLearningLanguage(
+                        user,
+                        user.getLearningLanguage(),
+                        LearningLanguage.JAPANESE
+                )
+        );
+    }
+
+    /**
+     * 현재 학습 목적에 따라 화면에 표시할 학습 단계 라벨을 반환합니다.
+     *
+     * 실생활 학습은 레벨 테스트 결과를 표시하고,
+     * JLPT 또는 TOEIC 학습은 사용자가 선택한 단계의 라벨을 반환합니다.
+     *
+     * @param user 학습 단계 정보를 조회할 사용자
+     * @return 표시할 학습 단계 라벨 또는 설정되지 않은 경우 null
+     */
+    private String resolveLearningStageLabel(User user) {
+        if (user.getLearningGoal() == null) {
+            return null;
+        }
+
+        if (user.getLearningGoal() == LearningGoal.DAILY_LIFE) {
+            Integer currentLevel = user.getCurrentLevel();
+
+            return currentLevel == null ? null : "Level " + currentLevel;
+        }
+
+        LearningStage learningStage = user.getLearningStage();
+
+        return learningStage == null ? null : learningStage.getLabel();
+    }
 
     /**
      * 오늘의 학습 카드 조회
      *
-     * * 메인페이지 카드에 노출할 오늘의 학습 영역, 문항 수,
-     * 예상 소요 시간을 반환한다.
+     * * KST 기준 오늘 날짜와 사용자의 현재 레벨을 기준으로
+     * 오늘의 학습 세트를 선택해 반환한다.
      *
      * @param loginId 로그인 ID
      * @return 오늘의 학습 카드 응답 정보
-     * @throws BusinessException 유저가 존재하지 않는 경우
+     * @throws BusinessException 유저가 존재하지 않거나 오늘의 학습 세트가 없는 경우
      */
     public TodayLearningResponseDto findTodayLearning(String loginId) {
-        validateUser(loginId);
+        return findTodayLearning(loginId, null);
+    }
 
-        // TODO: 학습 콘텐츠 API 구현 후 사용자 레벨과 오늘 날짜를 기준으로 실제 학습 데이터를 조회하도록 변경 예정
+    /**
+     * 오늘의 학습 카드 조회
+     *
+     * * 요청 날짜가 있으면 해당 날짜를, 없으면 KST 기준 오늘 날짜를 기준으로
+     * 사용자의 오늘의 학습 세트를 선택해 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @param date 조회 기준 날짜
+     * @return 오늘의 학습 카드 응답 정보
+     * @throws BusinessException 유저가 존재하지 않거나 오늘의 학습 세트가 없는 경우
+     */
+    public TodayLearningResponseDto findTodayLearning(String loginId, LocalDate date) {
+        User user = findUserByLoginId(loginId);
+        LocalDate today = date == null ? LocalDate.now(KST_ZONE) : date;
+        TodayLearningSet todayLearningSet = findTodayLearningSet(user, today);
+
         return TodayLearningResponseDto.of(
-                TODAY_LEARNING_CATEGORY,
-                TODAY_LEARNING_TITLE,
-                TODAY_LEARNING_TOTAL_QUESTION_COUNT,
-                TODAY_LEARNING_ESTIMATED_MINUTES
+                todayLearningSet.level(),
+                user.getLearningLanguage(),
+                todayLearningSet.language(),
+                todayLearningSet.cefrLevel(),
+                todayLearningSet.qurveLevel(),
+                todayLearningSet.categoryCode(),
+                todayLearningSet.subTypeCode(),
+                todayLearningSet.offset(),
+                todayLearningSet.categoryLabel(),
+                todayLearningSet.titleLabel(),
+                todayLearningSet.totalQuestionCount(),
+                todayLearningSet.estimatedMinutes()
         );
     }
 
-    private void validateUser(String loginId) {
-        if (!userRepository.existsByLoginId(loginId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+    /**
+     * 학습 시간 통계 조회
+     *
+     * * KST 기준 이번 주 월요일부터 일요일까지의 요일별 학습 시간,
+     * 오늘 학습 시간, 이번 주 전체 학습 시간을 분 단위로 반환한다.
+     *
+     * @param loginId 로그인 ID
+     * @return 학습 시간 통계 응답 정보
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public StudyTimeStatisticsResponseDto findStudyTimeStatistics(String loginId) {
+        User user = findUserByLoginId(loginId);
+        LocalDate today = LocalDate.now(KST_ZONE);
+        LocalDate weekStartDate = today.with(DayOfWeek.MONDAY);
+        LocalDate weekEndDate = weekStartDate.plusDays(6);
+
+        Map<LocalDate, Integer> studyTimeByDate = studyTimeRecordRepository
+                .findAllByUserAndStudyDateBetween(user, weekStartDate, weekEndDate)
+                .stream()
+                .collect(Collectors.toMap(
+                        StudyTimeRecord::getStudyDate,
+                        StudyTimeRecord::getStudyTimeMinutes,
+                        Integer::sum
+                ));
+
+        List<DailyStudyTimeResponseDto> dailyStudyTimes = IntStream.range(0, 7)
+                .mapToObj(index -> {
+                    LocalDate targetDate = weekStartDate.plusDays(index);
+                    DayOfWeek dayOfWeek = targetDate.getDayOfWeek();
+                    int studyTimeMinutes = studyTimeByDate.getOrDefault(targetDate, 0);
+
+                    return DailyStudyTimeResponseDto.of(
+                            dayOfWeek.name(),
+                            DAY_OF_WEEK_LABELS.get(dayOfWeek.getValue() - 1),
+                            studyTimeMinutes
+                    );
+                })
+                .toList();
+
+        int todayStudyTimeMinutes = studyTimeByDate.getOrDefault(today, 0);
+        int weeklyStudyTimeMinutes = studyTimeByDate.values().stream()
+                .mapToInt(Integer::intValue)
+                .sum();
+
+        return StudyTimeStatisticsResponseDto.of(
+                weekStartDate,
+                weekEndDate,
+                todayStudyTimeMinutes,
+                weeklyStudyTimeMinutes,
+                dailyStudyTimes
+        );
+    }
+
+    /**
+     * 월간 학습 시간 통계 조회
+     *
+     * * 기준 월과 이전 두 달을 포함한 최근 3개월의 월별 누적 학습 시간을 분 단위로 반환한다.
+     * * 기준 월이 없으면 KST 기준 이번 달을 조회한다.
+     *
+     * @param loginId 로그인 ID
+     * @param yearMonth 조회할 연월
+     * @return 월간 학습 시간 통계 응답 정보
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    public MonthlyStudyTimeStatisticsResponseDto findMonthlyStudyTimeStatistics(String loginId, YearMonth yearMonth) {
+        User user = findUserByLoginId(loginId);
+        YearMonth endYearMonth = yearMonth == null ? YearMonth.now(KST_ZONE) : yearMonth;
+        YearMonth startYearMonth = endYearMonth.minusMonths(2);
+        LocalDate startDate = startYearMonth.atDay(1);
+        LocalDate endDate = endYearMonth.atEndOfMonth();
+
+        Map<LocalDate, Integer> studyTimeByDate = studyTimeRecordRepository
+                .findAllByUserAndStudyDateBetween(user, startDate, endDate)
+                .stream()
+                .collect(Collectors.toMap(
+                        StudyTimeRecord::getStudyDate,
+                        StudyTimeRecord::getStudyTimeMinutes,
+                        Integer::sum
+                ));
+
+        List<MonthlyStudyTimeResponseDto> monthlyStudyTimes = IntStream.range(0, 3)
+                .mapToObj(startYearMonth::plusMonths)
+                .map(targetYearMonth -> MonthlyStudyTimeResponseDto.of(
+                        targetYearMonth,
+                        studyTimeByDate.entrySet().stream()
+                                .filter(entry -> YearMonth.from(entry.getKey()).equals(targetYearMonth))
+                                .mapToInt(Map.Entry::getValue)
+                                .sum()
+                ))
+                .toList();
+
+        return MonthlyStudyTimeStatisticsResponseDto.of(
+                startYearMonth,
+                endYearMonth,
+                monthlyStudyTimes
+        );
+    }
+
+    /**
+     * 학습 시간 저장
+     *
+     * * 오늘 날짜 기준 학습 시간 레코드를 생성하거나 누적하고,
+     * 전체 누적 학습 시간도 함께 갱신한다.
+     *
+     * @param loginId 로그인 ID
+     * @param requestDto 추가할 학습 시간
+     * @return 추가된 학습 시간과 누적 학습 시간
+     * @throws BusinessException 유저가 존재하지 않는 경우
+     */
+    @Transactional
+    public StudyTimeSaveResponseDto saveStudyTime(String loginId, StudyTimeSaveRequestDto requestDto) {
+        User user = findUserByLoginId(loginId);
+        StudyStatistics studyStatistics = findOrCreateStudyStatistics(user);
+        StudyTimeRecord studyTimeRecord = findOrCreateStudyTimeRecord(user, LocalDate.now(KST_ZONE));
+
+        int studyTimeMinutes = requestDto.getStudyTimeMinutes();
+        studyTimeRecord.addStudyTime(studyTimeMinutes);
+        studyStatistics.addStudyTime(studyTimeMinutes);
+        challengeProgressService.addProgress(user, com.qurve.challenge.domain.ChallengeGoalType.STUDY_TIME, studyTimeMinutes);
+        badgeService.evaluate(user);
+
+        return StudyTimeSaveResponseDto.of(studyTimeMinutes, studyStatistics);
+    }
+
+    private User findUserByLoginId(String loginId) {
+        return userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private TodayLearningResponseDto findTodayLearningOrNull(String loginId) {
+        try {
+            return findTodayLearning(loginId);
+        } catch (BusinessException exception) {
+            if (exception.getErrorCode() == ErrorCode.TODAY_LEARNING_NOT_FOUND) {
+                return null;
+            }
+            throw exception;
         }
+    }
+
+    private StudyStatistics findOrCreateStudyStatistics(User user) {
+        return studyStatisticsRepository.findByUser_UserId(user.getUserId())
+                .orElseGet(() -> studyStatisticsRepository.save(StudyStatistics.create(user)));
+    }
+
+    private StudyTimeRecord findOrCreateStudyTimeRecord(User user, LocalDate studyDate) {
+        return studyTimeRecordRepository.findByUserAndStudyDate(user, studyDate)
+                .orElseGet(() -> studyTimeRecordRepository.save(StudyTimeRecord.create(user, studyDate)));
+    }
+
+    private TodayLearningSet findTodayLearningSet(User user, LocalDate today) {
+        LearningLanguage learningLanguage = user.getLearningLanguage();
+        String problemLanguage = learningLanguage == LearningLanguage.ENGLISH
+                ? ENGLISH_PROBLEM_LANGUAGE
+                : JAPANESE_PROBLEM_LANGUAGE;
+        List<String> candidateLevels = learningLanguage == LearningLanguage.ENGLISH
+                ? createEnglishLevelFallbackOrder(user.getCurrentLevel())
+                : createLevelFallbackOrder(mapCurrentLevelToJlptLevel(user.getCurrentLevel()));
+
+        for (String candidateLevel : candidateLevels) {
+            List<ProblemRepository.TodayLearningSetProjection> learningSets = problemRepository
+                    .findTodayLearningSetsByLanguageAndLevel(problemLanguage, candidateLevel);
+
+            if (learningSets.isEmpty()) {
+                continue;
+            }
+
+            List<TodayLearningSet> expandedLearningSets = expandTodayLearningSets(
+                    problemLanguage,
+                    candidateLevel,
+                    learningSets
+            );
+            shuffleTodayLearningSets(problemLanguage, candidateLevel, expandedLearningSets);
+            int index = Math.floorMod(today.toEpochDay(), expandedLearningSets.size());
+            return expandedLearningSets.get(index);
+        }
+
+        throw new BusinessException(ErrorCode.TODAY_LEARNING_NOT_FOUND);
+    }
+
+    private List<TodayLearningSet> expandTodayLearningSets(
+            String language,
+            String level,
+            List<ProblemRepository.TodayLearningSetProjection> learningSets
+    ) {
+        List<TodayLearningSet> expandedLearningSets = new ArrayList<>();
+
+        for (ProblemRepository.TodayLearningSetProjection learningSet : learningSets) {
+            int problemCount = learningSet.getProblemCount().intValue();
+
+            for (int offset = 0; offset < problemCount; offset += DEFAULT_TODAY_LEARNING_SET_SIZE) {
+                int totalQuestionCount = Math.min(DEFAULT_TODAY_LEARNING_SET_SIZE, problemCount - offset);
+
+                expandedLearningSets.add(new TodayLearningSet(
+                        level,
+                        language,
+                        learningSet.getCefrLevel(),
+                        ENGLISH_PROBLEM_LANGUAGE.equals(language) ? level : null,
+                        learningSet.getCategory(),
+                        learningSet.getSubType(),
+                        offset,
+                        toCategoryLabel(language, learningSet.getCategory(), learningSet.getSubType()),
+                        toTitleLabel(language, learningSet.getSubType()),
+                        totalQuestionCount,
+                        Math.max(1, (int) Math.ceil(totalQuestionCount / 2.0))
+                ));
+            }
+        }
+
+        return expandedLearningSets;
+    }
+
+    private void shuffleTodayLearningSets(String language, String level, List<TodayLearningSet> learningSets) {
+        long seed = (language + level).hashCode();
+        Collections.shuffle(learningSets, new Random(seed));
+    }
+
+    private List<String> createEnglishLevelFallbackOrder(Integer currentLevel) {
+        int preferredLevel = currentLevel == null ? 1 : Math.clamp(currentLevel, 1, 10);
+        List<String> fallbackOrder = new ArrayList<>();
+
+        for (int distance = 0; distance < 10; distance++) {
+            int lowerLevel = preferredLevel - distance;
+            int higherLevel = preferredLevel + distance;
+
+            if (lowerLevel >= 1) {
+                fallbackOrder.add("Lv" + lowerLevel);
+            }
+
+            if (distance > 0 && higherLevel <= 10) {
+                fallbackOrder.add("Lv" + higherLevel);
+            }
+        }
+
+        return fallbackOrder;
+    }
+
+    private String mapCurrentLevelToJlptLevel(Integer currentLevel) {
+        if (currentLevel == null) {
+            return "N5";
+        }
+
+        return switch (currentLevel) {
+            case 1, 2 -> "N5";
+            case 3, 4 -> "N4";
+            case 5, 6 -> "N3";
+            case 7, 8 -> "N2";
+            case 9, 10 -> "N1";
+            default -> "N5";
+        };
+    }
+
+    private List<String> createLevelFallbackOrder(String preferredLevel) {
+        int preferredIndex = JLPT_LEVELS.indexOf(preferredLevel);
+
+        if (preferredIndex < 0) {
+            return List.of("N5");
+        }
+
+        List<String> fallbackOrder = new ArrayList<>();
+
+        for (int index = preferredIndex; index < JLPT_LEVELS.size(); index++) {
+            fallbackOrder.add(JLPT_LEVELS.get(index));
+        }
+
+        for (int index = preferredIndex - 1; index >= 0; index--) {
+            fallbackOrder.add(JLPT_LEVELS.get(index));
+        }
+
+        return fallbackOrder;
+    }
+
+    private String toCategoryLabel(String language, String categoryCode, String subTypeCode) {
+        String normalizedCategoryCode = normalizeKeyword(categoryCode);
+        String normalizedSubTypeCode = normalizeKeyword(subTypeCode);
+
+        if (ENGLISH_PROBLEM_LANGUAGE.equals(language)) {
+            return switch (normalizedCategoryCode) {
+                case "VOCABULARY" -> "어휘";
+                case "GRAMMAR" -> "문법";
+                case "READING" -> "독해";
+                case "LISTENING" -> "듣기";
+                case "DAILY_ENGLISH" -> "실생활 영어";
+                default -> normalizedCategoryCode;
+            };
+        }
+
+        return switch (normalizedCategoryCode) {
+            case "READING" -> "독해";
+            case "GRAMMAR" -> "문법";
+            case "LANGUAGE_KNOWLEDGE" -> switch (normalizedSubTypeCode) {
+                case "GRAMMAR_PATTERN" -> "문법";
+                default -> "문자/어휘";
+            };
+            default -> normalizedCategoryCode;
+        };
+    }
+
+    private String toTitleLabel(String language, String subTypeCode) {
+        String normalizedSubTypeCode = normalizeKeyword(subTypeCode);
+
+        if (ENGLISH_PROBLEM_LANGUAGE.equals(language)) {
+            return switch (normalizedSubTypeCode) {
+                case "WORD_MEANING" -> "단어 의미";
+                case "WORD_RECOGNITION" -> "단어 인식";
+                case "CONTEXT_VOCABULARY" -> "문맥 어휘";
+                case "VOCABULARY_BLANK" -> "어휘 빈칸";
+                case "SYNONYM" -> "유의어";
+                case "GRAMMAR_BLANK" -> "문법 빈칸";
+                case "CORRECT_SENTENCE" -> "문장 고르기";
+                case "ERROR_FINDING" -> "오류 찾기";
+                case "SENTENCE_ORDER" -> "문장 순서";
+                case "SENTENCE_RECOGNITION" -> "문장 인식";
+                case "SHORT_MESSAGE" -> "짧은 메시지";
+                case "NOTICE" -> "안내문";
+                case "DETAIL" -> "세부 내용";
+                case "MAIN_IDEA" -> "주제 찾기";
+                case "PURPOSE" -> "글의 목적";
+                case "INFERENCE" -> "추론";
+                case "INTENTION" -> "의도 파악";
+                case "SITUATION_EXPRESSION" -> "상황 표현";
+                case "POLITE_EXPRESSION" -> "공손한 표현";
+                case "SIMILAR_EXPRESSION" -> "유사 표현";
+                case "KOREAN_TO_ENGLISH" -> "영작";
+                case "DIALOGUE_BLANK" -> "대화 빈칸";
+                case "DIALOGUE_ORDER" -> "대화 순서";
+                case "NATURAL_RESPONSE" -> "자연스러운 응답";
+                case "LISTENING_INFORMATION" -> "듣기 정보";
+                case "LISTENING_DIALOGUE" -> "듣기 대화";
+                case "LISTENING_RESPONSE" -> "듣기 응답";
+                case "LIFE_LISTENING" -> "일상 듣기";
+                case "DICTATION" -> "받아쓰기";
+                case "PRONUNCIATION_DISTINCTION" -> "발음 구별";
+                default -> normalizedSubTypeCode;
+            };
+        }
+
+        return switch (normalizedSubTypeCode) {
+            case "KANJI_READING" -> "한자 읽기";
+            case "VOCABULARY_KANJI" -> "한자 어휘";
+            case "CONTEXT_VOCABULARY" -> "문맥 규정";
+            case "USAGE" -> "용법";
+            case "GRAMMAR_PATTERN" -> "문법";
+            case "READING_COMPREHENSION" -> "독해";
+            default -> normalizedSubTypeCode;
+        };
+    }
+
+    private String normalizeKeyword(String keyword) {
+        return keyword == null ? "" : keyword.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private String toProblemLanguage(LearningLanguage learningLanguage) {
+        return learningLanguage == LearningLanguage.ENGLISH
+                ? ENGLISH_PROBLEM_LANGUAGE
+                : JAPANESE_PROBLEM_LANGUAGE;
+    }
+
+    private record TodayLearningSet(
+            String level,
+            String language,
+            String cefrLevel,
+            String qurveLevel,
+            String categoryCode,
+            String subTypeCode,
+            int offset,
+            String categoryLabel,
+            String titleLabel,
+            int totalQuestionCount,
+            int estimatedMinutes
+    ) {
     }
 }

@@ -1,6 +1,7 @@
 package com.qurve.auth.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.Role;
 import com.qurve.user.domain.User;
 import jakarta.validation.constraints.*;
@@ -43,6 +44,7 @@ public class SignupRequestDto {
                 .role(Role.USER)
                 .name(this.name)
                 .nickname(this.nickname)
+                .learningLanguage(LearningLanguage.JAPANESE)
                 .build();
     }
 }
