@@ -1,5 +1,7 @@
 package com.qurve.ai.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.qurve.ai.domain.AiChatMessage;
 import com.qurve.ai.domain.AiChatRoom;
 import com.qurve.ai.dto.request.AiChatRequestDto;
@@ -31,11 +33,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AiService {
+
+    private static final ObjectMapper LOG_JSON = new ObjectMapper();
 
     @Value("${gemini.api-key}")
     private String apiKey;
@@ -222,42 +227,163 @@ public class AiService {
                 !apiKey.isBlank()
         );
 
+        String requestId = UUID.randomUUID().toString();
+        long startedNanos = System.nanoTime();
+        String phase = "HTTP";
+        Map response = null;
+
+        log.info(
+                "[AI_GEMINI_START] requestId={} questionChars={} historyMessages={}",
+                requestId,
+                userMessage.length(),
+                recentMessages.size()
+        );
+
         try {
-            Map response = restClient.post()
+            response = restClient.post()
                     .uri(apiUrl + "/models/{model}:generateContent?key={apiKey}", geminiModel, apiKey)
                     .header("Content-Type", "application/json")
                     .body(body)
                     .retrieve()
                     .body(Map.class);
 
-            return extractAnswer(response);
+            phase = "RESPONSE_PARSE";
+            String answer = extractAnswer(response);
+            long elapsedMs = (System.nanoTime() - startedNanos) / 1_000_000;
+
+            if (answer == null || answer.isBlank()) {
+                log.warn(
+                        "[AI_GEMINI_EMPTY_TEXT] requestId={} elapsedMs={} responseMeta={}",
+                        requestId,
+                        elapsedMs,
+                        summarizeGeminiResponse(response)
+                );
+            } else {
+                log.info(
+                        "[AI_GEMINI_OK] requestId={} elapsedMs={} answerChars={}",
+                        requestId,
+                        elapsedMs,
+                        answer.length()
+                );
+            }
+
+            return answer;
+
         } catch (RestClientResponseException e) {
+            // Gemini가 HTTP 오류 응답을 반환한 경우
             log.error(
-                    "Gemini API response error: status={}, statusText={}, responseBody={}, model={}, "
-                            + "contentCount={}, connectTimeoutMillis={}, readTimeoutMillis={}",
+                    "[AI_GEMINI_HTTP_ERROR] requestId={} elapsedMs={} status={} errorMeta={}",
+                    requestId,
+                    (System.nanoTime() - startedNanos) / 1_000_000,
                     e.getStatusCode().value(),
-                    e.getStatusText(),
-                    abbreviate(e.getResponseBodyAsString()),
-                    geminiModel,
-                    contents.size(),
-                    GEMINI_CONNECT_TIMEOUT_MILLIS,
-                    GEMINI_READ_TIMEOUT_MILLIS,
-                    e
+                    summarizeGeminiError(e.getResponseBodyAsString())
             );
+
             throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+
         } catch (RestClientException e) {
+            // 연결, 시간 초과, HTTP 응답 변환 등의 클라이언트 오류
             log.error(
-                    "Gemini API request failed: exceptionType={}, message={}, model={}, contentCount={}, "
-                            + "connectTimeoutMillis={}, readTimeoutMillis={}",
-                    e.getClass().getSimpleName(),
-                    e.getMessage(),
-                    geminiModel,
-                    contents.size(),
-                    GEMINI_CONNECT_TIMEOUT_MILLIS,
-                    GEMINI_READ_TIMEOUT_MILLIS,
-                    e
+                    "[AI_GEMINI_CLIENT_ERROR] requestId={} elapsedMs={} exceptionType={} causeType={}",
+                    requestId,
+                    (System.nanoTime() - startedNanos) / 1_000_000,
+                    e.getClass().getName(),
+                    e.getMostSpecificCause().getClass().getName()
             );
+
             throw new BusinessException(ErrorCode.GEMINI_API_FAIL);
+
+        } catch (RuntimeException e) {
+            // 응답 구조가 예상과 달라 extractAnswer() 등이 실패한 경우
+            log.error(
+                    "[AI_GEMINI_UNEXPECTED_ERROR] requestId={} elapsedMs={} phase={} exceptionType={} responseMeta={}",
+                    requestId,
+                    (System.nanoTime() - startedNanos) / 1_000_000,
+                    phase,
+                    e.getClass().getName(),
+                    summarizeGeminiResponse(response)
+            );
+
+            throw e;
+        }
+    }
+
+    /**
+     * 오류 본문에서 진단용 항목만 추출한다.
+     * 원본 오류 메시지, API 키, 질문 전문은 기록하지 않는다.
+     */
+    private String summarizeGeminiError(String responseBody) {
+        try {
+            JsonNode error = LOG_JSON.readTree(responseBody).path("error");
+
+            var summary = LOG_JSON.createObjectNode();
+            summary.set("code", error.path("code"));
+            summary.set("status", error.path("status"));
+
+            var details = summary.putArray("details");
+
+            for (JsonNode detail : error.path("details")) {
+                var item = details.addObject();
+                item.set("reason", detail.path("reason"));
+                item.set("retryDelay", detail.path("retryDelay"));
+
+                var quotas = item.putArray("quotas");
+
+                for (JsonNode violation : detail.path("violations")) {
+                    var quota = quotas.addObject();
+                    quota.set("quotaMetric", violation.path("quotaMetric"));
+                    quota.set("quotaId", violation.path("quotaId"));
+                    quota.set("quotaValue", violation.path("quotaValue"));
+                }
+            }
+
+            return summary.toString();
+
+        } catch (Exception ignored) {
+            return "ERROR_BODY_UNREADABLE";
+        }
+    }
+
+    /**
+     * 응답 구조와 종료 사유만 기록한다.
+     * 생성된 답변이나 입력한 질문 전문은 기록하지 않는다.
+     */
+    private String summarizeGeminiResponse(Map<?, ?> response) {
+        try {
+            JsonNode root = LOG_JSON.valueToTree(response);
+            JsonNode candidates = root.path("candidates");
+            JsonNode candidate = candidates.path(0);
+            JsonNode parts = candidate.path("content").path("parts");
+
+            int textPartCount = 0;
+            for (JsonNode part : parts) {
+                if (part.path("text").isTextual()) {
+                    textPartCount++;
+                }
+            }
+
+            var summary = LOG_JSON.createObjectNode();
+            summary.put("candidateCount", candidates.size());
+            summary.set("finishReason", candidate.path("finishReason"));
+            summary.set(
+                    "blockReason",
+                    root.path("promptFeedback").path("blockReason")
+            );
+            summary.put("partCount", parts.size());
+            summary.put("textPartCount", textPartCount);
+            summary.put(
+                    "firstPartTextLength",
+                    parts.path(0).path("text").asText("").length()
+            );
+            summary.set(
+                    "totalTokenCount",
+                    root.path("usageMetadata").path("totalTokenCount")
+            );
+
+            return summary.toString();
+
+        } catch (Exception ignored) {
+            return "RESPONSE_SUMMARY_UNAVAILABLE";
         }
     }
 
