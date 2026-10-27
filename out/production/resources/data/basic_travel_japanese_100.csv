@@ -1,0 +1,101 @@
+﻿category,kanji,hiragana,romaji,translation
+인사 및 기본 표현,初めまして。,はじめまして。,hajimemashite,처음 뵙겠습니다.
+인사 및 기본 표현,こんにちは。,こんにちは。,konnichiwa,안녕하세요. (낮)
+인사 및 기본 표현,ありがとうございます。,ありがとうございます。,arigatou gozaimasu,감사합니다.
+인사 및 기본 표현,すみません。,すみません。,sumimasen,죄송합니다 / 저기요.
+인사 및 기본 표현,はい。,はい。,hai,네.
+인사 및 기본 표현,いいえ。,いいえ。,iie,아니요.
+인사 및 기본 표현,お元気ですか？,おげんきですか？,o genki desu ka,잘 지내시나요?
+인사 및 기본 표현,さようなら。,さようなら。,sayounara,안녕히 가세요.
+인사 및 기본 표현,よろしくお願いします。,よろしくおねがいします。,yoroshiku onegai shimasu,잘 부탁드립니다.
+인사 및 기본 표현,ごめんなさい。,ごめんなさい。,gomen nasai,미안합니다.
+인사 및 기본 표현,また会いましょう。,またあいましょう。,mata aimashou,또 만나요.
+인사 및 기본 표현,おやすみなさい。,おやすみなさい。,oyasumi nasai,안녕히 주무세요.
+인사 및 기본 표현,いただきます。,いただきます。,itadakimasu,잘 먹겠습니다.
+인사 및 기본 표현,ごちそうさまでした。,ごちそうさまでした。,gochisousama deshita,잘 먹었습니다.
+인사 및 기본 표현,いってきます。,いってきます。,ittekimasu,다녀오겠습니다.
+인사 및 기본 표현,いってらっしゃい。,いってらっしゃい。,itterasshai,다녀오세요.
+인사 및 기본 표현,ただいま。,ただいま。,tadaima,다녀왔습니다.
+인사 및 기본 표현,おかえりなさい。,おかえりなさい。,okaeri nasai,어서 오세요 (집에 돌아왔을 때).
+인사 및 기본 표현,おめでとうございます。,おめでとうございます。,omedetou gozaimasu,축하합니다.
+인사 및 기본 표현,がんばってください。,がんばってください。,ganbatte kudasai,힘내세요.
+식당 및 주문,注文します。,ちゅうもんします。,chuumon shimasu,주문하겠습니다.
+식당 및 주문,メニューを見せてください。,メニューをみせてください。,menyuu o misete kudasai,메뉴판을 보여주세요.
+식당 및 주문,これをお願いします。,これをおねがいします。,kore o onegai shimasu,이것으로 부탁합니다.
+식당 및 주문,これ、いくらですか？,これ、いくらですか？,"kore, ikura desu ka",이거 얼마인가요?
+식당 및 주문,お会計をお願いします。,おかいけいをおねがいします。,okaikei o onegai shimasu,계산해 주세요.
+식당 및 주문,お水をください。,おみずをください。,omizu o kudasai,물을 주세요.
+식당 및 주문,英語のメニューはありますか？,えいごのメニューはありますか？,eigo no menyuu wa arimasu ka,영어 메뉴판이 있나요?
+식당 및 주문,おすすめは何ですか？,おすすめはなんですか？,ososume wa nan desu ka,추천 메뉴는 무엇인가요?
+식당 및 주문,とても美味しいです。,とてもおいしいです。,totemo oishii desu,정말 맛있어요.
+식당 및 주문,お腹がいっぱいです。,おなかがいっぱいです。,onaka ga ippai desu,배가 부릅니다.
+식당 및 주문,辛いですか？,からいですか？,karai desu ka,매운가요?
+식당 및 주문,これをもう一つください。,これをもうひとつください。,kore o mou hitotsu kudasai,이것 한 개 더 주세요.
+식당 및 주문,クレジットカードは使えますか？,クレジットカードはつかえますか？,kurejitto kaado wa tsukaえますか,신용카드 사용 가능한가요?
+식당 및 주문,領収書をください。,りょうしゅうしょをください。,ryoushuusho o kudasai,영수증을 주세요.
+식당 및 주문,テイクアウトできますか？,テイクアウトできますか？,teikuauto dekimasu ka,포장 가능한가요?
+식당 및 주문,禁煙席をお願いします。,きんえんせきをおねがいします。,kinen seki o onegai shimasu,금연석으로 부탁합니다.
+식당 및 주문,二人です。,ふたりです。,futari desu,두 명입니다.
+식당 및 주문,予約はしていません。,よやくはしていません。,yoyaku wa shite imasen,예약은 하지 않았습니다.
+식당 및 주문,わさびを抜いてください。,わさびをぬいてください。,wasabi o nuite kudasai,와사비를 빼주세요.
+식당 및 주문,ごちそうさまでした。,ごちそうさまでした。,gochisousama deshita,잘 먹었습니다.
+길 묻기 및 교통,この店はどこにありますか？,このみせはどこにありますか？,kono mise wa doko ni arimasu ka,이 가게가 어딘지 아시나요?
+길 묻기 및 교통,駅はどこですか？,えきはどこですか？,eki wa doko desu ka,역은 어디인가요?
+길 묻기 및 교통,まっすぐ行ってください。,まっすぐいってください。,massugu itte kudasai,쭉 가세요.
+길 묻기 및 교통,右に曲がってください。,みぎにまがってください。,migi ni magatte kudasai,우회전해 주세요.
+길 묻기 및 교통,左に曲がってください。,ひだりにまがってください。,hidari ni magatte kudasai,좌회전해 주세요.
+길 묻기 및 교통,トイレはどこですか？,トイレはどこですか？,toire wa doko desu ka,화장실은 어디인가요?
+길 묻기 및 교통,ここから遠いですか？,ここからとおいですか？,koko kara tooi desu ka,여기서 먼가요?
+길 묻기 및 교통,歩いて行けますか？,あるいていけますか？,aruite ikemasu ka,걸어갈 수 있나요?
+길 묻기 및 교통,タクシーを呼んでください。,タクシーをよんでください。,takushii o yonde kudasai,택시를 불러주세요.
+길 묻기 및 교통,切符はどこで買いますか？,きっぷはどこでかいますか？,kippu wa doko de kaimasu ka,표는 어디서 사나요?
+길 묻기 및 교통,ここに行きたいです。,ここにいきたいです。,koko ni ikitai desu,여기에 가고 싶습니다.
+길 묻기 및 교통,地図を見せてください。,ちずをみせてください。,chizu o misete kudasai,지도를 보여주세요.
+길 묻기 및 교통,バス停はどこですか？,バスていはどこですか？,basutei wa doko desu ka,버스 정류장은 어디인가요?
+길 묻기 및 교통,次の電車は何時ですか？,つぎのでんしゃはなんじですか？,tsugi no densha wa nanji desu ka,다음 기차는 몇 시인가요?
+길 묻기 및 교통,東京駅までいくらですか？,とうきょうえきまでいくらですか？,toukyou eki made ikura desu ka,도쿄역까지 얼마인가요?
+길 묻기 및 교통,ここで降ります。,ここでおります。,koko de orimasu,여기서 내립니다.
+길 묻기 및 교통,迷子になりました。,まいごになりました。,maigo ni narimashita,길을 잃었습니다.
+길 묻기 및 교통,近くにコンビニはありますか？,ちかくにコンビニはありますか？,chikaku ni konbini wa arimasu ka,근처에 편의점이 있나요?
+길 묻기 및 교통,このバスは渋谷に行きますか？,このバスはしぶやにいきますか？,kono basu wa shibuya ni ikimasu ka,이 버스는 시부야에 가나요?
+길 묻기 및 교통,手伝ってもらえますか？,てつだってもらえますか？,tetsudatte moraemasu ka,도와주실 수 있나요?
+쇼핑,これを見せてください。,これをみせてください。,kore o misete kudasai,이것을 보여주세요.
+쇼핑,いくらですか？,いくらですか？,ikura desu ka,얼마인가요?
+쇼핑,これを買います。,これをかいます。,kore o kaimasu,이것을 사겠습니다.
+쇼핑,他の色はありますか？,ほかのいろはありますか？,hoka no iro wa arimasu ka,다른 색상도 있나요?
+쇼핑,大きいサイズはありますか？,おおきいサイズはありますか？,ookii saizu wa arimasu ka,큰 사이즈가 있나요?
+쇼핑,小さいサイズはありますか？,ちいさいサイズはありますか？,chiisai saizu wa arimasu ka,작은 사이즈가 있나요?
+쇼핑,試着してもいいですか？,しちゃくしてもいいですか？,shichaku shite mo ii desu ka,입어봐도 될까요?
+쇼핑,安くしてもらえますか？,やすくしてもらえますか？,yasuku shitemoraemasu ka,깎아주실 수 있나요?
+쇼핑,免税はできますか？,めんぜいはできますか？,menzei wa dekimasu ka,면세 가능한가요?
+쇼핑,袋をください。,ふくろをください。,fukuro o kudasai,봉투를 주세요.
+쇼핑,プレゼント用です。,プレゼントようです。,purezento you desu,선물용입니다.
+쇼핑,ちょっと見てるだけです。,ちょっとみて留だけです。,chotto miteru dake desu,그냥 좀 보고 있어요.
+쇼핑,違うものはありますか？,ちがうものはありますか？,chigau mono wa arimasu ka,다른 것은 없나요?
+쇼핑,カードで払います。,カードではらいます。,kaado de haraimasu,카드로 계산할게요.
+쇼핑,現金で払います。,げんきんではらいます。,genkin de haraimasu,현금으로 계산할게요.
+쇼핑,お釣りが違います。,おつりがちがいます。,otsuri ga chigaimasu,거스름돈이 다릅니다.
+쇼핑,返品できますか？,へんぴんできますか？,henpin dekimasu ka,반품 가능한가요?
+쇼핑,交換できますか？,こうかんできますか？,koukan dekimasu ka,교환 가능한가요?
+쇼핑,人気のある商品はどれですか？,にんきのあるしょうひんはどれですか？,ninki no aru shouhin wa dore desu ka,인기 있는 상품은 어떤 건가요?
+쇼핑,これでいいです。,これでいいです。,kore de ii desu,이것으로 좋습니다.
+호텔 및 숙박,チェックインをお願いします。,チェックインをおねがいします。,chekkuin o onegai shimasu,체크인 부탁합니다.
+호텔 및 숙박,チェックアウトは何時ですか？,チェックアウトはなんじですか？,chekkuauto wa nanji desu ka,체크아웃은 몇 시인가요?
+호텔 및 숙박,荷物を預かっていただけますか？,にもつをあずかっていただけますか？,nimotsu o azukatte itadakemasu ka,짐을 맡아주실 수 있나요?
+호텔 및 숙박,部屋の鍵をください。,へやのかぎをください。,heya no kagi o kudasai,방 열쇠를 주세요.
+호텔 및 숙박,Wi-Fiのパスワードは何ですか？,Wi-Fiのパスワードはなんですか？,waifai no pasuwaado wa nan desu ka,와이파이 비밀번호가 무엇인가요?
+호텔 및 숙박,朝食は何時ですか？,ちょうしょくはなんじですか？,choushoku wa nanji desu ka,조식은 몇 시인가요?
+호텔 및 숙박,タオルを換えてください。,タオルをかえてください。,taoru o kaete kudasai,수건을 바꿔주세요.
+호텔 및 숙박,部屋を掃除してください。,へやをそうじしてください。,heya o souji shite kudasai,방을 청소해 주세요.
+호텔 및 숙박,お湯が出ません。,おゆがでません。,oyu ga demasen,따뜻한 물이 안 나와요.
+호텔 및 숙박,エアコンが動きません。,エアコンがうごきません。,eakon ga ugokimasen,에어컨이 작동하지 않아요.
+호텔 및 숙박,近くの美味しい店を教えてください。,ちかくのおいしいみせをおしえてください。,chikaku no oishii mise o oshiete kudasai,근처의 맛집을 알려주세요.
+호텔 및 숙박,予約した金と申します。,よやくしたきんともうします。,yoyaku shita kin to moushimasu,예약한 김이라고 합니다.
+호텔 및 숙박,部屋を変更できますか？,へやをへんこうできますか？,heya o henkou dekimasu ka,방을 변경할 수 있나요?
+호텔 및 숙박,静かな部屋がいいです。,しずかなへやがいいです。,shizuka na heya ga ii desu,조용한 방이 좋습니다.
+호텔 및 숙박,ドライヤーはありますか？,ドライヤーはありますか？,doraiyaa wa arimasu ka,헤어드라이어가 있나요?
+호텔 및 숙박,タクシーを呼んでもらえますか？,タクシーをよんでもらえますか？,takushii o yonde moraemasu ka,택시를 불러주실 수 있나요?
+호텔 및 숙박,チェックアウトを延長できますか？,チェックアウトをえんちょうできますか？,chekkuauto o enchou dekimasu ka,체크아웃을 연장할 수 있나요?
+호텔 및 숙박,お世話になりました。,おせわになりました。,osewa ni narimashita,신세 많이 졌습니다 (체크아웃 시).
+호텔 및 숙박,もう一泊できますか？,もういっぱくできますか？,mou ippaku dekimasu ka,1박 더 숙박할 수 있나요?
+호텔 및 숙박,非常口はどこですか？,ひじょうぐちはどこですか？,hijou guchi wa doko desu ka,비상구는 어디인가요?

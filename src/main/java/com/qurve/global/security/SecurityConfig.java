@@ -21,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final PlatformAuthorizationRequestRepository platformAuthorizationRequestRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -77,8 +79,22 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .tokenEndpoint(token -> token.accessTokenResponseClient(oauth2TokenResponseClient()))
+                        .authorizationEndpoint(authorization -> authorization
+                                .authorizationRequestRepository(platformAuthorizationRequestRepository)
+                        )
+                        .tokenEndpoint(token -> token
+                                .accessTokenResponseClient(oauth2TokenResponseClient())
+                        )
                         .successHandler(oAuth2SuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            String redirectUrl = UriComponentsBuilder.fromUriString(platformAuthorizationRequestRepository.getSuccessRedirectUri(request))
+                                    .queryParam("error", "oauth_login_failed")
+                                    .build()
+                                    .encode()
+                                    .toUriString();
+
+                            response.sendRedirect(redirectUrl);
+                        })
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {

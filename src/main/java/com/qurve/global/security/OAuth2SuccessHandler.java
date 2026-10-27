@@ -10,7 +10,6 @@ import com.qurve.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -44,9 +43,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final UserRepository userRepository;
     private final BadgeService badgeService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-    @Value("${app.oauth2.success-redirect-uri}")
-    private String successRedirectUri;
+    private final PlatformAuthorizationRequestRepository platformAuthorizationRequestRepository;
 
     /**
      * 소셜 로그인 성공 시 JWT 발급
@@ -108,7 +105,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         badgeService.evaluate(user);
 
         String redirectUrl = UriComponentsBuilder
-                .fromUriString(successRedirectUri)
+                .fromUriString(platformAuthorizationRequestRepository.getSuccessRedirectUri(request))
                 .queryParam("accessToken", accessToken)
                 .queryParam("refreshToken", refreshToken)
                 .build()
