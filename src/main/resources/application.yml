@@ -122,6 +122,7 @@ app:
     server-url: ${SWAGGER_SERVER_URL:https://qurve.duckdns.org}
   oauth2:
     success-redirect-uri: ${OAUTH2_SUCCESS_REDIRECT_URI:qurvefrontend://auth/social-callback}
+    web-success-redirect-uri: ${OAUTH2_WEB_SUCCESS_REDIRECT_URI:https://qurve-app.netlify.app/auth/social-callback}
 
 springdoc:
   swagger-ui:

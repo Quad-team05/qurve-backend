@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.context.annotation.Primary;
 
 /**
  * Redis 관련 설정 클래스
@@ -51,6 +52,7 @@ public class RedisConfig {
      * @return 문자열 기반 RedisTemplate
      */
     @Bean
+    @Primary
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
 
         RedisTemplate<String, String> template = new RedisTemplate<>();
