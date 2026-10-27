@@ -35,6 +35,9 @@ public class User extends BaseEntity {
     @Column(name = "email", length = 255, nullable = false, unique = true)
     private String email;
 
+    @Column(name = "google_sub", length = 255, unique = true)
+    private String googleSub;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;

@@ -1,9 +1,7 @@
 package com.qurve.global.security;
 
 import com.qurve.badge.service.BadgeService;
-import com.qurve.global.enums.ErrorCode;
 import com.qurve.global.enums.LearningLanguage;
-import com.qurve.global.exception.BusinessException;
 import com.qurve.global.enums.Role;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
@@ -16,6 +14,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -78,24 +78,51 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             name = oAuth2User.getAttribute("name");
         }
 
-        // 이메일 기준으로 기존 회원 조회, 없으면 자동 회원가입 처리
-        User user = userRepository.findByEmail(email)
-                .map(existingUser -> {
-                    if (existingUser.isDeleted()) {
-                        throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-                    }
-                    return existingUser;
-                })
-                .orElseGet(() -> userRepository.save(User.builder()
-                        .loginId(email)
-                        .email(email)
-                        .name(name)
-                        .nickname(name)
-                        .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
-                        .role(Role.USER)
-                        .learningLanguage(LearningLanguage.JAPANESE)
-                        .emailVerified(true)
-                        .build()));
+        boolean isGoogle = authentication instanceof OAuth2AuthenticationToken oauth2Token && "google".equals(oauth2Token.getAuthorizedClientRegistrationId());
+
+        String googleSub = isGoogle ? oAuth2User.getAttribute("sub") : null;
+
+        if (isGoogle && (googleSub == null || googleSub.isBlank() || email == null || email.isBlank())) {
+            redirectLoginError(request, response, "INVALID_GOOGLE_PROFILE");
+            return;
+        }
+
+        User user;
+
+        if (isGoogle) {
+            // Google 로그인은 이메일이 아닌 Google 고유 ID로 조회
+            user = userRepository.findByGoogleSub(googleSub).orElse(null);
+
+            // 연결된 Google 계정이 없는데 이메일이 이미 존재하면 자동 연결 금지
+            if (user == null && userRepository.existsByEmail(email)) {
+                redirectLoginError(request, response, "EMAIL_ALREADY_REGISTERED");
+                return;
+            }
+        } else {
+            // 기존 카카오·네이버 조회 방식 유지
+            user = userRepository.findByEmail(email).orElse(null);
+        }
+
+        if (user != null && user.isDeleted()) {
+            redirectLoginError(request, response, "USER_NOT_FOUND");
+            return;
+        }
+
+        if (user == null) {
+            user = userRepository.save(User.builder()
+                    .loginId(email)
+                    .email(email)
+                    .name(name)
+                    .nickname(name)
+                    .googleSub(googleSub)
+                    .passwordHash(
+                            passwordEncoder.encode(UUID.randomUUID().toString())
+                    )
+                    .role(Role.USER)
+                    .learningLanguage(LearningLanguage.JAPANESE)
+                    .emailVerified(true)
+                    .build());
+        }
 
         // JWT Access Token / Refresh Token 발급
         String accessToken = jwtTokenProvider.createAccessToken(user.getLoginId(), user.getRole().name());
@@ -111,6 +138,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .build()
                 .encode()
                 .toUriString();
+
+        response.sendRedirect(redirectUrl);
+
+
+    }
+
+    private void redirectLoginError(HttpServletRequest request, HttpServletResponse response, String errorCode) throws IOException {
+        String redirectUrl = UriComponentsBuilder.fromUriString(platformAuthorizationRequestRepository.getSuccessRedirectUri(request))
+                .queryParam("error", errorCode)
+                .build()
+                .encode()
+                .toUriString();
+
+        // 거절된 OAuth 인증이 서버 세션에도 남지 않도록 정리
+        new SecurityContextLogoutHandler().logout(request, response, null);
 
         response.sendRedirect(redirectUrl);
     }
