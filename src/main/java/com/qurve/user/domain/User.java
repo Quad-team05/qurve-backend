@@ -164,4 +164,8 @@ public class User extends BaseEntity {
         LearningGoal goal = getLearningGoal();
         return goal != null && goal.requiresStageSelection();
     }
+
+    public void linkGoogleAccount(String googleSub) {
+        this.googleSub = googleSub;
+    }
 }

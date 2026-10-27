@@ -100,4 +100,11 @@ public class AuthController {
         AuthLogoutResponseDto responseDto = authService.logout(authentication.getName());
         return ResponseEntity.ok(ApiResponse.success(responseDto));
     }
+
+    @PostMapping("/social/google/link")
+    @Operation(summary = "기존 회원에 Google 계정 연결", description = "일반 로그인 JWT, 비밀번호, Google 연결 티켓을 검증하여 계정을 연결합니다.")
+    public ResponseEntity<ApiResponse<Void>> linkGoogleAccount(@Valid @RequestBody GoogleAccountLinkRequestDto requestDto, Authentication authentication) {
+        authService.linkGoogleAccount(authentication.getName(), requestDto);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

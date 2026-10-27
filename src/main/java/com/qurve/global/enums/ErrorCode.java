@@ -11,6 +11,8 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(409, "DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다."),
     EMAIL_NOT_FOUND(404, "EMAIL_NOT_FOUND", "가입되지 않은 이메일입니다."),
     INVALID_PASSWORD(400, "INVALID_PASSWORD", "비밀번호가 일치하지 않습니다."),
+    SOCIAL_LINK_INVALID(400, "SOCIAL_LINK_INVALID", "계정 연결 요청이 만료되었거나 유효하지 않습니다. Google 로그인을 다시 시작해주세요."),
+    SOCIAL_LINK_CONFLICT(409, "SOCIAL_LINK_CONFLICT", "이미 다른 Google 계정이 연결되어 있거나 연결할 수 없는 계정입니다."),
     INVALID_TOKEN(401, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(401, "EXPIRED_TOKEN", "만료된 토큰입니다."),
     UNSUPPORTED_TOKEN(401, "UNSUPPORTED_TOKEN", "지원하지 않는 토큰입니다."),

@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Service
 @Slf4j
@@ -41,6 +42,7 @@ public class AuthService {
     private final JavaMailSender mailSender;
     private final RedisTemplate<String, String> redisTemplate;
     private final BadgeService badgeService;
+    private final GoogleAccountLinkTicketService googleAccountLinkTicketService;
 
     @Value("${spring.mail.username}")
     private String mailUsername;
@@ -444,5 +446,51 @@ public class AuthService {
         user.clearRefreshToken();
 
         return AuthLogoutResponseDto.of("로그아웃이 완료되었습니다.");
+    }
+
+    @Transactional
+    public void linkGoogleAccount(String loginId, GoogleAccountLinkRequestDto dto) {
+        var pendingLink = googleAccountLinkTicketService.load(dto.getLinkTicket());
+
+        User user = userRepository.findForGoogleLink(loginId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        // Google 인증에서 확인된 대상 회원과 현재 로그인 회원이 같아야 함
+        if (!user.getUserId().equals(pendingLink.userId())) {
+            throw new BusinessException(ErrorCode.SOCIAL_LINK_CONFLICT);
+        }
+
+        // 오래된 로그인 JWT만으로 연결되지 않도록 비밀번호 재확인
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        // 이미 연결된 다른 Google 계정을 덮어쓰지 않음
+        if (user.getGoogleSub() != null && !user.getGoogleSub().equals(pendingLink.googleSub())) {
+            throw new BusinessException(ErrorCode.SOCIAL_LINK_CONFLICT);
+        }
+
+        User linkedUser = userRepository
+                .findByGoogleSub(pendingLink.googleSub())
+                .orElse(null);
+
+        if (linkedUser != null && !linkedUser.getUserId().equals(user.getUserId())) {
+            throw new BusinessException(ErrorCode.SOCIAL_LINK_CONFLICT);
+        }
+
+        // 검증을 통과한 요청만 티켓을 일회용으로 소비
+        var consumedLink = googleAccountLinkTicketService.consume(dto.getLinkTicket());
+
+        if (!pendingLink.equals(consumedLink)) {
+            throw new BusinessException(ErrorCode.SOCIAL_LINK_INVALID);
+        }
+
+        user.linkGoogleAccount(pendingLink.googleSub());
+
+        try {
+            userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException exception) {
+            throw new BusinessException(ErrorCode.SOCIAL_LINK_CONFLICT);
+        }
     }
 }

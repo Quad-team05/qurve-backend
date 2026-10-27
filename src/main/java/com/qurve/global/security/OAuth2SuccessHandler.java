@@ -5,6 +5,7 @@ import com.qurve.global.enums.LearningLanguage;
 import com.qurve.global.enums.Role;
 import com.qurve.user.domain.User;
 import com.qurve.user.repository.UserRepository;
+import com.qurve.auth.service.GoogleAccountLinkTicketService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final BadgeService badgeService;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final PlatformAuthorizationRequestRepository platformAuthorizationRequestRepository;
+    private final GoogleAccountLinkTicketService googleAccountLinkTicketService;
 
     /**
      * 소셜 로그인 성공 시 JWT 발급
@@ -94,9 +96,27 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             user = userRepository.findByGoogleSub(googleSub).orElse(null);
 
             // 연결된 Google 계정이 없는데 이메일이 이미 존재하면 자동 연결 금지
-            if (user == null && userRepository.existsByEmail(email)) {
-                redirectLoginError(request, response, "EMAIL_ALREADY_REGISTERED");
-                return;
+            if (user == null) {
+                User existingUser = userRepository.findByEmail(email).orElse(null);
+
+                if (existingUser != null) {
+                    if (existingUser.isDeleted()) {
+                        redirectLoginError(request, response, "USER_NOT_FOUND");
+                        return;
+                    }
+
+                    String linkTicket;
+
+                    try {
+                        linkTicket = googleAccountLinkTicketService.issue(existingUser.getUserId(), googleSub);
+                    } catch (RuntimeException exception) {
+                        redirectLoginError(request, response, "SOCIAL_LINK_UNAVAILABLE");
+                        return;
+                    }
+
+                    redirectLoginError(request, response, "ACCOUNT_LINK_REQUIRED", linkTicket);
+                    return;
+                }
             }
         } else {
             // 기존 카카오·네이버 조회 방식 유지
@@ -145,13 +165,23 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private void redirectLoginError(HttpServletRequest request, HttpServletResponse response, String errorCode) throws IOException {
-        String redirectUrl = UriComponentsBuilder.fromUriString(platformAuthorizationRequestRepository.getSuccessRedirectUri(request))
-                .queryParam("error", errorCode)
+        redirectLoginError(request, response, errorCode, null);
+    }
+
+    private void redirectLoginError(HttpServletRequest request, HttpServletResponse response, String errorCode, String linkTicket) throws IOException {
+        var builder = UriComponentsBuilder
+                .fromUriString(platformAuthorizationRequestRepository.getSuccessRedirectUri(request))
+                .queryParam("error", errorCode);
+
+        if (linkTicket != null) {
+            builder.queryParam("linkTicket", linkTicket);
+        }
+
+        String redirectUrl = builder
                 .build()
                 .encode()
                 .toUriString();
 
-        // 거절된 OAuth 인증이 서버 세션에도 남지 않도록 정리
         new SecurityContextLogoutHandler().logout(request, response, null);
 
         response.sendRedirect(redirectUrl);
