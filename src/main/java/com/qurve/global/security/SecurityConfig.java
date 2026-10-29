@@ -72,6 +72,12 @@ public class SecurityConfig {
                                 "/api/auth/reissue"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET,
+                                "/account-deletion",
+                                "/account-deletion/",
+                                "/account-deletion.html",
+                                "/privacy-policy",
+                                "/privacy-policy/",
+                                "/privacy-policy.html",
                                 "/api/auth/check-id",
                                 "/api/auth/check-email",
                                 "/api/challenges/goal-types"

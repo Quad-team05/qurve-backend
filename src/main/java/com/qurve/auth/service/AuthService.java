@@ -43,6 +43,7 @@ public class AuthService {
     private final RedisTemplate<String, String> redisTemplate;
     private final BadgeService badgeService;
     private final GoogleAccountLinkTicketService googleAccountLinkTicketService;
+    private final AccountDeletionService accountDeletionService;
 
     @Value("${spring.mail.username}")
     private String mailUsername;
@@ -265,7 +266,7 @@ public class AuthService {
     /**
      * 회원 탈퇴
      *
-     * * 현재 로그인된 사용자를 조회한 뒤,탈퇴 상태로 변경한다.
+     * * 현재 로그인된 사용자의 계정과 연결된 서버 데이터를 삭제한다.
      *
      * @throws BusinessException 인증된 사용자가 존재하지 않는 경우
      */
@@ -279,9 +280,7 @@ public class AuthService {
          User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                  .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-         // 실제 삭제 대신 isDelete = true 탈퇴 상태로 변경 (soft delete, 데이터 무결성 및 이력 보존)
-         user.clearRefreshToken();
-         user.withdraw();
+         accountDeletionService.deleteAccountData(user.getUserId());
     }
 
     /**
