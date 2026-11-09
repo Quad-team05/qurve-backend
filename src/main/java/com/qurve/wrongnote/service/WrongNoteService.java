@@ -78,7 +78,7 @@ public class WrongNoteService {
     @Transactional
     public void markRetryCorrect(User user, Problem problem) {
         wrongNoteRepository.findByUserAndProblem(user, problem)
-                .ifPresent(wrongNote -> wrongNote.markRetryCorrect(LocalDateTime.now()));
+                .ifPresent(wrongNote -> wrongNote.markRetryCorrect(LocalDateTime.now(KST_ZONE)));
     }
 
     /**
@@ -230,7 +230,7 @@ public class WrongNoteService {
             review = createReview(user, reviewKey, problemIds.size());
         }
 
-        LocalDateTime reviewedAt = LocalDateTime.now();
+        LocalDateTime reviewedAt = LocalDateTime.now(KST_ZONE);
         problemIds.forEach(problemId -> wrongNoteByProblemId.get(problemId).completeReview(reviewedAt));
 
         if (newlyCompleted) {
